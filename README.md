@@ -51,4 +51,4 @@ Join our community of developers creating universal apps.
 
 ## Contributors
 
-Aryan Bahl (bahlaryan@gmail.com)
+Aryan Bahl (bahlaryan@gmail.com blah blah blah)
