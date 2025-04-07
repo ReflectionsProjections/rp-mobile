@@ -10,7 +10,7 @@ import ProfileScreen from './profile';
 const { width, height } = Dimensions.get('window');
 const WIDTH=width;
 const HEIGHT=0.15*height; 
-const BUTTON_SIZE=70; 
+const BUTTON_SIZE = Math.min(width, height) * 0.15;
 const TAB_SIZE=40; 
 
 const styles = StyleSheet.create({
