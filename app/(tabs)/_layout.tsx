@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     height: HEIGHT,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    zIndex: -1,
+    // zIndex: -1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 30,
