@@ -6,6 +6,7 @@ export interface ApiEvent {
   startTime: string;   // ISO timestamp
   location:  string;
   points:    number;
+  description?: string; // optional for modal
 }
 
 interface CardType {
@@ -31,5 +32,6 @@ export async function fetchAllEvents(): Promise<CardType[]> {
               }),
     location: e.location,
     pts:      e.points,
+    description: e.description || '',
   }));
 }
