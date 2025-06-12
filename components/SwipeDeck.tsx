@@ -15,20 +15,17 @@ export interface CardType {
   time: string;
   location: string;
   pts: number;
+  description?: string; // optional for modal
 }
 
 interface SwipeDeckProps {
   data: CardType[];
-  flaggedIds: Set<string>;
-  onToggleFlag: (id: string) => void;
   onCardPress?: (item: CardType) => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function SwipeDeck({
   data,
-  flaggedIds,
-  onToggleFlag,
   onCardPress = () => {},
   containerStyle,
 }: SwipeDeckProps) {
@@ -36,25 +33,16 @@ export default function SwipeDeck({
 
   const renderCard = (item: CardType, idx: number) => {
     if (!item) return null;
-    const isFlagged = flaggedIds.has(item.id);
 
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <AppText style={styles.title}>{item.title}</AppText>
 
-
-          <TouchableOpacity onPress={() => onToggleFlag(item.id)}>
-            <FontAwesome
-              name={isFlagged ? 'flag' : 'flag-o'}
-              size={18}
-              color={isFlagged ? 'tomato' : '#000'}
-            />
-          </TouchableOpacity>
         </View>
 
         <AppText style={styles.time}>{item.time}</AppText>
-        <AppText style={styles.location}>{item.location}</AppText>
+        <AppText style={styles.location}>{truncate(item.location, 20)}</AppText>
 
         { idx === cardIndex % data.length && (
           <View style={styles.footer}>
@@ -87,13 +75,10 @@ export default function SwipeDeck({
       cards={data}
       renderCard={renderCard}
 
-      // 1) stable keys
       keyExtractor={(card) => card.id}
 
-      // 2) never ask for more cards than you have
       stackSize={Math.min(data.length, 3)}
       
-      // 3) force remount when data length changes
       key={data.length}
 
       stackSeparation={8}
@@ -113,6 +98,11 @@ export default function SwipeDeck({
       disableBottomSwipe
     />
   );
+}
+
+function truncate(str: string, maxLen: number) {
+  if (str.length <= maxLen) return str;
+  return str.slice(0, maxLen - 1).trimEnd() + '…';
 }
 
 const styles = StyleSheet.create({
