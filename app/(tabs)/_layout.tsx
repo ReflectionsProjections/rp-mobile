@@ -6,6 +6,7 @@ import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
 import ProfileScreen from './profile';
+import ScannerScreen from './scanner';
 
 const { width, height } = Dimensions.get('window');
 const WIDTH=width;
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
     height: HEIGHT,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    zIndex: -1,
+    zIndex: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 30,
@@ -92,6 +93,8 @@ export default function TabLayout() {
         return <PointsShopScreen />;
       case 'profile':
         return <ProfileScreen />;
+      case 'scanner':
+        return <ScannerScreen goBack={() => setActiveTab('home')} />;
       default:
         return <HomeScreen />;
     }
@@ -123,7 +126,7 @@ export default function TabLayout() {
 
         </View>
 
-        <TouchableOpacity style={styles.addButton} >
+        <TouchableOpacity style={styles.addButton} onPress={() => setActiveTab('scanner')}>
           <MaterialIcons size={28} name="qr-code-scanner" color="white" 
           />
         </TouchableOpacity>
