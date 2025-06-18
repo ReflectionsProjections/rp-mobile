@@ -1,13 +1,23 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import { googleAuth } from './auth';
+import LoginIcon from '../../assets/images/login.svg';
+import ReflectionsProjections from '../../assets/images/rp_2025.svg';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// import { VITE_GOOGLE_OAUTH_CLIENT_ID } from '@env';
+
+const VITE_GOOGLE_OAUTH_CLIENT_ID = "" // todo: replace with google auth id 
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-
     const router = useRouter();
 
     const handleSignIn = async () => {
@@ -15,550 +25,219 @@ export default function SignInScreen() {
             setError('Please fill in all fields');
             return;
         }
-
         setIsLoading(true);
         setError('');
-
-        try {
-            setTimeout(() => {
-                setIsLoading(false);
-                router.replace('/(tabs)/explore');
-            }, 1000);
-        } catch (err) {
+        // Simulate login
+        setTimeout(() => {
             setIsLoading(false);
-            setError('Invalid email or password');
-            console.error('Sign in error:', err);
-        }
+            router.replace('/(tabs)/explore');
+        }, 1000);
+    };
+
+
+    const openLink = async () => {
+        await WebBrowser.openBrowserAsync(googleAuth(VITE_GOOGLE_OAUTH_CLIENT_ID, true));
     };
 
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
+            style={styles.outerContainer}
         >
-            <View style={styles.inner}>
-                <Text style={styles.titleTop}>reflections</Text>
-                <Text style={styles.titleBottom}>projections</Text>
+
+            <View style={{ marginTop: 77, marginLeft: 57 }}>
+                <ReflectionsProjections width={280} height={46} />
+            </View>
+            <View style={styles.card}>
+                <LoginIcon width={150} height={150} />
 
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-                <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>EMAIL</Text>
+                <View style={styles.inputWrapper}>
                     <TextInput
                         style={styles.input}
+                        placeholder="Email"
+                        placeholderTextColor="#222"
                         value={email}
                         onChangeText={setEmail}
                         autoCapitalize="none"
                         keyboardType="email-address"
-                        placeholder="you@example.com"
-                        placeholderTextColor="#666"
                     />
                 </View>
-
-                <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>PASSWORD</Text>
+                <View style={styles.inputWrapper}>
                     <TextInput
                         style={styles.input}
+                        placeholder="Password"
+                        placeholderTextColor="#222"
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
-                        placeholder="••••••••"
-                        placeholderTextColor="#666"
                     />
                 </View>
-
-                <TouchableOpacity
-                    style={styles.forgotPassword}
-                    onPress={() => console.log('Forgot password')}
-                >
-                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity
                     style={[styles.button, isLoading && styles.buttonDisabled]}
                     onPress={handleSignIn}
                     disabled={isLoading}
                 >
                     <Text style={styles.buttonText}>
-                        {isLoading ? 'STARTING ENGINES...' : 'START YOUR ENGINES'}
+                        {isLoading ? 'STARTING ENGINES...' : 'LOGIN'}
                     </Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={openLink}>
+                    <Text style={{ color: '#4285F4', fontWeight: 'bold', marginBottom: 10 }}>Sign in with Google</Text>
+                </TouchableOpacity>
+                <View style={styles.dividerRow}>
+                    <View style={styles.divider} />
+                    <Text style={styles.orText}>OR</Text>
+                    <View style={styles.divider} />
+                </View>
+                <View style={styles.signupRow}>
+                    <Text style={styles.signupText}>Don't have an account? </Text>
 
-                <View style={styles.signUpContainer}>
-                    <Text style={styles.signUpText}>New to the track? </Text>
-                    <TouchableOpacity onPress={() => console.log('Navigate to sign up')}>
-                        <Text style={styles.signUpLink}>REGISTER NOW</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
-
-            {/* <View style={styles.bottomStripe}></View> */}
         </KeyboardAvoidingView>
     );
 }
 
+
+
 const styles = StyleSheet.create({
-    container: {
+    outerContainer: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
     },
-    inner: {
+    keyboardContainer: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        justifyContent: 'center',
+        paddingHorizontal: 20,
     },
-    titleTop: {
-        fontSize: 32,
+    header: {
+        fontSize: 42,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#fff',
         fontFamily: 'RacingSansOne',
-        letterSpacing: 2,
+        marginTop: 40,
+        marginBottom: 20,
+        letterSpacing: 3,
+        textShadowColor: '#000',
+        textShadowOffset: { width: 2, height: 3 },
+        textShadowRadius: 6,
+        textAlign: 'center',
     },
-    titleBottom: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#F0363D',
-        marginBottom: 40,
-        fontFamily: 'RacingSansOne',
-        letterSpacing: 2,
+
+    card: {
+
+        width: 339,
+        height: 374,
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 32,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 8,
     },
+
     errorText: {
         color: '#F0363D',
-        marginBottom: 15,
         fontWeight: 'bold',
+        marginBottom: 12,
         fontFamily: 'Inter-Bold',
+        textAlign: 'center',
     },
-    inputContainer: {
+    inputWrapper: {
         width: '100%',
         marginBottom: 20,
-    },
-    inputLabel: {
-        color: '#F0363D',
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        letterSpacing: 1,
-        fontFamily: 'Inter-Bold',
+        backgroundColor: '#F5F5F5',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
     input: {
-        width: '100%',
-        height: 50,
-        borderWidth: 2,
-        borderColor: '#333',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        backgroundColor: '#FFFFFF',
-        color: '#000000',
+        height: 52,
+        fontSize: 16,
+        color: '#111',
         fontFamily: 'Inter-Regular',
-    },
-    forgotPassword: {
-        alignSelf: 'flex-end',
-        marginBottom: 25,
-    },
-    forgotPasswordText: {
-        color: '#999',
-        fontSize: 12,
-        fontFamily: 'Inter-Regular',
+        paddingHorizontal: 16,
     },
     button: {
         width: '100%',
-        height: 55,
-        backgroundColor: '#F0363D',
-        borderRadius: 8,
+        height: 52,
+        backgroundColor: '#111',
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 25,
+        marginTop: 12,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     buttonDisabled: {
-        backgroundColor: '#5c1417',
+        backgroundColor: '#888',
     },
     buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
+        color: '#fff',
+        fontSize: 18,
         fontWeight: 'bold',
-        letterSpacing: 1,
         fontFamily: 'RacingSansOne',
+        letterSpacing: 2,
     },
-    signUpContainer: {
+    googleButton: {
+        marginBottom: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+    },
+    googleButtonText: {
+        color: '#4285F4',
+        fontWeight: 'bold',
+        fontSize: 16,
+        textAlign: 'center',
+    },
+    dividerRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        width: '100%',
+        marginVertical: 12,
     },
-    signUpText: {
-        color: '#999',
-        fontFamily: 'Inter-Regular',
+    divider: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#E0E0E0',
     },
-    signUpLink: {
-        color: '#F0363D',
+    orText: {
+        marginHorizontal: 16,
+        color: '#888',
         fontWeight: 'bold',
         fontFamily: 'Inter-Bold',
+        fontSize: 14,
     },
-
+    signupRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    signupText: {
+        color: '#666',
+        fontFamily: 'Inter-Regular',
+        fontSize: 15,
+    },
+    signupLink: {
+        color: '#111',
+        fontWeight: 'bold',
+        textDecorationLine: 'underline',
+        fontFamily: 'Inter-Bold',
+        fontSize: 15,
+    },
 });
 
 
-// app/(auth)/sign-in.tsx
-// import { useState } from 'react';
-// import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
-// import { useRouter } from 'expo-router';
-// // import RacingCheckeredFlag from '../../components/RacingCheckeredFlag';
-
-// export default function SignInScreen() {
-//     const [email, setEmail] = useState('');
-//     const [password, setPassword] = useState('');
-//     const [isLoading, setIsLoading] = useState(false);
-//     const [error, setError] = useState('');
-
-//     const router = useRouter();
-
-//     const handleSignIn = async () => {
-//         if (!email || !password) {
-//             setError('Please fill in all fields');
-//             return;
-//         }
-
-//         setIsLoading(true);
-//         setError('');
-
-//         try {
-//             // Simulate authentication process
-//             setTimeout(() => {
-//                 setIsLoading(false);
-//                 router.replace('/(tabs)');
-//             }, 1000);
-//         } catch (err) {
-//             setIsLoading(false);
-//             setError('Invalid email or password');
-//             console.error('Sign in error:', err);
-//         }
-//     };
-
-//     return (
-//         <KeyboardAvoidingView
-//             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-//             style={styles.container}
-//         >
-//             <View style={styles.inner}>
-
-
-//                 <View style={{ position: 'absolute', top: 30, right: 20 }}>
-//                     {/* <RacingCheckeredFlag size={15} rows={2} columns={4} /> */}
-//                 </View>
-
-//                 <Text style={styles.title}>reflections <Text style={styles.accentText}>projections</Text></Text>
-
-//                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-//                 <View style={styles.inputContainer}>
-//                     <Text style={styles.inputLabel}>EMAIL</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         value={email}
-//                         onChangeText={setEmail}
-//                         autoCapitalize="none"
-//                         keyboardType="email-address"
-//                         placeholderTextColor="#666"
-//                     />
-//                 </View>
-
-//                 <View style={styles.inputContainer}>
-//                     <Text style={styles.inputLabel}>PASSWORD</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         value={password}
-//                         onChangeText={setPassword}
-//                         secureTextEntry
-//                         placeholderTextColor="#666"
-//                     />
-//                 </View>
-
-//                 <TouchableOpacity
-//                     style={styles.forgotPassword}
-//                     onPress={() => console.log('Forgot password')}
-//                 >
-//                     <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-//                 </TouchableOpacity>
-
-//                 <TouchableOpacity
-//                     style={[styles.button, isLoading && styles.buttonDisabled]}
-//                     onPress={handleSignIn}
-//                     disabled={isLoading}
-//                 >
-//                     <Text style={styles.buttonText}>
-//                         {isLoading ? 'STARTING ENGINES...' : 'START YOUR ENGINES'}
-//                     </Text>
-//                 </TouchableOpacity>
-
-//                 <View style={styles.signUpContainer}>
-//                     <Text style={styles.signUpText}>New to the track? </Text>
-//                     <TouchableOpacity onPress={() => console.log('Navigate to sign up')}>
-//                         <Text style={styles.signUpLink}>REGISTER NOW</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//             </View>
-
-//             <View style={styles.bottomStripe}></View>
-//         </KeyboardAvoidingView>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         backgroundColor: '#FFFFFF',
-//     },
-//     inner: {
-//         flex: 1,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         padding: 20,
-//     },
-//     logo: {
-//         width: 100,
-//         height: 100,
-//         marginBottom: 20,
-//     },
-//     title: {
-//         fontSize: 28,
-//         fontWeight: 'bold',
-//         color: '#000000',
-//         marginBottom: 40,
-//         fontFamily: 'RacingSansOne', // Using Racing Sans One font
-//         letterSpacing: 2,
-//     },
-//     accentText: {
-//         color: '#F0363D',
-//     },
-//     errorText: {
-//         color: '#F0363D',
-//         marginBottom: 15,
-//         fontWeight: 'bold',
-//         fontFamily: 'Inter-Bold', // Using Inter font
-//     },
-//     inputContainer: {
-//         width: '100%',
-//         marginBottom: 20,
-//     },
-//     inputLabel: {
-//         color: '#F0363D',
-//         fontSize: 12,
-//         fontWeight: 'bold',
-//         marginBottom: 5,
-//         letterSpacing: 1,
-//         fontFamily: 'Inter-Bold', // Using Inter font
-//     },
-//     input: {
-//         width: '100%',
-//         height: 50,
-//         borderWidth: 2,
-//         borderColor: '#333',
-//         borderRadius: 8,
-//         paddingHorizontal: 15,
-//         backgroundColor: '#000000',
-//         color: '#FFFFFF',
-//         fontFamily: 'Inter-Regular', // Using Inter font
-//     },
-//     forgotPassword: {
-//         alignSelf: 'flex-end',
-//         marginBottom: 25,
-//     },
-//     forgotPasswordText: {
-//         color: '#999',
-//         fontSize: 12,
-//         fontFamily: 'Inter-Regular', // Using Inter font
-//     },
-//     button: {
-//         width: '100%',
-//         height: 55,
-//         backgroundColor: '#F0363D',
-//         borderRadius: 8,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         marginBottom: 25,
-//     },
-//     buttonDisabled: {
-//         backgroundColor: '#5c1417',
-//     },
-//     buttonText: {
-//         color: '#FFFFFF',
-//         fontSize: 16,
-//         fontWeight: 'bold',
-//         letterSpacing: 1,
-//         fontFamily: 'RacingSansOne', // Racing Sans font
-//     },
-//     signUpContainer: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//     },
-//     signUpText: {
-//         color: '#999',
-//         fontFamily: 'Inter-Regular', // Using Inter font
-//     },
-//     signUpLink: {
-//         color: '#F0363D',
-//         fontWeight: 'bold',
-//         fontFamily: 'Inter-Bold', // Using Inter font
-//     },
-//     bottomStripe: {
-//         height: 10,
-//         backgroundColor: '#F0363D',
-//     }
-// });
-
-
-// import React from 'react';
-// import { StyleSheet, View, Text, TouchableOpacity, Image, SafeAreaView, StatusBar } from 'react-native';
-
-// const SignInScreen = () => {
-//     const handleLogin = () => {
-//         console.log('Login pressed');
-//         // Add navigation to login screen
-//     };
-
-//     const handleRegister = () => {
-//         console.log('Register pressed');
-//         // Add navigation to register screen
-//     };
-
-
-
-//     return (
-//         <SafeAreaView style={styles.container}>
-//             <StatusBar barStyle="dark-content" />
-
-//             {/* Logo and welcome section */}
-//             <View style={styles.logoContainer}>
-//                 <Image
-//                     source={{ uri: 'https://via.placeholder.com/150' }}
-//                     style={styles.logo}
-//                     resizeMode="contain"
-//                 />
-//                 <Text style={styles.welcomeText}>Welcome to App Name</Text>
-//                 <Text style={styles.subText}>Sign in to continue</Text>
-//             </View>
-
-//             {/* Buttons section */}
-//             <View style={styles.buttonContainer}>
-//                 <TouchableOpacity
-//                     style={styles.primaryButton}
-//                     onPress={handleLogin}
-//                 >
-//                     <Text style={styles.primaryButtonText}>Login</Text>
-//                 </TouchableOpacity>
-
-//                 <TouchableOpacity
-//                     style={styles.secondaryButton}
-//                     onPress={handleRegister}
-//                 >
-//                     <Text style={styles.secondaryButtonText}>Register</Text>
-//                 </TouchableOpacity>
-
-//                 <TouchableOpacity
-//                     style={styles.ghostButton}
-
-//                 >
-
-//                 </TouchableOpacity>
-//             </View>
-
-//             {/* Footer */}
-//             <View style={styles.footer}>
-//                 <Text style={styles.footerText}>
-//                     By continuing, you agree to our Terms of Service and Privacy Policy
-//                 </Text>
-//             </View>
-//         </SafeAreaView>
-//     );
-// };
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         backgroundColor: '#f8f9fa',
-//         justifyContent: 'space-between',
-//     },
-//     logoContainer: {
-//         alignItems: 'center',
-//         marginTop: 60,
-//         paddingHorizontal: 20,
-//     },
-//     logo: {
-//         width: 120,
-//         height: 120,
-//         marginBottom: 20,
-//     },
-//     welcomeText: {
-//         fontSize: 24,
-//         fontWeight: 'bold',
-//         color: '#333',
-//         marginBottom: 10,
-//     },
-//     subText: {
-//         fontSize: 16,
-//         color: '#666',
-//         textAlign: 'center',
-//     },
-//     buttonContainer: {
-//         padding: 20,
-//         width: '100%',
-//     },
-//     primaryButton: {
-//         backgroundColor: '#4361ee',
-//         borderRadius: 8,
-//         height: 56,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         marginBottom: 16,
-//         elevation: 2,
-//         shadowColor: '#000',
-//         shadowOffset: { width: 0, height: 2 },
-//         shadowOpacity: 0.1,
-//         shadowRadius: 4,
-//     },
-//     primaryButtonText: {
-//         color: '#fff',
-//         fontSize: 16,
-//         fontWeight: '600',
-//     },
-//     secondaryButton: {
-//         backgroundColor: '#fff',
-//         borderRadius: 8,
-//         height: 56,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         marginBottom: 16,
-//         borderWidth: 1,
-//         borderColor: '#4361ee',
-//         elevation: 1,
-//         shadowColor: '#000',
-//         shadowOffset: { width: 0, height: 1 },
-//         shadowOpacity: 0.05,
-//         shadowRadius: 2,
-//     },
-//     secondaryButtonText: {
-//         color: '#4361ee',
-//         fontSize: 16,
-//         fontWeight: '600',
-//     },
-//     ghostButton: {
-//         height: 56,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//     },
-//     ghostButtonText: {
-//         color: '#666',
-//         fontSize: 16,
-//         fontWeight: '500',
-//     },
-//     footer: {
-//         padding: 20,
-//         alignItems: 'center',
-//     },
-//     footerText: {
-//         fontSize: 12,
-//         color: '#999',
-//         textAlign: 'center',
-//     },
-// });
-
-// export default SignInScreen;
