@@ -49,9 +49,7 @@ export default function TabLayout() {
     <View className="flex-1">
       {renderContent()}
 
-      <View
-        className="absolute left-0 right-0 bottom-0 items-center pb-8"
-      >
+      <View className="absolute left-0 right-0 bottom-0 items-center pb-8">
         <View className="absolute left-0 right-0 bottom-0">
           <CurvedBottomBar />
         </View>
@@ -86,7 +84,7 @@ export default function TabLayout() {
           className="absolute justify-center items-center rounded-full shadow-lg"
           style={{
             bottom: HEIGHT - BUTTON_SIZE,
-            left: width / 2 - BUTTON_SIZE * 0.9 / 2,
+            left: width / 2 - (BUTTON_SIZE * 0.9) / 2,
             width: BUTTON_SIZE * 0.9,
             height: BUTTON_SIZE * 0.9,
             backgroundColor: '#393E46',
