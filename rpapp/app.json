@@ -1,23 +1,21 @@
 {
   "expo": {
-    "name": "rp-mobile",
-    "slug": "rp-mobile",
+    "name": "rpapp",
+    "slug": "rpapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "reflectionsprojections",
+    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.rp-mobile"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.yourcompany.rpmobile"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -34,8 +32,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-web-browser"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
