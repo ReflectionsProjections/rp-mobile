@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .tab-icon {
+    @apply justify-center items-center rounded-full bg-gray-800;
+    width: 40px;
+    height: 40px;
+  }
+  .tab-icon-active {
+    @apply bg-blue-600;
+  }
+}
+

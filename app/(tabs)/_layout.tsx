@@ -1,87 +1,35 @@
-import React, {useState} from 'react';
-import { Dimensions,StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-import CurvedBottomBar from './curvedBottomBar';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; 
+import '@/global.css';
+import React, { useState } from 'react';
+import { Dimensions, View, TouchableOpacity } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { SvgProps } from 'react-native-svg';
+
+import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
 import ProfileScreen from './profile';
 
-const { width, height } = Dimensions.get('window');
-const WIDTH=width;
-const HEIGHT=0.15*height; 
-const BUTTON_SIZE = Math.min(width, height) * 0.15;
-const TAB_SIZE=40; 
+import HomeIcon from '@/assets/icons/tabIcons/rp_home.svg';
+import EventsIcon from '@/assets/icons/tabIcons/rp_events.svg';
+import QrCodeIcon from '@/assets/icons/tabIcons/rp_qr.svg';
+import PointsIcon from '@/assets/icons/tabIcons/rp_points.svg';
+import ProfileIcon from '@/assets/icons/tabIcons/rp_profile.svg';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: HEIGHT,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    zIndex: -1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 30,
-    alignItems: 'center',
-  },
-  tabLeft: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginTop: height * 0.045,
-  },
-  tabRight: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginTop: height * 0.045,
-  },
-  tabButton: {
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabIcon: {
-    width: TAB_SIZE,
-    height: TAB_SIZE,
-    borderRadius: TAB_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabLabel: {
-    fontSize: 12,
-    color: 'white',
-    marginTop: 2,
-  },
-  addButton: {
-    position: 'absolute',
-    bottom: HEIGHT / 1.10 - BUTTON_SIZE,
-    left: WIDTH / 2 - BUTTON_SIZE / 2,
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
-    backgroundColor: '#393E46',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-  },
-});
+const { width, height } = Dimensions.get('window');
+const HEIGHT = 0.15 * height;
+const BUTTON_SIZE = Math.min(width, height) * 0.2;
+
+const TABS: { key: string; icon: React.FC<SvgProps> }[] = [
+  { key: 'home', icon: HomeIcon },
+  { key: 'events', icon: EventsIcon },
+  { key: 'points', icon: PointsIcon },
+  { key: 'profile', icon: ProfileIcon },
+];
 
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -98,55 +46,80 @@ export default function TabLayout() {
   };
 
   return (
-    <>
-      <View style={styles.contentContainer}>
-        {renderContent()}
-      </View>
-      <View style={styles.bottomBar}>
-        <CurvedBottomBar />
-        <View style={styles.tabLeft}>
+    <View className="flex-1">
+      {renderContent()}
 
-          <TouchableOpacity style={styles.tabButton} onPress={() => setActiveTab('home')} >
-            <View style={styles.tabIcon}>
-              <MaterialIcons size={28} name="home" color="white" />
-            </View>
-            <Text style={styles.tabLabel}>Info</Text>
-          </TouchableOpacity>
-
-
-          <TouchableOpacity style={styles.tabButton} onPress={() => setActiveTab('events')}>
-            <View style={styles.tabIcon}>
-              <MaterialIcons size={28} name="event" color="white" />
-            </View>
-            <Text style={styles.tabLabel}>Events</Text>
-          </TouchableOpacity>
-
+      <View
+        className="absolute left-0 right-0 bottom-0 items-center pb-8"
+      >
+        <View className="absolute left-0 right-0 bottom-0">
+          <CurvedBottomBar />
         </View>
 
-        <TouchableOpacity style={styles.addButton} >
-          <MaterialIcons size={28} name="qr-code-scanner" color="white" 
-          />
+        <View className="flex-1 flex-row">
+          {TABS.map((tab, idx) => {
+            if (idx === 2) {
+              return (
+                <React.Fragment key="spacer">
+                  <View style={{ width: BUTTON_SIZE }} />
+                  <TabButton
+                    key={tab.key}
+                    tab={tab}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+                </React.Fragment>
+              );
+            }
+            return (
+              <TabButton
+                key={tab.key}
+                tab={tab}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+              />
+            );
+          })}
+        </View>
+
+        <TouchableOpacity
+          className="absolute justify-center items-center rounded-full shadow-lg"
+          style={{
+            bottom: HEIGHT - BUTTON_SIZE,
+            left: width / 2 - BUTTON_SIZE * 0.9 / 2,
+            width: BUTTON_SIZE * 0.9,
+            height: BUTTON_SIZE * 0.9,
+            backgroundColor: '#393E46',
+            zIndex: 2,
+          }}
+        >
+          <QrCodeIcon width={36} height={36} color={Colors.light.tabIconDefault} />
         </TouchableOpacity>
-
-        <View style={styles.tabRight}>
-
-          <TouchableOpacity style={styles.tabButton } onPress={() => setActiveTab('points')} >
-            <View style={styles.tabIcon}>
-              <MaterialIcons size={28} name="storefront" color="white"/>
-            </View>
-            <Text style={styles.tabLabel}>Points Shop</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabButton}  onPress={() => setActiveTab('profile')} >
-            <View style={styles.tabIcon}>
-              <MaterialIcons size={28} name="account-circle" color="white"/>
-            </View>
-            <Text style={styles.tabLabel}>Profile</Text>
-          </TouchableOpacity>
-
-        </View>
-
       </View>
-    </>
+    </View>
+  );
+}
+
+type TabButtonProps = {
+  tab: { key: string; icon: React.FC<SvgProps> };
+  activeTab: string;
+  setActiveTab: (key: string) => void;
+};
+function TabButton({ tab, activeTab, setActiveTab }: TabButtonProps) {
+  const Icon = tab.icon;
+  const isActive = activeTab === tab.key;
+  return (
+    <TouchableOpacity
+      className="flex-1 justify-center items-center"
+      onPress={() => setActiveTab(tab.key)}
+    >
+      <View className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}>
+        <Icon
+          width={36}
+          height={36}
+          color={isActive ? Colors.light.tabIconSelected : Colors.light.tabIconDefault}
+        />
+      </View>
+    </TouchableOpacity>
   );
 }
