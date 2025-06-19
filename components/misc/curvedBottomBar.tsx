@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions,View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { Dimensions, View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 // const WIDTH = 320; // Width of the screen
@@ -11,7 +11,7 @@ import Svg, { Path } from 'react-native-svg';
 const { width, height } = Dimensions.get('window'); // Get screen width and height
 
 const WIDTH = width; // Use the full screen width
-const HEIGHT = 0.10 * height; // Set the bottom bar height to 15% of the screen height
+const HEIGHT = 0.1 * height; // Set the bottom bar height to 15% of the screen height
 const CORNER_RADIUS = 0.05 * width; // Set corner radius relative to width (e.g., 5% of screen width)
 const CUTOUT_RADIUS = 0.1 * width; // Radius of the circular cutout (e.g., 10% of screen width)
 
@@ -37,7 +37,7 @@ const CurvedBottomBar = () => {
       <Svg width={WIDTH} height={HEIGHT} style={styles.svg}>
         <Path d={d} fill="#C3C3C3" />
       </Svg>
-      
+
       {/* Floating Action Button
       <View style={styles.fabContainer}>
         <TouchableOpacity style={styles.fab} onPress={() => alert('Button Pressed!')}>

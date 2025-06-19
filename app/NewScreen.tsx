@@ -7,7 +7,7 @@ export default function NewScreen() {
       <Text style={styles.text}>This is the new screen!</Text>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
