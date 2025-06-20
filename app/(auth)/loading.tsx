@@ -8,17 +8,14 @@ export default function LoadingScreen() {
     const [loadingComplete, setLoadingComplete] = useState(false);
 
     useEffect(() => {
-        // Start the loading animation
         Animated.timing(loadingAnimation, {
             toValue: 1,
             duration: 2000,
             useNativeDriver: false,
         }).start();
 
-        // Simulate initialization or checking auth state
         const checkAuthStatus = async () => {
             try {
-                // Simulate a check with a timeout
                 setTimeout(() => {
                     setLoadingComplete(true);
                     router.replace('/(auth)/sign-in');
@@ -39,12 +36,6 @@ export default function LoadingScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Racing logo here */}
-            {/* <Image
-                source={require('../../assets/your-logo.png')} // Update with your racing logo
-                style={styles.logo}
-                resizeMode="contain"
-            /> */}
             <Text style={styles.titleContainer}>
                 <Text style={styles.titleTop}>reflections</Text>
                 {'\n'}
@@ -77,7 +68,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#000000',
         marginBottom: 40,
-        fontFamily: 'RacingSansOne', // Using Racing Sans One font
+        fontFamily: 'RacingSansOne',
         letterSpacing: 2,
     },
     accentText: {
