@@ -93,8 +93,11 @@ export default function TabLayout() {
             backgroundColor: '#393E46',
             zIndex: 2,
           }}
+          onPress={() => {
+            setActiveTab('scanner');
+          }}
         >
-          <QrCodeIcon width={36} height={36} color={Colors.light.tabIconDefault} />
+          <QrCodeIcon width={36} height={36} color={activeTab === 'scanner' ? '#00ADB5' : '#fff'} />
         </TouchableOpacity>
       </View>
     </View>

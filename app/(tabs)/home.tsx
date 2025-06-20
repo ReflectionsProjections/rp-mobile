@@ -5,13 +5,14 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { fetchAllEvents } from '../../api/api';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { ProgressBar } from '@/components/home/ProgressBar';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
+import { Event as ApiEvent } from '@/api/types';
+import { api } from '@/api/api';
 
 export default function HomeScreen() {
   // fetched cards
@@ -44,16 +45,32 @@ export default function HomeScreen() {
 
   // fetch once on mount
   useEffect(() => {
-    fetchAllEvents()
-      .then(setCards)
-      .catch((e) => setError(e.message || 'Failed to load events'))
-      .finally(() => setLoading(false));
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get("/events");
+        const formattedEvents = (response.data as ApiEvent[]).map((event: ApiEvent) => ({
+          id: event.eventId,
+          title: event.name,
+          time: new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          location: event.location,
+          pts: event.points,
+          description: event.description,
+        }));
+        setCards(formattedEvents);
+      } catch (e: any) {
+        console.error("Failed to fetch or process events:", e);
+        setError(e.message || 'Failed to load events');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
   }, []);
 
   // loading / error states
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#00adb5" />
       </SafeAreaView>
     );
@@ -61,8 +78,8 @@ export default function HomeScreen() {
   
   if (error) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
-        <ThemedText className="text-white text-base">Error: {error}</ThemedText>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <ThemedText className="text-black text-base">Error: {error}</ThemedText>
       </SafeAreaView>
     );
   }
