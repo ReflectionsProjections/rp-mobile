@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, View, type PressableProps } from 'react-native';
 import { styled } from 'nativewind';
-import { ThemedText } from './ThemedText';
+import { ThemedText } from '../themed/ThemedText';
 
 const StyledPressable = styled(Pressable);
 const StyledView = styled(View);
