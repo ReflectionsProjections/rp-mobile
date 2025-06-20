@@ -31,6 +31,7 @@ export default function RootLayout() {
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ProRacing: require('../assets/fonts/ProRacing-Regular.otf'),
+    ProRacingSlant: require('../assets/fonts/ProRacingSlant.otf'),
   });
 
   useEffect(() => {

@@ -35,15 +35,8 @@ const CurvedBottomBar = () => {
     <View style={styles.container}>
       {/* Bottom Bar SVG */}
       <Svg width={WIDTH} height={HEIGHT} style={styles.svg}>
-        <Path d={d} fill="#C3C3C3" />
+        <Path d={d} fill="#fff" />
       </Svg>
-
-      {/* Floating Action Button
-      <View style={styles.fabContainer}>
-        <TouchableOpacity style={styles.fab} onPress={() => alert('Button Pressed!')}>
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 };

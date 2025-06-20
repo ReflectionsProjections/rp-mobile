@@ -16,7 +16,7 @@ export function ThemedText({
   const getVariantClass = () => {
     switch (variant) {
       case 'bigName':
-        return 'font-proRacing text-[40px] tracking-wide text-white font-italic';
+        return 'font-proRacingSlant text-[40px] tracking-wide text-white font-italic';
       case 'h1':
         return 'font-proRacing text-[30px] tracking-wide';
       case 'h2':
