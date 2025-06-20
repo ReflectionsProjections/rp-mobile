@@ -8,11 +8,7 @@ export type ThemedTextProps = TextProps & {
   className?: string;
 };
 
-export function ThemedText({
-  variant = 'body',
-  className = '',
-  ...rest
-}: ThemedTextProps) {
+export function ThemedText({ variant = 'body', className = '', ...rest }: ThemedTextProps) {
   const getVariantClass = () => {
     switch (variant) {
       case 'bigName':
@@ -37,4 +33,4 @@ export function ThemedText({
   };
 
   return <StyledText className={`${getVariantClass()} ${className}`} {...rest} />;
-} 
+}

@@ -1,4 +1,4 @@
-import "../global.css";
+import '../global.css';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -13,17 +13,16 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 SplashScreen.preventAutoHideAsync();
 
-;(React as any).useInsertionEffect = useLayoutEffect;
+(React as any).useInsertionEffect = useLayoutEffect;
 
 const RNText = Text as any;
 RNText.defaultProps = {
   ...(RNText.defaultProps || {}),
   style: {
     ...(RNText.defaultProps?.style || {}),
-    fontFamily: 'ProRacing',   // ← your loaded font key
+    fontFamily: 'ProRacing', // ← your loaded font key
   },
 };
-
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
