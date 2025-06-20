@@ -20,12 +20,7 @@ export const EventModal: React.FC<EventModalProps> = ({
   onToggleFlag,
 }) => {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity
         className="flex-1 bg-black/40 justify-center items-center"
         activeOpacity={1}
@@ -39,24 +34,14 @@ export const EventModal: React.FC<EventModalProps> = ({
           {event && (
             <>
               <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-                <ThemedText className="text-2xl font-bold font">
-                  {event.title}
-                </ThemedText>
-                <ThemedText className="mb-1">
-                  {event.time}
-                </ThemedText>
-                <ThemedText className="mb-4 text-[#666]">
-                  {event.location}
-                </ThemedText>
+                <ThemedText className="text-2xl font-bold font">{event.title}</ThemedText>
+                <ThemedText className="mb-1">{event.time}</ThemedText>
+                <ThemedText className="mb-4 text-[#666]">{event.location}</ThemedText>
                 {event.description && (
-                  <ThemedText className="mb-4 leading-5">
-                    {event.description}
-                  </ThemedText>
+                  <ThemedText className="mb-4 leading-5">{event.description}</ThemedText>
                 )}
                 <View className="mb-4 self-end bg-black rounded-xl px-2 py-1">
-                  <ThemedText className="text-white">
-                    {event.pts} PTS
-                  </ThemedText>
+                  <ThemedText className="text-white">{event.pts} PTS</ThemedText>
                 </View>
               </ScrollView>
 
@@ -76,4 +61,4 @@ export const EventModal: React.FC<EventModalProps> = ({
       </TouchableOpacity>
     </Modal>
   );
-}; 
+};

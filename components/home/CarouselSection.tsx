@@ -29,27 +29,19 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   onCardPress,
   limit,
 }) => {
-  const displayData = typeof limit === 'number'
-    ? data.slice(0, limit)
-    : data;
+  const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
 
-  const containerHeight =
-    CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
+  const containerHeight = CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
 
   return (
     <View className="mt-6 mb-6">
-      <ThemedText variant="title" className="mx-4 mb-2">{title}</ThemedText>
+      <ThemedText variant="title" className="mx-4 mb-2">
+        {title}
+      </ThemedText>
 
-      <View
-        className="self-center mb-3"
-        style={{ width: CARD_WIDTH, height: containerHeight }}
-      >
-        <SwipeDeck
-          data={displayData}
-          onCardPress={onCardPress}
-          containerStyle={{ flex: 1 }}
-        />
+      <View className="self-center mb-3" style={{ width: CARD_WIDTH, height: containerHeight }}>
+        <SwipeDeck data={displayData} onCardPress={onCardPress} containerStyle={{ flex: 1 }} />
       </View>
     </View>
   );
-}; 
+};

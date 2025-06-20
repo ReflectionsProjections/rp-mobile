@@ -36,14 +36,19 @@ export default function SwipeDeck({
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <ThemedText variant="body" className='text-[14px] leading-[14px]'>{item.title}</ThemedText>
-
+          <ThemedText variant="body" className="text-[14px] leading-[14px]">
+            {item.title}
+          </ThemedText>
         </View>
 
-        <ThemedText variant="body" className='text-[12px]'>{item.time}</ThemedText>
-        <ThemedText variant="body" className='text-[10px]'>{truncate(item.location, 20)}</ThemedText>
+        <ThemedText variant="body" className="text-[12px]">
+          {item.time}
+        </ThemedText>
+        <ThemedText variant="body" className="text-[10px]">
+          {truncate(item.location, 20)}
+        </ThemedText>
 
-        { idx === cardIndex % data.length && (
+        {idx === cardIndex % data.length && (
           <View style={styles.footer}>
             <View style={styles.points}>
               <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
@@ -57,10 +62,7 @@ export default function SwipeDeck({
             {data.map((_, dotIdx) => (
               <View
                 key={dotIdx}
-                style={[
-                  styles.dot,
-                  cardIndex % data.length === dotIdx && styles.dotActive,
-                ]}
+                style={[styles.dot, cardIndex % data.length === dotIdx && styles.dotActive]}
               />
             ))}
           </View>
@@ -73,13 +75,9 @@ export default function SwipeDeck({
     <Swiper
       cards={data}
       renderCard={renderCard}
-
       keyExtractor={(card) => card.id}
-
       stackSize={Math.min(data.length, 3)}
-      
       key={data.length}
-
       stackSeparation={8}
       infinite
       cardIndex={cardIndex}
@@ -88,11 +86,7 @@ export default function SwipeDeck({
       backgroundColor="transparent"
       cardHorizontalMargin={0}
       cardVerticalMargin={0}
-      containerStyle={
-        containerStyle
-          ? (StyleSheet.flatten(containerStyle) as object)
-          : undefined
-      }
+      containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
       disableTopSwipe
       disableBottomSwipe
     />

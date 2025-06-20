@@ -1,15 +1,12 @@
-import axios from "axios";
-import * as SecureStore from "expo-secure-store";
-import { TypedAxiosInstance } from "./type-wrapper";
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { TypedAxiosInstance } from './type-wrapper';
 
-function createApi(
-  baseURL: string,
-  unauthorizedCallback: () => void
-): TypedAxiosInstance {
+function createApi(baseURL: string, unauthorizedCallback: () => void): TypedAxiosInstance {
   const axiosObject = axios.create({ baseURL });
 
   axiosObject.interceptors.request.use(async (config) => {
-    const jwt = await SecureStore.getItemAsync("jwt");
+    const jwt = await SecureStore.getItemAsync('jwt');
     if (jwt) {
       config.headers.Authorization = jwt;
     } else {
@@ -25,29 +22,24 @@ function createApi(
       if (error.response) {
         const errorType = error.response.data?.error;
 
-        if (
-          errorType === "NoJWT" ||
-          errorType === "ExpiredJWT" ||
-          errorType === "InvalidJWT"
-        ) {
+        if (errorType === 'NoJWT' || errorType === 'ExpiredJWT' || errorType === 'InvalidJWT') {
           unauthorizedCallback();
         }
       }
 
-      console.error("API error:", error);
+      console.error('API error:', error);
 
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(error);
-    }
+    },
   );
 
   return {
     get: (url, config) => axiosObject.get(url as string, config),
     post: (url, data, config) => axiosObject.post(url as string, data, config),
     put: (url, data, config) => axiosObject.put(url as string, data, config),
-    patch: (url, data, config) =>
-      axiosObject.patch(url as string, data, config),
-    delete: (url, config) => axiosObject.delete(url as string, config)
+    patch: (url, data, config) => axiosObject.patch(url as string, data, config),
+    delete: (url, config) => axiosObject.delete(url as string, config),
   };
 }
 
