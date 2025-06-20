@@ -10,6 +10,7 @@ module.exports = {
           racing: ['RacingSansOne', 'System'],
           inter: ['Inter', 'System'],
           proRacing: ['ProRacing', 'System'],
+          proRacingSlant: ['ProRacingSlant', 'System'],
         },
       },
     },

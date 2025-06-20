@@ -88,7 +88,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-[#222]">
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <Header />
-        
+                
         <ThemedText variant="bigName" className="text-left my-2 mx-4">R|P 2025</ThemedText>
         
         <ProgressBar progress={40} />
