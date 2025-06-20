@@ -4,8 +4,8 @@ import { View, KeyboardAvoidingView, Platform, Pressable, Text } from 'react-nat
 import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed/ThemedText';
-import { SlantedButton } from '@/components/themed/SlantedButton';
-import { SlantedButtonGroup } from '@/components/themed/SlantedButtonGroup';
+import { SlantedButton } from '@/components/auth/SlantedButton';
+import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
 import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/racingLogo.svg';
 
