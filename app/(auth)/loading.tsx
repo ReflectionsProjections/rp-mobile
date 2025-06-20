@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Image, Platform, Animated } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function LoadingScreen() {
     const router = useRouter();
     const loadingAnimation = useRef(new Animated.Value(0)).current;
-    const [loadingComplete, setLoadingComplete] = useState(false);
 
     useEffect(() => {
         Animated.timing(loadingAnimation, {
@@ -17,7 +16,6 @@ export default function LoadingScreen() {
         const checkAuthStatus = async () => {
             try {
                 setTimeout(() => {
-                    setLoadingComplete(true);
                     router.replace('/(auth)/sign-in');
                 }, 2000);
             } catch (error) {
@@ -27,7 +25,7 @@ export default function LoadingScreen() {
         };
 
         checkAuthStatus();
-    }, []);
+    }, [router, loadingAnimation]);
 
     const width = loadingAnimation.interpolate({
         inputRange: [0, 1],
@@ -35,81 +33,17 @@ export default function LoadingScreen() {
     });
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.titleContainer}>
-                <Text style={styles.titleTop}>reflections</Text>
+        <View className="flex-1 justify-center items-center bg-white p-5">
+            <Text className="text-center font-proRacing mb-10">
+                <Text className="text-[32px] font-bold text-black tracking-[2px]">reflections</Text>
                 {'\n'}
-                <Text style={styles.titleBottom}>projections</Text>
+                <Text className="text-[32px] font-bold text-[#F0363D] tracking-[2px]">projections</Text>
             </Text>
 
-            <View style={styles.loadingContainer}>
-                <Animated.View style={[styles.loadingProgress, { width }]} />
+            <View className="w-4/5 h-3 bg-[#EEEEEE] rounded-md overflow-hidden mb-4">
+                <Animated.View className="h-full bg-[#F0363D] rounded-md" style={{ width }} />
             </View>
-            <Text style={styles.loadingText}>REVVING ENGINES...</Text>
+            <Text className="text-[#F0363D] text-sm font-bold font-proRacing tracking-wider">REVVING ENGINES...</Text>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        padding: 20,
-    },
-    logo: {
-        width: 150,
-        height: 150,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#000000',
-        marginBottom: 40,
-        fontFamily: 'RacingSansOne',
-        letterSpacing: 2,
-    },
-    accentText: {
-        color: '#F0363D',
-    },
-    loadingContainer: {
-        width: '80%',
-        height: 12,
-        backgroundColor: '#EEEEEE',
-        borderRadius: 6,
-        overflow: 'hidden',
-        marginBottom: 15,
-    },
-    loadingProgress: {
-        height: '100%',
-        backgroundColor: '#F0363D',
-        borderRadius: 6,
-    },
-    loadingText: {
-        color: '#F0363D',
-        fontSize: 14,
-        fontWeight: 'bold',
-        fontFamily: 'RacingSansOne', // Changed to RacingSansOne font
-        letterSpacing: 1,
-    },
-
-    titleContainer: {
-        textAlign: 'center',
-        fontFamily: 'RacingSansOne',
-        marginBottom: 40,
-    },
-    titleTop: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#000000',
-        letterSpacing: 2,
-    },
-    titleBottom: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#F0363D',
-        letterSpacing: 2,
-    },
-});
