@@ -1,18 +1,17 @@
+import '@/global.css';
 import { Stack } from 'expo-router';
 
 export default function AuthLayout() {
     return (
         <Stack
             screenOptions={{
-                headerShown: false, // hides the header for all screens in (auth)
+                headerShown: false,
                 animation: 'fade',
             }}
         >
-            {/* Optional: Explicit config for sign-in screen if needed */}
-            {/* <Stack.Screen 
-                name="sign-in" 
-                options={{ headerShown: false }} 
-            /> */}
+            <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+            <Stack.Screen name="loading" options={{ headerShown: false }} />
+            <Stack.Screen name="callback" options={{ headerShown: false }} />
         </Stack>
     );
 }
