@@ -9,6 +9,7 @@ import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
 import ProfileScreen from './profile';
+import ScannerScreen from './scanner';
 
 import HomeIcon from '@/assets/icons/tabIcons/rp_home.svg';
 import EventsIcon from '@/assets/icons/tabIcons/rp_events.svg';
@@ -40,6 +41,8 @@ export default function TabLayout() {
         return <PointsShopScreen />;
       case 'profile':
         return <ProfileScreen />;
+      case 'scanner':
+        return <ScannerScreen />;
       default:
         return <HomeScreen />;
     }

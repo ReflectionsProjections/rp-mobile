@@ -37,7 +37,7 @@ export default function SignInScreen() {
                     </View>
     
                     <View className="w-full bg-white rounded-2xl p-6 py-10 mt-[-30px]">
-                        <Text className="font-racing text-3xl text-center mt-5 mb-6">LOGIN</Text>
+                        <Text className="font-proRacing text-3xl text-center mt-5 mb-6">LOGIN</Text>
                         
                         <SlantedButtonGroup>
                             <SlantedButton onPress={handleEmailLogin}>
@@ -51,7 +51,7 @@ export default function SignInScreen() {
     
                         <View className="flex-row items-center my-4 w-full">
                             <View className="flex-1 h-[4px] bg-gray-200" />
-                            <ThemedText variant="body-bold" className="mx-2 text-gray-600">OR</ThemedText>
+                            <ThemedText variant="h3" className="mx-2 text-gray-600">OR</ThemedText>
                             <View className="flex-1 h-[4px] bg-gray-200" />
                         </View>
                         
