@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import PTS from '../../assets/images/pts.svg';
+import PTS from '@/assets/images/pts.svg';
 
 const ProfileHeader = () => {
   return (

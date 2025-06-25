@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { validateAuthToken } from '@/app/lib/auth';
 
 export default function LoadingScreen() {
   const router = useRouter();
@@ -15,16 +17,33 @@ export default function LoadingScreen() {
 
     const checkAuthStatus = async () => {
       try {
-        setTimeout(() => {
+        const jwt = await SecureStore.getItemAsync('jwt');
+        
+        if (jwt) {
+          const isValid = await validateAuthToken();
+          
+          if (isValid) {
+            console.log('jwt', jwt);
+            console.log('User is authenticated, redirecting to home');
+            router.replace('/(tabs)/home');
+          } else {
+            console.log('Token is invalid, redirecting to sign-in');
+            await SecureStore.deleteItemAsync('jwt');
+            router.replace('/(auth)/sign-in');
+          }
+        } else {
+          console.log('User is not authenticated, redirecting to sign-in');
           router.replace('/(auth)/sign-in');
-        }, 2000);
+        }
       } catch (error) {
         console.error('Error checking auth status:', error);
         router.replace('/(auth)/sign-in');
       }
     };
 
-    checkAuthStatus();
+    setTimeout(() => {
+      checkAuthStatus();
+    }, 2000);
   }, [router, loadingAnimation]);
 
   const width = loadingAnimation.interpolate({

@@ -1,23 +1,51 @@
 import '@/global.css';
-import React from 'react';
-import { View, KeyboardAvoidingView, Platform, Pressable, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, KeyboardAvoidingView, Platform, Pressable, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as SecureStore from 'expo-secure-store';
+import { api } from '@/api/api';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { SlantedButton } from '@/components/auth/SlantedButton';
 import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
 import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/racingLogo.svg';
+import { OAUTH_CONFIG } from '@/app/lib/config';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleEmailLogin = () => {
-    router.replace('/(tabs)/home');
+  useEffect(() => {
+    GoogleSignin.configure({
+      iosClientId: OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
+    });
+  }, []);
+
+  const handleEmailLogin = async () => {
+    try {
+      setIsLoading(true);
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const response = await api.post('/auth/login/mobile', {
+        idToken: userInfo.data?.idToken || '',
+      });
+      await SecureStore.setItemAsync('jwt', response.data.token);
+      router.replace('/(tabs)/home');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert(
+        'Login Failed',
+        error.message || 'An error occurred during login. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGuestLogin = () => {
-    // Navigate directly to the app
     router.replace('/(tabs)/home');
   };
 
@@ -40,7 +68,12 @@ export default function SignInScreen() {
             <Text className="font-proRacing text-3xl text-center mt-5 mb-6">LOGIN</Text>
 
             <SlantedButtonGroup>
-              <SlantedButton onPress={handleEmailLogin}>Continue with Email</SlantedButton>
+              <SlantedButton 
+                onPress={handleEmailLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Continue with Email'}
+              </SlantedButton>
               <View className="h-px bg-white" />
               <SlantedButton onPress={handleGuestLogin}>Continue as Guest</SlantedButton>
             </SlantedButtonGroup>

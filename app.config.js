@@ -1,7 +1,11 @@
-{
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export default {
   "expo": {
-    "name": "rp-mobile",
-    "slug": "rp-mobile",
+    "name": "reflectionsprojections",
+    "slug": "reflectionsprojections",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,14 +14,27 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.rp-mobile"
+      "bundleIdentifier": "com.reflectionsprojections",
+      config: {
+        usesNonExemptEncryption: false,
+        googleSignIn: {
+          reservedClientId: "com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0"
+        }
+      },
+      infoPlist: {
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: ["reflectionsprojections"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourcompany.rpmobile"
+      "package": "com.reflectionsprojections"
     },
     "web": {
       "bundler": "metro",
@@ -39,6 +56,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "googleClientId": process.env.OAUTH_GOOGLE_CLIENT_ID,
+      "apiUrl": process.env.API_URL || "https://api.reflectionsprojections.org",
     }
   }
 }

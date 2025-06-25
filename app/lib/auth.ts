@@ -1,19 +1,25 @@
-const LOCATION = 'admin.reflectionsprojections.org';
-const REDIRECT = 'reflectionsprojections.org';
+import * as SecureStore from 'expo-secure-store';
 
-export function googleAuth(clientId: string, selectAccount?: boolean) {
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: `${REDIRECT}/auth/callback`,
-    response_type: 'code',
-    scope: 'openid email profile',
-    access_type: 'offline',
-    state: encodeURIComponent(LOCATION),
-  });
-
-  if (selectAccount) {
-    params.set('prompt', 'select_account');
+export async function validateAuthToken(): Promise<boolean> {
+  try {
+    const response = await fetch('https://api.reflectionsprojections.org/auth/info', {
+      method: 'GET',
+      headers: {
+        'Authorization': await SecureStore.getItemAsync('jwt') || '',
+      },
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return false;
   }
+}
 
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+export async function clearAuth(): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync('jwt');
+  } catch (error) {
+    console.error('Error clearing auth:', error);
+  }
 }

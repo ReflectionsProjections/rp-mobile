@@ -162,6 +162,12 @@ export interface APIRoutes {
       response: { token: string };
     };
   };
+  '/auth/login/mobile': {
+    POST: {
+      request: { idToken: string };
+      response: { token: string };
+    };
+  };
   '/auth/info': {
     GET: {
       response: RoleObject;
