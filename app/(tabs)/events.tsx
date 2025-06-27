@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
 	View,
 	Text,
@@ -7,7 +7,12 @@ import {
 	TouchableOpacity,
 	StyleSheet,
 	ScrollView,
+	SafeAreaView,
 } from "react-native";
+import { Modal, Pressable } from "react-native";
+import BadgeSvg from "../../assets/images/badge.svg";
+import { Dimensions } from "react-native";
+import { Animated, Easing } from "react-native";
 
 const dayTabs = [
 	{ label: "MON", dayNumber: 1, barColor: "#4caf50" },
@@ -16,6 +21,7 @@ const dayTabs = [
 	{ label: "THU", dayNumber: 4, barColor: "#ffeb3b" },
 	{ label: "FRI", dayNumber: 5, barColor: "#3f51b5" },
 ];
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const typeColors = {
 	SPECIAL: "#4caf50",
@@ -29,6 +35,22 @@ const EventsScreen = () => {
 	const [events, setEvents] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedDay, setSelectedDay] = useState(1);
+	const [selectedEvent, setSelectedEvent] = useState(null); 
+
+	const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
+
+	useEffect(() => {
+		if (selectedEvent) {
+			Animated.timing(slideY, {
+				toValue: 0,
+				duration: 400,
+				easing: Easing.out(Easing.quad),
+				useNativeDriver: true,
+			}).start();
+		} else {
+			slideY.setValue(-SCREEN_HEIGHT);
+		}
+	}, [selectedEvent]);
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -70,7 +92,7 @@ const EventsScreen = () => {
 	}
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
 			<Text style={styles.headerText}>Events</Text>
 
 			<View style={styles.tabsWrapper}>
@@ -133,23 +155,54 @@ const EventsScreen = () => {
 						}
 
 						return (
-							<View style={[styles.eventBar, { backgroundColor: bgColor }]}>
-								<Text style={styles.eventIndex}>{index + 1}.</Text>
+							<TouchableOpacity onPress={() => setSelectedEvent(item)}>
+								<View style={[styles.eventBar, { backgroundColor: bgColor }]}>
+									<Text style={styles.eventIndex}>{index + 1}.</Text>
 
-								<View style={styles.eventInfo}>
-									<Text style={styles.eventName}>{item.name || "No Name"}</Text>
-									<Text style={styles.eventLocation}>
-										{item.location || "TBD"}
-									</Text>
+									<View style={styles.eventInfo}>
+										<Text style={styles.eventName}>
+											{item.name || "No Name"}
+										</Text>
+										<Text style={styles.eventLocation}>
+											{item.location || "TBD"}
+										</Text>
+									</View>
+
+									<Text style={styles.eventTime}>{timeString}</Text>
 								</View>
-
-								<Text style={styles.eventTime}>{timeString}</Text>
-							</View>
+							</TouchableOpacity>
 						);
 					}}
 				/>
 			)}
-		</View>
+			<Modal visible={!!selectedEvent} transparent>
+				<Pressable
+					style={styles.modalOverlay}
+					onPress={() => setSelectedEvent(null)}
+				>
+					{/* Animated badge container starts here */}
+					<Animated.View
+						style={[
+							styles.badgeContainer,
+							{ transform: [{ translateY: slideY }] },
+						]}
+					>
+						<BadgeSvg
+							width="100%"
+							height="100%"
+							preserveAspectRatio="xMidYMid meet"
+						/>
+
+						<View style={styles.badgeTextWrapper}>
+							<Text style={styles.badgeTitle}>{selectedEvent?.name}</Text>
+							<Text style={styles.badgeSubtitle}>
+								{new Date(selectedEvent?.startTime).toLocaleTimeString()}
+							</Text>
+						</View>
+					</Animated.View>
+				</Pressable>
+			</Modal>
+		</SafeAreaView>
 	);
 };
 
@@ -184,6 +237,7 @@ const styles = StyleSheet.create({
 	tabsContainer: {
 		alignItems: "center",
 		paddingHorizontal: 12,
+		gap: 10,
 	},
 	tab: {
 		flexDirection: "row",
@@ -191,7 +245,6 @@ const styles = StyleSheet.create({
 		borderRadius: 4,
 		height: 48,
 		paddingHorizontal: 12,
-		marginHorizontal: 6,
 	},
 	tabBar: {
 		width: 6,
@@ -252,6 +305,59 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		color: "#000000",
 		marginLeft: 12,
+	},
+	modalOverlay: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "rgba(0,0,0,0.6)",
+	},
+	modalContent: {
+		width: "90%",
+		backgroundColor: "#333333",
+		borderRadius: 12,
+		padding: 20,
+	},
+	modalTitle: {
+		color: "#fff",
+		fontSize: 28,
+		fontWeight: "bold",
+		marginBottom: 12,
+	},
+	modalText: {
+		color: "#ccc",
+		fontSize: 16,
+		marginBottom: 8,
+	},
+	badgeContainer: {
+		position: "absolute",
+		top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.4,
+		left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.75,
+		width: SCREEN_WIDTH * 0.95,
+		height: SCREEN_HEIGHT * 0.85,
+		justifyContent: "center",
+		alignItems: "center",
+		overflow: "hidden",
+	},
+	badgeTextWrapper: {
+		position: "absolute",
+		top: "65%",
+		left: "10%", 
+		right: "10%",
+		alignItems: "center",
+	},
+
+	badgeTitle: {
+		color: "#000",
+		fontSize: 18,
+		fontWeight: "bold",
+	},
+
+	badgeSubtitle: {
+		color: "#ccc",
+		fontSize: 16,
+		marginTop: 8,
+		textAlign: "center",
 	},
 });
 
