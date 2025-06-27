@@ -196,7 +196,7 @@ const EventsScreen = () => {
 						<View style={styles.badgeTextWrapper}>
 							<Text style={styles.badgeTitle}>{selectedEvent?.name}</Text>
 							<Text style={styles.badgeSubtitle}>
-								{new Date(selectedEvent?.startTime).toLocaleTimeString()}
+								{selectedEvent?.description}
 							</Text>
 						</View>
 					</Animated.View>
@@ -354,8 +354,8 @@ const styles = StyleSheet.create({
 	},
 
 	badgeSubtitle: {
-		color: "#ccc",
-		fontSize: 16,
+		color: "#000",
+		fontSize: 14,
 		marginTop: 8,
 		textAlign: "center",
 	},
