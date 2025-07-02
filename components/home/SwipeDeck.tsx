@@ -30,6 +30,17 @@ export default function SwipeDeck({
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
+  // Handle null/undefined data
+  if (!data || data.length === 0) {
+    return (
+      <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ThemedText variant="body" className="text-gray-500">
+          No events available
+        </ThemedText>
+      </View>
+    );
+  }
+
   const renderCard = (item: CardType, idx: number) => {
     if (!item) return null;
 
@@ -94,6 +105,7 @@ export default function SwipeDeck({
 }
 
 function truncate(str: string, maxLen: number) {
+  if (!str) return '';
   if (str.length <= maxLen) return str;
   return str.slice(0, maxLen - 1).trimEnd() + '…';
 }

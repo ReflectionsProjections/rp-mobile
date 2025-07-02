@@ -23,20 +23,15 @@ export default function LoadingScreen() {
           const isValid = await validateAuthToken();
           
           if (isValid) {
-            console.log('jwt', jwt);
-            console.log('User is authenticated, redirecting to home');
             router.replace('/(tabs)/home');
           } else {
-            console.log('Token is invalid, redirecting to sign-in');
             await SecureStore.deleteItemAsync('jwt');
             router.replace('/(auth)/sign-in');
           }
         } else {
-          console.log('User is not authenticated, redirecting to sign-in');
           router.replace('/(auth)/sign-in');
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
         router.replace('/(auth)/sign-in');
       }
     };
