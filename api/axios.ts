@@ -29,7 +29,6 @@ function createApi(baseURL: string, unauthorizedCallback: () => void): TypedAxio
 
       console.error('API error:', error);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(error);
     },
   );

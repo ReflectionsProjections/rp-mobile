@@ -2,7 +2,7 @@ import '@/global.css';
 import React, { useState, useEffect } from 'react';
 import { View, KeyboardAvoidingView, Platform, Pressable, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as SecureStore from 'expo-secure-store';
 import { api } from '@/api/api';
 
@@ -19,7 +19,7 @@ export default function SignInScreen() {
 
   useEffect(() => {
     GoogleSignin.configure({
-      iosClientId: OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
+      iosClientId: OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID
     });
   }, []);
 
