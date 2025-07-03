@@ -13,18 +13,18 @@ export default {
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.reflectionsprojections",
       config: {
-        usesNonExemptEncryption: false,
-        googleSignIn: {
-          reservedClientId: "com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0"
-        }
+        usesNonExemptEncryption: false
       },
       infoPlist: {
         CFBundleURLTypes: [
           {
-            CFBundleURLSchemes: ["reflectionsprojections"]
+            CFBundleURLSchemes: [
+              "reflectionsprojections",
+              "com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0"
+            ]
           }
         ]
       }

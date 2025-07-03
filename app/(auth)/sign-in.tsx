@@ -1,37 +1,46 @@
 import '@/global.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, KeyboardAvoidingView, Platform, Pressable, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as SecureStore from 'expo-secure-store';
+import * as AuthSession from 'expo-auth-session';
 import { api } from '@/api/api';
+import { path } from '@/api/types';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { SlantedButton } from '@/components/auth/SlantedButton';
 import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
 import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/racingLogo.svg';
-import { OAUTH_CONFIG } from '@/app/lib/config';
+import { googleAuth } from '@/app/lib/auth';
 
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      iosClientId: OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID
-    });
-  }, []);
-
   const handleEmailLogin = async () => {
     try {
       setIsLoading(true);
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      const response = await api.post('/auth/login/mobile', {
-        idToken: userInfo.data?.idToken || '',
+
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
+        path: '/(auth)/callback',
       });
+      
+      const authResult = await googleAuth();
+      if (!authResult || authResult.result.type !== 'success') {
+        throw new Error('Authentication was cancelled or failed');
+      }
+      const { result, codeVerifier } = authResult;
+
+      const response = await api.post(path('/auth/login/:platform', { platform: 'ios' }), {
+        code: result.params.code,
+        redirectUri: redirectUri,
+        codeVerifier: codeVerifier,
+      });
+
       await SecureStore.setItemAsync('jwt', response.data.token);
+      
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -72,7 +81,7 @@ export default function SignInScreen() {
                 onPress={handleEmailLogin}
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Continue with Email'}
+                {isLoading ? 'Signing in...' : 'Continue with Google'}
               </SlantedButton>
               <View className="h-px bg-white" />
               <SlantedButton onPress={handleGuestLogin}>Continue as Guest</SlantedButton>
