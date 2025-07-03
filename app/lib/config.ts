@@ -2,8 +2,8 @@ import Constants from 'expo-constants';
 
 export const OAUTH_CONFIG = {
   IOS_GOOGLE_CLIENT_ID: Constants.expoConfig?.extra?.googleClientId || process.env.OAUTH_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-  REDIRECT_SCHEME: 'reflectionsprojections',
-  REDIRECT_PATH: 'auth/callback',
+  REDIRECT_SCHEME: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
+  REDIRECT_PATH: '/(auth)/callback',
 };
 
 export const API_CONFIG = {
