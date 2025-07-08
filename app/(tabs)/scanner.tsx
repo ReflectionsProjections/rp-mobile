@@ -48,7 +48,7 @@ const ScannerScreen = () => {
 
   const handleBarCodeScanned = async ({ data }: any) => {
     if (scanned) return;
-    
+
     setScanned(true);
     setLoading(true);
 
@@ -65,18 +65,14 @@ const ScannerScreen = () => {
 
       setSuccessMessage(response.data);
       setShowSuccess(true);
-      
+
       setTimeout(() => {
         setScanned(false);
         setShowSuccess(false);
       }, 2000);
-
     } catch (error: any) {
       console.error('Scan error:', error);
-      Alert.alert(
-        'Scan Failed', 
-        error.response?.data?.message || 'Failed to process QR code'
-      );
+      Alert.alert('Scan Failed', error.response?.data?.message || 'Failed to process QR code');
       setScanned(false);
       setShowSuccess(false); // Ensure success modal is reset on scan failure
     } finally {
@@ -103,10 +99,7 @@ const ScannerScreen = () => {
         <Text className="text-white text-lg text-center mb-4">
           Camera access is required to scan QR codes
         </Text>
-        <TouchableOpacity 
-          className="bg-[#00adb5] px-6 py-3 rounded-lg"
-          onPress={requestPermission}
-        >
+        <TouchableOpacity className="bg-[#00adb5] px-6 py-3 rounded-lg" onPress={requestPermission}>
           <Text className="text-white font-semibold">Grant Permission</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -117,10 +110,7 @@ const ScannerScreen = () => {
     <SafeAreaView className="flex-1 bg-black">
       <View className="flex-row items-center justify-between px-4 py-2">
         <Text className="text-white text-xl font-bold">QR Scanner</Text>
-        <TouchableOpacity 
-          className="bg-[#00adb5] px-4 py-2 rounded-lg"
-          onPress={resetScan}
-        >
+        <TouchableOpacity className="bg-[#00adb5] px-4 py-2 rounded-lg" onPress={resetScan}>
           <Text className="text-white font-semibold">Reset</Text>
         </TouchableOpacity>
       </View>
@@ -133,7 +123,7 @@ const ScannerScreen = () => {
           activeOpacity={0.7}
         >
           <Text className="text-white">
-            {events.find(e => e.eventId === selectedEventId)?.name || 'Select an event'}
+            {events.find((e) => e.eventId === selectedEventId)?.name || 'Select an event'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -146,25 +136,22 @@ const ScannerScreen = () => {
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         >
           <View className="flex-1 items-center top-20">
-            <View 
-              className="relative"
-              style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}
-            >
+            <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
               <View className="absolute top-0 left-0 w-12 h-12">
                 <View className="absolute top-0 left-0 w-8 h-1 bg-[#00adb5]" />
                 <View className="absolute top-0 left-0 w-1 h-8 bg-[#00adb5]" />
               </View>
-              
+
               <View className="absolute top-0 right-0 w-12 h-12">
                 <View className="absolute top-0 right-0 w-8 h-1 bg-[#00adb5]" />
                 <View className="absolute top-0 right-0 w-1 h-8 bg-[#00adb5]" />
               </View>
-              
+
               <View className="absolute bottom-0 left-0 w-12 h-12">
                 <View className="absolute bottom-0 left-0 w-8 h-1 bg-[#00adb5]" />
                 <View className="absolute bottom-0 left-0 w-1 h-8 bg-[#00adb5]" />
               </View>
-              
+
               <View className="absolute bottom-0 right-0 w-12 h-12">
                 <View className="absolute bottom-0 right-0 w-8 h-1 bg-[#00adb5]" />
                 <View className="absolute bottom-0 right-0 w-1 h-8 bg-[#00adb5]" />
@@ -191,24 +178,16 @@ const ScannerScreen = () => {
           </View>
         )}
       </View>
-      
-      <Modal
-        visible={showSuccess}
-        transparent
-        animationType="fade"
-      >
-        <Pressable 
+
+      <Modal visible={showSuccess} transparent animationType="fade">
+        <Pressable
           className="flex-1 bg-black/50 justify-center items-center"
           onPress={() => setShowSuccess(false)}
         >
           <View className="bg-[#333] p-6 rounded-lg mx-6 max-w-sm">
-            <Text className="text-[#00adb5] text-xl font-bold text-center mb-2">
-              ✓ Success!
-            </Text>
-            <Text className="text-white text-center">
-              {successMessage}
-            </Text>
-            <TouchableOpacity 
+            <Text className="text-[#00adb5] text-xl font-bold text-center mb-2">✓ Success!</Text>
+            <Text className="text-white text-center">{successMessage}</Text>
+            <TouchableOpacity
               className="bg-[#00adb5] mt-4 py-2 rounded-lg"
               onPress={() => {
                 setShowSuccess(false);

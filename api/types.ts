@@ -125,7 +125,7 @@ export type Meeting = {
 };
 
 export interface APIRoutes {
-  '/attendee' : {
+  '/attendee': {
     GET: {
       response: Attendee;
     };
