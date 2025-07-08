@@ -19,6 +19,7 @@
     "@expo/vector-icons": "^14.1.0",
     "@react-native-community/blur": "^4.4.1",
     "@react-native-google-signin/google-signin": "^15.0.0",
+    "@react-native-picker/picker": "^2.11.1",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "all": "^0.0.0",
