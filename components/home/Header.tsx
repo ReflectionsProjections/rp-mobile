@@ -9,7 +9,7 @@ export const Header: React.FC = () => {
     await SecureStore.deleteItemAsync('jwt');
     await SecureStore.deleteItemAsync('codeVerifier');
     router.push('/');
-  }
+  };
 
   return (
     <View className="flex-row p-4 justify-between items-center">
