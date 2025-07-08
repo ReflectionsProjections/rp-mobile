@@ -177,7 +177,6 @@ const EventsScreen = () => {
           className="flex-1 justify-center items-center bg-black/60"
           onPress={() => setSelectedEvent(null)}
         >
-          {/* Animated badge container starts here */}
           <Animated.View
             className="absolute justify-center items-center overflow-hidden"
             style={[
