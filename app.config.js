@@ -8,7 +8,7 @@ export default {
     slug: 'reflectionsprojections',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: './assets/images/rp_logo_2025.png',
     scheme: 'reflectionsprojections',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,

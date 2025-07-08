@@ -7,10 +7,11 @@ interface UserInfoProps {
     first: string;
     last: string;
   };
-  foodWave: string;
+  roles: string[];
+  foodWave?: string;
 }
 
-const UserInfo = ({ name, foodWave }: UserInfoProps) => {
+const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
   return (
     <>
       <View className="flex-row justify-between items-center">
@@ -25,10 +26,14 @@ const UserInfo = ({ name, foodWave }: UserInfoProps) => {
       </View>
 
       <View className="h-0.5 bg-black my-3" />
-
       <Text className="font-inter text-xl italic mt-[-5px] mb-5">
-        Food Wave: <Text className="font-bold not-italic">{foodWave}</Text>
+        Roles: <Text className="font-bold not-italic">{roles.join(', ')}</Text>
       </Text>
+      {foodWave && (
+        <Text className="font-inter text-xl italic mt-[-5px] mb-5">
+          Food Wave: <Text className="font-bold not-italic">{foodWave}</Text>
+        </Text>
+      )}
     </>
   );
 };
