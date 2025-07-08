@@ -1,6 +1,5 @@
-// SwipeDeck.tsx
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions, StyleProp, ViewStyle } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 
@@ -14,7 +13,7 @@ export interface CardType {
   time: string;
   location: string;
   pts: number;
-  description?: string; // optional for modal
+  description?: string;
 }
 
 interface SwipeDeckProps {
@@ -41,8 +40,15 @@ export default function SwipeDeck({
     );
   }
 
-  const renderCard = (item: CardType, idx: number) => {
-    if (!item) return null;
+  // Clamp the index to valid range
+  const safeIndex = data.length > 0
+    ? Math.min(cardIndex, data.length - 1)
+    : 0;
+
+  const renderCard = (item: CardType | null, idx: number) => {
+    if (!item) {
+      return <View style={[styles.card, styles.emptyCard]} />;
+    }
 
     return (
       <View style={styles.card}>
@@ -59,7 +65,7 @@ export default function SwipeDeck({
           {truncate(item.location, 20)}
         </ThemedText>
 
-        {idx === cardIndex % data.length && (
+        {idx === safeIndex && (
           <View style={styles.footer}>
             <View style={styles.points}>
               <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
@@ -67,13 +73,12 @@ export default function SwipeDeck({
           </View>
         )}
 
-        {/* only show dots when this is the front card */}
-        {idx === cardIndex % data.length && (
+        {idx === safeIndex && (
           <View style={styles.dots}>
             {data.map((_, dotIdx) => (
               <View
                 key={dotIdx}
-                style={[styles.dot, cardIndex % data.length === dotIdx && styles.dotActive]}
+                style={[styles.dot, safeIndex === dotIdx && styles.dotActive]}
               />
             ))}
           </View>
@@ -91,13 +96,19 @@ export default function SwipeDeck({
       key={data.length}
       stackSeparation={8}
       infinite
-      cardIndex={cardIndex}
+      cardIndex={safeIndex}
       onSwiped={(i) => setCardIndex(i + 1)}
-      onTapCard={(i) => onCardPress(data[i])}
+      onTapCard={(i) => {
+        if (i < data.length) {
+          onCardPress(data[i]);
+        }
+      }}
       backgroundColor="transparent"
       cardHorizontalMargin={0}
       cardVerticalMargin={0}
-      containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
+      containerStyle={
+        containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined
+      }
       disableTopSwipe
       disableBottomSwipe
     />
@@ -123,14 +134,15 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginTop: 10,
   },
+  emptyCard: {
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  title: { color: '#000', fontSize: 16, fontWeight: 'bold' },
-  time: { color: '#000', marginTop: 4 },
-  location: { color: '#999', marginBottom: 8 },
   footer: { flexDirection: 'row', justifyContent: 'flex-end' },
   points: {
     backgroundColor: '#000',
