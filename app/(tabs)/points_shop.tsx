@@ -24,7 +24,7 @@ export default function PointsScreen() {
       <Text
         className="absolute z-10 text-[16px] font-bold text-black font-proRacing"
         style={{
-          top: height * 0.70,
+          top: height * 0.7,
           left: width * 0.65,
           width: width * 0.35,
         }}

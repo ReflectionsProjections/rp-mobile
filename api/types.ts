@@ -158,7 +158,7 @@ export interface APIRoutes {
   };
   '/auth/login/:platform': {
     POST: {
-      request: { code: string; redirectUri: string, codeVerifier: string };
+      request: { code: string; redirectUri: string; codeVerifier: string };
       response: { token: string };
     };
   };

@@ -11,10 +11,10 @@ export async function validateAuthToken(): Promise<boolean> {
     const response = await fetch('https://api.reflectionsprojections.org/auth/info', {
       method: 'GET',
       headers: {
-        'Authorization': await SecureStore.getItemAsync('jwt') || '',
+        Authorization: (await SecureStore.getItemAsync('jwt')) || '',
       },
     });
-    
+
     return response.ok;
   } catch (error) {
     console.error('Token validation error:', error);
@@ -31,12 +31,15 @@ export async function clearAuth(): Promise<void> {
   }
 }
 
-export async function googleAuth(): Promise<{result: AuthSession.AuthSessionResult, codeVerifier: string} | null> {
+export async function googleAuth(): Promise<{
+  result: AuthSession.AuthSessionResult;
+  codeVerifier: string;
+} | null> {
   try {
     const discovery = {
-      authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-      tokenEndpoint: "https://oauth2.googleapis.com/token",
-      revocationEndpoint: "https://accounts.google.com/o/oauth2/revoke",
+      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+      tokenEndpoint: 'https://oauth2.googleapis.com/token',
+      revocationEndpoint: 'https://accounts.google.com/o/oauth2/revoke',
     };
 
     const redirectUri = AuthSession.makeRedirectUri({
@@ -56,7 +59,7 @@ export async function googleAuth(): Promise<{result: AuthSession.AuthSessionResu
 
     const result = await request.promptAsync(discovery);
 
-    return {result, codeVerifier: request.codeVerifier!};
+    return { result, codeVerifier: request.codeVerifier! };
   } catch (error) {
     console.error('Google OAuth error:', error);
     return null;

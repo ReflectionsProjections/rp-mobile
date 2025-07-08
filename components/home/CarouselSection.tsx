@@ -45,5 +45,3 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
     </View>
   );
 };
-
-
