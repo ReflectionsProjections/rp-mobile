@@ -125,6 +125,11 @@ export type Meeting = {
 };
 
 export interface APIRoutes {
+  '/attendee' : {
+    GET: {
+      response: Attendee;
+    };
+  };
   '/attendee/emails': {
     GET: {
       response: Array<{ email: string; userId: string }>;
@@ -159,12 +164,6 @@ export interface APIRoutes {
   '/auth/login/:platform': {
     POST: {
       request: { code: string; redirectUri: string; codeVerifier: string };
-      response: { token: string };
-    };
-  };
-  '/auth/login/mobile': {
-    POST: {
-      request: { idToken: string };
       response: { token: string };
     };
   };

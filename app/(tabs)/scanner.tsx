@@ -8,6 +8,7 @@ import {
   Modal,
   Pressable,
   Dimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -77,6 +78,7 @@ const ScannerScreen = () => {
         error.response?.data?.message || 'Failed to process QR code'
       );
       setScanned(false);
+      setShowSuccess(false); // Ensure success modal is reset on scan failure
     } finally {
       setLoading(false);
     }
@@ -208,7 +210,10 @@ const ScannerScreen = () => {
             </Text>
             <TouchableOpacity 
               className="bg-[#00adb5] mt-4 py-2 rounded-lg"
-              onPress={() => setShowSuccess(false)}
+              onPress={() => {
+                setShowSuccess(false);
+                setScanned(false); // <-- ensure you can scan again
+              }}
             >
               <Text className="text-white text-center font-semibold">OK</Text>
             </TouchableOpacity>
@@ -220,33 +225,35 @@ const ScannerScreen = () => {
         visible={pickerVisible}
         transparent
         animationType="fade"
+        presentationStyle="overFullScreen"
         onRequestClose={() => setPickerVisible(false)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' }}
-          onPress={() => setPickerVisible(false)}
-        >
-          <View className="mx-8 bg-[#222] rounded-lg p-4">
-            <Picker
-              selectedValue={selectedEventId}
-              onValueChange={(itemValue: string) => {
-                setSelectedEventId(itemValue);
-                setPickerVisible(false);
-              }}
-              style={{ color: 'white' }}
-              dropdownIconColor="white"
-            >
-              {events.map((event) => (
-                <Picker.Item
-                  key={event.eventId}
-                  label={event.name}
-                  value={event.eventId}
-                  color="white"
-                />
-              ))}
-            </Picker>
+        <TouchableWithoutFeedback onPress={() => setPickerVisible(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' }}>
+            <TouchableWithoutFeedback>
+              <View className="mx-8 bg-[#222] rounded-lg p-4">
+                <Picker
+                  selectedValue={selectedEventId}
+                  onValueChange={(itemValue: string) => {
+                    setSelectedEventId(itemValue);
+                    setPickerVisible(false);
+                  }}
+                  style={{ color: 'white' }}
+                  dropdownIconColor="white"
+                >
+                  {events.map((event) => (
+                    <Picker.Item
+                      key={event.eventId}
+                      label={event.name}
+                      value={event.eventId}
+                      color="white"
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );
