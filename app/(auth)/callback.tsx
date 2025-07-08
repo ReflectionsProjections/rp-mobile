@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { View, Text } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function AuthCallback() {
   const router = useRouter();
-  const params = useLocalSearchParams();
 
   useEffect(() => {
     router.replace('/(auth)/sign-in');
