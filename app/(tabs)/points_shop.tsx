@@ -1,54 +1,36 @@
+// screens/PointsScreen.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { clearAuth } from '@/app/lib/auth';
+import { View, Text, Dimensions } from 'react-native';
+import Background from '../../assets/pointshop/point_background.svg';
+import { PointsGauge } from '@/components/pointshop/PointsGuage';
 
-const PointsShopScreen = () => {
-  const router = useRouter();
+const { width, height } = Dimensions.get('window');
+const SPEEDO_WIDTH = width * 0.7;
 
-  const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await clearAuth();
-              router.replace('/(auth)/sign-in');
-            } catch (error) {
-              console.error('Error signing out:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
+export default function PointsScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ color: '#f0f0f0', marginBottom: 20 }}>Points Shop Screen</Text>
-      
-      <TouchableOpacity
-        onPress={handleSignOut}
+    <View className="flex-1 bg-rpRed relative">
+      <Background
+        width={width}
+        height={height}
+        className="absolute inset-0 z-0"
+        preserveAspectRatio="xMidYMin slice"
+      />
+
+      <View className="absolute inset-x-0 top-16 items-center z-10">
+        <PointsGauge points={20} width={SPEEDO_WIDTH} />
+      </View>
+
+      <Text
+        className="absolute z-10 text-[16px] font-bold text-black font-proRacing"
         style={{
-          backgroundColor: '#ff4444',
-          paddingHorizontal: 20,
-          paddingVertical: 10,
-          borderRadius: 8,
+          top: height * 0.70,
+          left: width * 0.65,
+          width: width * 0.35,
         }}
       >
-        <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Sign Out</Text>
-      </TouchableOpacity>
+        Attend events to earn points and unlock prizes!
+      </Text>
     </View>
   );
-};
-
-export default PointsShopScreen;
+}
