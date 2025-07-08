@@ -41,9 +41,7 @@ export default function SwipeDeck({
   }
 
   // Clamp the index to valid range
-  const safeIndex = data.length > 0
-    ? Math.min(cardIndex, data.length - 1)
-    : 0;
+  const safeIndex = data.length > 0 ? Math.min(cardIndex, data.length - 1) : 0;
 
   const renderCard = (item: CardType | null, idx: number) => {
     if (!item) {
@@ -76,10 +74,7 @@ export default function SwipeDeck({
         {idx === safeIndex && (
           <View style={styles.dots}>
             {data.map((_, dotIdx) => (
-              <View
-                key={dotIdx}
-                style={[styles.dot, safeIndex === dotIdx && styles.dotActive]}
-              />
+              <View key={dotIdx} style={[styles.dot, safeIndex === dotIdx && styles.dotActive]} />
             ))}
           </View>
         )}
@@ -106,9 +101,7 @@ export default function SwipeDeck({
       backgroundColor="transparent"
       cardHorizontalMargin={0}
       cardVerticalMargin={0}
-      containerStyle={
-        containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined
-      }
+      containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
       disableTopSwipe
       disableBottomSwipe
     />

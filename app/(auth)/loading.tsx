@@ -18,10 +18,10 @@ export default function LoadingScreen() {
     const checkAuthStatus = async () => {
       try {
         const jwt = await SecureStore.getItemAsync('jwt');
-        
+
         if (jwt) {
           const isValid = await validateAuthToken();
-          
+
           if (isValid) {
             router.replace('/(tabs)/home');
           } else {

@@ -14,4 +14,4 @@ export default function AuthCallback() {
       <Text>Processing authentication...</Text>
     </View>
   );
-} 
+}

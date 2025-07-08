@@ -26,7 +26,7 @@ export default function SignInScreen() {
         scheme: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
         path: '/(auth)/callback',
       });
-      
+
       const authResult = await googleAuth();
       if (!authResult || authResult.result.type !== 'success') {
         throw new Error('Authentication was cancelled or failed');
@@ -40,14 +40,14 @@ export default function SignInScreen() {
       });
 
       await SecureStore.setItemAsync('jwt', response.data.token);
-      
+
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert(
         'Login Failed',
         error.message || 'An error occurred during login. Please try again.',
-        [{ text: 'OK' }]
+        [{ text: 'OK' }],
       );
     } finally {
       setIsLoading(false);
@@ -77,10 +77,7 @@ export default function SignInScreen() {
             <Text className="font-proRacing text-3xl text-center mt-5 mb-6">LOGIN</Text>
 
             <SlantedButtonGroup>
-              <SlantedButton 
-                onPress={handleEmailLogin}
-                disabled={isLoading}
-              >
+              <SlantedButton onPress={handleEmailLogin} disabled={isLoading}>
                 {isLoading ? 'Signing in...' : 'Continue with Google'}
               </SlantedButton>
               <View className="h-px bg-white" />
