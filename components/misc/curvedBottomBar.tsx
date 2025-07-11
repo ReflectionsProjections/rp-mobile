@@ -2,24 +2,16 @@ import React from 'react';
 import { Dimensions, View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-// const WIDTH = 320; // Width of the screen
-// const HEIGHT = 100; // Height of the bottom bar
-// const CORNER_RADIUS = 12; // Corner radius
-// const CUTOUT_RADIUS = 30; // Radius of the circular cutout
-// const CUTOUT_LEFT_X = WIDTH / 2 - CUTOUT_RADIUS; // Left X position of cutout
-// const CUTOUT_RIGHT_X = WIDTH / 2 + CUTOUT_RADIUS; // Right X position of cutout
-const { width, height } = Dimensions.get('window'); // Get screen width and height
+const { width, height } = Dimensions.get('window');
 
-const WIDTH = width; // Use the full screen width
-const HEIGHT = 0.1 * height; // Set the bottom bar height to 15% of the screen height
-const CORNER_RADIUS = 0.05 * width; // Set corner radius relative to width (e.g., 5% of screen width)
-const CUTOUT_RADIUS = 0.1 * width; // Radius of the circular cutout (e.g., 10% of screen width)
+const WIDTH = width;
+const HEIGHT = 0.1 * height;
+const CORNER_RADIUS = 0.05 * width;
+const CUTOUT_RADIUS = 0.09 * width;
 
-// Calculate cutout positions based on the dynamic width
-const CUTOUT_LEFT_X = WIDTH / 2 - CUTOUT_RADIUS; // Left X position of cutout
-const CUTOUT_RIGHT_X = WIDTH / 2 + CUTOUT_RADIUS; // Right X position of cutout
+const CUTOUT_LEFT_X = WIDTH / 2 - CUTOUT_RADIUS;
+const CUTOUT_RIGHT_X = WIDTH / 2 + CUTOUT_RADIUS;
 
-// The SVG path for the bottom bar with a circular cutout in the middle
 const d = `
   M0,${HEIGHT}
   L0,${CORNER_RADIUS} Q0,0 ${CORNER_RADIUS},0
@@ -35,7 +27,7 @@ const CurvedBottomBar = () => {
     <View style={styles.container}>
       {/* Bottom Bar SVG */}
       <Svg width={WIDTH} height={HEIGHT} style={styles.svg}>
-        <Path d={d} fill="#fff" />
+        <Path d={d} fill="#473737" />
       </Svg>
     </View>
   );
@@ -54,9 +46,9 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    bottom: HEIGHT / 2 - CUTOUT_RADIUS, // Center the FAB in the cutout
-    left: WIDTH / 2 - 30, // Center horizontally
-    zIndex: 1, // Ensure it stays on top of the SVG
+    bottom: HEIGHT / 2 - CUTOUT_RADIUS,
+    left: WIDTH / 2 - 30,
+    zIndex: 1,
   },
   fab: {
     width: 60,
