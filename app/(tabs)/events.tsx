@@ -13,14 +13,27 @@ import { Modal, Pressable } from "react-native";
 import BadgeSvg from "../../assets/images/badge.svg";
 import { Dimensions } from "react-native";
 import { Animated, Easing } from "react-native";
+import SpeakerShape from "../../assets/images/speakerblock.svg";
+import MealsShape from "../../assets/images/corporate.svg";
+import CorporateShape from "../../assets/images/meals.svg";
+import DefaultShape from "../../assets/images/meals.svg";
+import { useFonts } from "expo-font";
 
 const dayTabs = [
-	{ label: "MON", dayNumber: 1, barColor: "#4caf50" },
-	{ label: "TUE", dayNumber: 2, barColor: "#ff9800" },
-	{ label: "WED", dayNumber: 3, barColor: "#ffffff" },
-	{ label: "THU", dayNumber: 4, barColor: "#ffeb3b" },
-	{ label: "FRI", dayNumber: 5, barColor: "#3f51b5" },
+	{ label: "MON", dayNumber: 1, barColor: "#4F0202" },
+	{ label: "TUE", dayNumber: 2, barColor: "#831C1C" },
+	{ label: "WED", dayNumber: 3, barColor: "#B60000" },
+	{ label: "THU", dayNumber: 4, barColor: "#E20303" },
+	{ label: "FRI", dayNumber: 5, barColor: "#EF3F3F" },
 ];
+
+const ShapeByType = {
+	SPEAKER: SpeakerShape,
+	CORPORATE: CorporateShape,
+	MEALS: MealsShape,
+	DEFAULT: DefaultShape,
+};
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const typeColors = {
@@ -35,7 +48,12 @@ const EventsScreen = () => {
 	const [events, setEvents] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedDay, setSelectedDay] = useState(1);
-	const [selectedEvent, setSelectedEvent] = useState(null); 
+	const [selectedEvent, setSelectedEvent] = useState(null);
+
+	const [loaded] = useFonts({
+		ProRacing: require("../../assets/fonts/ProRacing.otf"),
+		ProRacingSlant: require("../../assets/fonts/ProRacingSlant.otf"),
+	});
 
 	const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
 
@@ -91,17 +109,24 @@ const EventsScreen = () => {
 		);
 	}
 
+	const getWeekday = (isoString) => {
+		if (!isoString) return "";
+		const d = new Date(isoString);
+		return d.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<Text style={styles.headerText}>Events</Text>
 
 			<View style={styles.tabsWrapper}>
-				<ScrollView
+				{/* <ScrollView
 					horizontal
 					showsHorizontalScrollIndicator={false}
 					contentContainerStyle={styles.tabsContainer}
 					style={styles.tabsScroll}
-				>
+				> */}
+				<View style={styles.tabsContainer}>
 					{dayTabs.map((tab) => {
 						const isActive = tab.dayNumber === selectedDay;
 						return (
@@ -110,7 +135,7 @@ const EventsScreen = () => {
 								onPress={() => setSelectedDay(tab.dayNumber)}
 								style={[
 									styles.tab,
-									{ backgroundColor: isActive ? "#ffffff" : "#000000" },
+									{ backgroundColor: isActive ? "#000000" : "#ffffff" },
 								]}
 							>
 								<View
@@ -119,7 +144,7 @@ const EventsScreen = () => {
 								<Text
 									style={[
 										styles.tabLabel,
-										{ color: isActive ? "#000000" : "#ffffff" },
+										{ color: isActive ? "#ffffff" : "#000000" },
 									]}
 								>
 									{tab.label}
@@ -127,7 +152,7 @@ const EventsScreen = () => {
 							</TouchableOpacity>
 						);
 					})}
-				</ScrollView>
+				</View>
 			</View>
 
 			{filteredEvents.length === 0 ? (
@@ -138,37 +163,36 @@ const EventsScreen = () => {
 				<FlatList
 					data={filteredEvents}
 					keyExtractor={(item) => item.eventId}
-					contentContainerStyle={styles.listContent}
+					contentContainerStyle={[styles.listContent, { paddingHorizontal: 0 }]}
 					renderItem={({ item, index }) => {
-						const bgColor = typeColors[item.eventType] || typeColors.DEFAULT;
-
-						let timeString = "—";
-						if (item.startTime && item.endTime) {
-							const start = new Date(item.startTime);
-							const end = new Date(item.endTime);
-							const pad = (n) => String(n).padStart(2, "0");
-							const hh1 = pad(start.getHours());
-							const mm1 = pad(start.getMinutes());
-							const hh2 = pad(end.getHours());
-							const mm2 = pad(end.getMinutes());
-							timeString = `${hh1}:${mm1}–${hh2}:${mm2}`;
-						}
+						const Shape = ShapeByType[item.eventType] || DefaultShape;
+						const start = new Date(item.startTime);
+						const end = new Date(item.endTime);
+						const pad = (n) => String(n).padStart(2, "0");
+						const timeString = `${pad(start.getHours())}:${pad(
+							start.getMinutes()
+						)}–${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
 						return (
 							<TouchableOpacity onPress={() => setSelectedEvent(item)}>
-								<View style={[styles.eventBar, { backgroundColor: bgColor }]}>
-									<Text style={styles.eventIndex}>{index + 1}.</Text>
+								<View style={styles.svgWrapper}>
+									<Shape
+										width={SCREEN_WIDTH - 24}
+										height={80}
+										style={StyleSheet.absoluteFill}
+									/>
 
-									<View style={styles.eventInfo}>
-										<Text style={styles.eventName}>
-											{item.name || "No Name"}
-										</Text>
-										<Text style={styles.eventLocation}>
-											{item.location || "TBD"}
+									<Text style={[styles.eventIndex, styles.svgText]}>
+										{index + 1}.
+									</Text>
+									<View style={styles.svgTextBlock}>
+										<Text style={styles.eventName}>{item.name}</Text>
+										{/* <Text style={styles.eventLocation}>{item.location}</Text> */}
+
+										<Text style={[styles.eventTime, styles.svgText]}>
+											{timeString}
 										</Text>
 									</View>
-
-									<Text style={styles.eventTime}>{timeString}</Text>
 								</View>
 							</TouchableOpacity>
 						);
@@ -195,10 +219,19 @@ const EventsScreen = () => {
 
 						<View style={styles.badgeTextWrapper}>
 							<Text style={styles.badgeTitle}>{selectedEvent?.name}</Text>
-							<Text style={styles.badgeSubtitle}>
+							<Text
+								style={styles.badgeSubtitle}
+								numberOfLines={4}
+								ellipsizeMode="tail"
+							>
 								{selectedEvent?.description}
 							</Text>
 						</View>
+						{/* location, just above the day */}
+						<Text style={styles.badgeLocation}>{selectedEvent?.location}</Text>
+						<Text style={styles.badgeDay}>
+							{getWeekday(selectedEvent?.startTime)}
+						</Text>
 					</Animated.View>
 				</Pressable>
 			</Modal>
@@ -219,11 +252,14 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	headerText: {
-		fontSize: 32,
+		marginTop: 8,
+
+		fontSize: 40,
 		fontWeight: "bold",
 		color: "#ffffff",
 		textAlign: "center",
 		marginBottom: 16,
+		fontFamily: "ProRacingSlant",
 	},
 
 	tabsWrapper: {
@@ -235,27 +271,34 @@ const styles = StyleSheet.create({
 		flexGrow: 0,
 	},
 	tabsContainer: {
+		flexDirection: "row",
+		justifyContent: "space-between",
 		alignItems: "center",
+		width: "100%",
 		paddingHorizontal: 12,
-		gap: 10,
+		gap: 5,
 	},
+
 	tab: {
 		flexDirection: "row",
 		alignItems: "center",
-		borderRadius: 4,
-		height: 48,
-		paddingHorizontal: 12,
+		// borderRadius: 4,
+		height: 35,
+		width: 70,
+		gap: 4,
+		// paddingHorizontal: 12,
 	},
 	tabBar: {
-		width: 6,
+		width: 10,
 		height: 24,
-		marginRight: 8,
-		borderRadius: 2,
+		marginRight: 3,
+		// borderRadius: 2,
 	},
 	tabLabel: {
-		fontSize: 16,
+		fontSize: 12,
 		fontWeight: "bold",
 		letterSpacing: 1,
+		fontFamily: "ProRacingSlant",
 	},
 
 	emptyContainer: {
@@ -285,26 +328,34 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		color: "#000000",
 		width: 32,
+		left: 10,
+		top: 25,
+		fontFamily: "ProRacingSlant",
 	},
 	eventInfo: {
 		flex: 1,
 		paddingLeft: 8,
 	},
 	eventName: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#000000",
+		fontSize: 14,
+		color: "#FFFFFF",
+		fontFamily: "ProRacingSlant",
 	},
 	eventLocation: {
 		fontSize: 14,
-		color: "#000000",
 		marginTop: 2,
+		color: "#FFFFFF",
+		fontFamily: "ProRacingSlant",
 	},
 	eventTime: {
+		position: "absolute",
+		left: SCREEN_WIDTH * 0.05, // ~60% across the screen — tune this
+
+		top: 28,
 		fontSize: 16,
-		fontWeight: "bold",
-		color: "#000000",
-		marginLeft: 12,
+		fontWeight: "600",
+		color: "#FFFFFF",
+		textAlign: "left",
 	},
 	modalOverlay: {
 		flex: 1,
@@ -325,16 +376,16 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	modalText: {
-		color: "#ccc",
 		fontSize: 16,
 		marginBottom: 8,
+		color: "#800000",
 	},
 	badgeContainer: {
 		position: "absolute",
-		top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.4,
-		left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.75,
-		width: SCREEN_WIDTH * 0.95,
-		height: SCREEN_HEIGHT * 0.85,
+		top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.3,
+		left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.7,
+		width: "100%",
+		height: "100%",
 		justifyContent: "center",
 		alignItems: "center",
 		overflow: "hidden",
@@ -342,7 +393,7 @@ const styles = StyleSheet.create({
 	badgeTextWrapper: {
 		position: "absolute",
 		top: "65%",
-		left: "10%", 
+		left: "10%",
 		right: "10%",
 		alignItems: "center",
 	},
@@ -351,6 +402,8 @@ const styles = StyleSheet.create({
 		color: "#000",
 		fontSize: 18,
 		fontWeight: "bold",
+		fontFamily: "ProRacingSlant",
+		color: "#800000",
 	},
 
 	badgeSubtitle: {
@@ -358,6 +411,51 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		marginTop: 8,
 		textAlign: "center",
+		color: "#800000",
+	},
+	badgeDay: {
+		position: "absolute",
+		bottom: 12,
+		right: 60,
+		fontSize: 18,
+		color: "#800000",
+		letterSpacing: 2,
+	},
+	Location: {
+		position: "absolute",
+		bottom: 12,
+		right: 60,
+		fontSize: 18,
+		color: "#800000",
+		letterSpacing: 2,
+	},
+	svgWrapper: {
+		marginHorizontal: 0,
+		marginVertical: 6,
+		width: SCREEN_WIDTH - 24,
+		height: 80,
+		overflow: "hidden",
+	},
+	svgText: {
+		position: "absolute",
+		color: "#FFF",
+		fontWeight: "bold",
+	},
+
+	svgTextBlock: {
+		position: "absolute",
+		left: 48,
+		top: 12,
+		width: "100%",
+		height: "100%",
+	},
+	badgeLocation: {
+		position: "absolute",
+		bottom: 36,
+		right: 60,
+		fontSize: 14,
+		color: "#800000",
+		letterSpacing: 1,
 	},
 });
 
