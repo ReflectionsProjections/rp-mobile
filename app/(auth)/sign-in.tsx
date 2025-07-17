@@ -12,7 +12,7 @@ import { SlantedButton } from '@/components/auth/SlantedButton';
 import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
 import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/racingLogo.svg';
-import { googleAuth } from '@/app/lib/auth';
+import { googleAuth } from '@/lib/auth';
 
 export default function SignInScreen() {
   const router = useRouter();

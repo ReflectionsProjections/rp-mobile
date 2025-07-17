@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { validateAuthToken } from '@/app/lib/auth';
+import { validateAuthToken } from '@/lib/auth';
 
 export default function LoadingScreen() {
   const router = useRouter();
