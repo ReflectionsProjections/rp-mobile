@@ -39,7 +39,9 @@ const ProfileScreen = () => {
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-gray-500 justify-center items-center">
-        <Text className="text-red-500">{error}</Text>
+        <Text className="text-xl text-white text-center px-6">
+          Make sure to register and login with Google!
+        </Text>
       </SafeAreaView>
     );
   }
