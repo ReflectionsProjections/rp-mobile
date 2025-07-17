@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { TypedAxiosInstance } from './type-wrapper';
 
 function createApi(baseURL: string, unauthorizedCallback: () => void): TypedAxiosInstance {
+  console.log('baseURL', baseURL);
   const axiosObject = axios.create({ baseURL });
 
   axiosObject.interceptors.request.use(async (config) => {
