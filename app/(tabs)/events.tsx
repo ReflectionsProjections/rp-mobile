@@ -107,27 +107,26 @@ const EventsScreen = () => {
 		Events
 	  </Text>
 
-      <View className="flex-row justify-center space-x-3 my-4">
+      <View className="flex-row justify-evenly my-4">
         {dayTabs.map((tab) => {
           const isActive = tab.dayNumber === selectedDay;
           return (
             <TouchableOpacity
               key={tab.label}
               onPress={() => setSelectedDay(tab.dayNumber)}
-              className={`w-[17%] h-8 flex-row items-center ${isActive ? 'bg-black' : 'bg-white'}`}
-              style={{ elevation: isActive ? 4 : 1 }}
+              className={`w-[16%] h-8 flex-row items-center ${isActive ? 'bg-black' : 'bg-white'}`}
               activeOpacity={0.85}
             >
               <View
                 className="h-[80%] pl-2 ml-1"
                 style={{
-                  width: 8,
+                  width: 10,
                   backgroundColor: tab.barColor,
                 }}
               />
               <Text
-                className={`ml-2 text-base font-bold italic tracking-wider ${isActive ? 'text-white' : 'text-black'}`}
-                style={{ fontFamily: 'RacingSansOne-Regular' }} // or your italic font
+                className={`ml-2 text-base font-bold italic ${isActive ? 'text-white' : 'text-black'}`}
+                style={{ fontFamily: 'RacingSansOne-Regular' }}
               >
                 {tab.label}
               </Text>
