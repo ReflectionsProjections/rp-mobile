@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ViewStyle } from 'react-native';
+import QuestionSvg from '../../assets/images/question.svg';
 
 interface QuestionMarkerProps {
   count: number;
@@ -13,16 +14,13 @@ export const QuestionMarker: React.FC<QuestionMarkerProps> = ({
   style = {},
 }) => (
   <View
-    className={`absolute items-center ${className}`.trim()}
+    className={`absolute items-end flex-row ${className}`.trim()}
     style={style}
   >
+    <QuestionSvg width={80} height={80} />
+    {/* */}
     <Text
-      className="text-[40px] font-proRacing text-[#C49D00]"
-    >
-      ?
-    </Text>
-    <Text
-      className="text-[16px] font-proRacing text-[#C49D00] -mt-1"
+      className="text-[24px] font-RacingSansOne italic font-bold text-[#FFFFFF] -ml-7"
     >
       ×{count}
     </Text>
