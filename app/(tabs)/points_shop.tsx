@@ -3,6 +3,8 @@ import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Background from '../../assets/pointshop/point_background.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
+import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
+
 
 const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
@@ -20,6 +22,22 @@ export default function PointsScreen() {
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge points={20} width={SPEEDO_WIDTH} />
       </View>
+
+      <QuestionMarker
+        count={15}
+        className="z-10"
+        style={{ top: height * 0.4, left: width * 0.7 }}
+      />
+      <QuestionMarker
+        count={50}
+        className="z-10"
+        style={{ top: height * 0.55, left: width * 0.25 }}
+      />
+      <QuestionMarker
+        count={100}
+        className="z-10"
+        style={{ top: height * 0.75, left: width * 0.5 }}
+      />
 
       <Text
         className="absolute z-10 text-[16px] font-bold text-black font-proRacing"
