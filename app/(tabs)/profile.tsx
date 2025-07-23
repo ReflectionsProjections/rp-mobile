@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useFonts } from "expo-font";
 import PTS from "../../assets/images/pts.svg";
 import LOGO from "../../assets/images/logo.svg";
+import BACKGROUND from "../../assets/images/profile_background.svg";
+import PROFILE from "../../assets/images/profile_svg.svg";
+import GRADIENT from "../../assets/images/customize_gradient.svg";
+
 import {
 	SafeAreaView,
 	ScrollView,
@@ -37,9 +41,16 @@ const ProfileScreen = () => {
 
 	return (
 		<SafeAreaView style={styles.root}>
+			<View style={styles.absoluteBackground}>
+				<BACKGROUND
+					width="100%"
+					height="100%"
+					preserveAspectRatio="xMidYMid slice"
+				/>
+			</View>
 			<View style={styles.content}>
 				<View style={styles.header}>
-					<Text style={styles.tier}>TIER 1</Text>
+					<Text style={styles.tier}></Text>
 					<View style={styles.pointsContainer}>
 						<Text style={styles.pointsValue}>99</Text>
 						<PTS style={styles.pointsImage} />
@@ -48,37 +59,16 @@ const ProfileScreen = () => {
 
 				<View style={styles.separator} />
 
-				<View style={styles.carouselContainer}>
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						style={styles.pagedScroll}
-						snapToInterval={IMAGE_SIZE}
-						snapToAlignment="start"
-						decelerationRate="fast"
-						onMomentumScrollEnd={onMomentumScrollEnd}
-					>
-						{images.map((src, i) => (
-							<Image key={i} source={src} style={styles.carouselImage} />
-						))}
-					</ScrollView>
-					<View style={styles.pagination}>
-						{images.map((_, i) => (
-							<View
-								key={i}
-								style={[styles.dot, i === activeIndex && styles.activeDot]}
-							/>
-						))}
-					</View>
+				<View style={styles.imageContainer}>
+					<PROFILE width={350} height={350} />
 				</View>
 
 				<View style={styles.separator} />
-
-				<View style={styles.nameSection}>
+				<View style={styles.nameCard}>
 					<View style={styles.nameGroup}>
 						<View style={styles.nameBar} />
 						<View style={styles.nameText}>
-							<Text style={styles.nameFirst}>Dev</Text>
+							<Text style={styles.nameFirst}>DEV</Text>
 							<Text style={styles.nameLast}>PATEL</Text>
 						</View>
 					</View>
@@ -87,21 +77,17 @@ const ProfileScreen = () => {
 
 				<View style={styles.separator} />
 
-				<Text style={styles.foodWave}>
-					Food Wave: <Text>D1 Gooner</Text>
-				</Text>
-
-				<Text style={styles.customize}>CUSTOMIZE</Text>
-
-				<View style={styles.colorOptionsShadow}>
+				<View style={styles.customizeContainer}>
+					<GRADIENT style={styles.customizeBackground} />
+					<Text style={styles.customize}>CUSTOMIZE</Text>
 					<View style={styles.colorOptions}>
 						{[
-							"#75D46E",
-							"#2E1C47",
-							"#D69C2B",
-							"#4450D6",
-							"#F7D62A",
-							"#FFFFFF",
+							"#56BF59",
+							"#1F0C4C",
+							"#E6930D",
+							"#322BB7",
+							"#FFD93F",
+							"#D42422",
 						].map((c) => (
 							<TouchableOpacity
 								key={c}
@@ -140,15 +126,18 @@ const styles = StyleSheet.create({
 		fontFamily: "ProRacingSlant",
 		fontSize: 40,
 		fontWeight: "bold",
+		color: "#fff",
 	},
 	pointsContainer: {
 		flexDirection: "column",
 		alignItems: "flex-end",
+		paddingRight: 10,
 	},
 	pointsValue: {
 		fontSize: 30,
 		fontWeight: "bold",
 		fontFamily: "ProRacing",
+		color: "#fff",
 	},
 	pointsImage: {
 		width: 85,
@@ -159,7 +148,7 @@ const styles = StyleSheet.create({
 
 	separator: {
 		height: 2,
-		backgroundColor: "#000",
+		backgroundColor: "#fff",
 		marginVertical: 12,
 	},
 
@@ -205,21 +194,25 @@ const styles = StyleSheet.create({
 	},
 	nameBar: {
 		width: 8,
-		backgroundColor: "#000",
+		backgroundColor: "#D42422",
 		height: 55,
 		marginRight: 10,
 	},
 	nameText: {
 		flexShrink: 1,
+		minHeight: 30,
 	},
 	nameFirst: {
-		fontFamily: "Inter",
-		fontSize: 20,
+		fontFamily: "ProRacing",
+		fontSize: 21,
+		color: "#D42422",
 	},
 	nameLast: {
 		fontFamily: "ProRacing",
 		fontSize: 24,
 		fontWeight: "bold",
+		color: "#D42422",
+		paddingRight: 10,
 	},
 	profileIcon: {
 		width: 40,
@@ -238,34 +231,66 @@ const styles = StyleSheet.create({
 	},
 
 	customize: {
-		fontFamily: "Inter",
+		fontFamily: "ProRacing",
 		fontSize: 22,
 		marginTop: 2,
 		marginBottom: 8,
 	},
 
-	colorOptionsShadow: {
-		alignSelf: "stretch",
-
-		//ios
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 3 },
-		shadowOpacity: 0.5,
-		shadowRadius: 5,
-
-		//andriod
-		elevation: 2,
+	absoluteBackground: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		zIndex: -1,
 	},
-
 	colorOptions: {
 		flexDirection: "row",
 		paddingVertical: 8,
+		justifyContent: "center",
 	},
 	colorCircle: {
 		width: 30,
 		height: 30,
 		borderRadius: 15,
 		marginRight: 12,
+	},
+
+	imageContainer: {
+		alignItems: "center",
+		marginVertical: -10,
+	},
+	singleImage: {
+		width: IMAGE_SIZE,
+		height: IMAGE_SIZE,
+		backgroundColor: "#eee",
+	},
+	nameCard: {
+		backgroundColor: "#D9D9D9",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		marginVertical: -1,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+
+	customizeContainer: {
+		position: "relative",
+		alignItems: "center",
+		marginVertical: 10,
+		justifyContent: "center",
+	},
+	customizeBackground: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		height: 140,
+		width: "100%",
+		resizeMode: "cover",
+		zIndex: -1,
 	},
 });
 
