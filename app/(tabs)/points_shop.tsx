@@ -26,17 +26,17 @@ export default function PointsScreen() {
       <QuestionMarker
         count={15}
         className="z-10"
-        style={{ top: height * 0.4, left: width * 0.7 }}
+        style={{ top: height * 0.32, left: width * 0.3 }}
       />
       <QuestionMarker
         count={50}
         className="z-10"
-        style={{ top: height * 0.55, left: width * 0.25 }}
+        style={{ top: height * 0.59, left: width * 0.05 }}
       />
       <QuestionMarker
         count={100}
         className="z-10"
-        style={{ top: height * 0.75, left: width * 0.5 }}
+        style={{ top: height * 0.76, left: width * 0.43 }}
       />
 
       <Text
