@@ -19,6 +19,8 @@ interface CarouselSectionProps {
   onCardPress(item: CardType): void;
   /* Maximum number of cards to display */
   limit?: number;
+  onSwipeTouchStart?: () => void;
+  onSwipeTouchEnd?: () => void;
 }
 
 export const CarouselSection: React.FC<CarouselSectionProps> = ({
@@ -28,6 +30,8 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   onToggleFlag,
   onCardPress,
   limit,
+  onSwipeTouchStart,
+  onSwipeTouchEnd,
 }) => {
   const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
 
@@ -40,7 +44,8 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
       </ThemedText>
 
       <View className="self-center mb-3" style={{ width: CARD_WIDTH, height: containerHeight }}>
-        <SwipeDeck data={displayData} onCardPress={onCardPress} containerStyle={{ flex: 1 }} />
+        <SwipeDeck data={displayData} onCardPress={onCardPress} containerStyle={{ flex: 1 }} onSwipeTouchStart={onSwipeTouchStart}
+        onSwipeTouchEnd={onSwipeTouchEnd}/>
       </View>
     </View>
   );
