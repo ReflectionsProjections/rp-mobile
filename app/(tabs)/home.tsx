@@ -7,14 +7,17 @@ import { ProgressBar } from '@/components/home/ProgressBar';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
-import { Event as ApiEvent } from '@/api/types';
+import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
+
+import HomeBar from '@/assets/home/homeBar.svg';
 
 export default function HomeScreen() {
   // fetched cards
   const [cards, setCards] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<RoleObject | null>(null);
 
   // flags + modal state
   const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
@@ -24,12 +27,18 @@ export default function HomeScreen() {
   // scrolling lock
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  const toggleFlag = (id: string) => {
-    setFlaggedIds((prev) => {
-      const next = new Set(prev);
-      prev.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const toggleFlag = async (id: string) => {
+    if (!user?.userId) return;
+    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), { userId: user.userId });
+    if (response.status === 200) {
+      setFlaggedIds((prev) => {
+        const next = new Set(prev);
+        prev.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      });
+    } else {
+      console.error('Failed to toggle flag:', response.data);
+    }
   };
 
   const openEvent = (evt: CardType) => {
@@ -42,8 +51,17 @@ export default function HomeScreen() {
     setSelectedEvent(null);
   };
 
-  // fetch once on mount
   useEffect(() => {
+    const fetchUser = async () => {
+      const response = await api.get('/auth/info');
+      setUser(response.data);
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user?.userId) return;
+
     const fetchEvents = async () => {
       try {
         const response = await api.get('/events');
@@ -66,11 +84,17 @@ export default function HomeScreen() {
         setLoading(false);
       }
     };
-    fetchEvents();
-  }, []);
 
-  // loading / error states
-  if (loading) {
+    const fetchFavorites = async (userId: string) => {
+      const response = await api.get(path('/attendee/favorites', { userId }));
+      setFlaggedIds(new Set(response.data.favorites));
+    };
+
+    fetchEvents();
+    fetchFavorites(user.userId);
+  }, [user?.userId]);
+
+  if (loading || !user) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#00adb5" />
@@ -96,12 +120,12 @@ export default function HomeScreen() {
           R|P 2025
         </ThemedText>
 
-        <ProgressBar progress={40} />
+        <HomeBar className="mx-4" />
 
         {/* NEXT LAP */}
         <CarouselSection
           title="NEXT LAP"
-          data={cards}
+          data={cards.slice(0, 1)}
           flaggedIds={flaggedIds}
           onToggleFlag={toggleFlag}
           onCardPress={openEvent}
