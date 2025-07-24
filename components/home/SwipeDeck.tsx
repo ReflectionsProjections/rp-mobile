@@ -20,12 +20,16 @@ interface SwipeDeckProps {
   data: CardType[];
   onCardPress?: (item: CardType) => void;
   containerStyle?: StyleProp<ViewStyle>;
+  onSwipeTouchStart?: () => void;
+  onSwipeTouchEnd?: () => void;
 }
 
 export default function SwipeDeck({
   data,
   onCardPress = () => {},
   containerStyle,
+  onSwipeTouchStart = () => {},
+  onSwipeTouchEnd = () => {},
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
@@ -83,28 +87,34 @@ export default function SwipeDeck({
   };
 
   return (
-    <Swiper
-      cards={data}
-      renderCard={renderCard}
-      keyExtractor={(card) => card.id}
-      stackSize={Math.min(data.length, 3)}
-      key={data.length}
-      stackSeparation={8}
-      infinite
-      cardIndex={safeIndex}
-      onSwiped={(i) => setCardIndex(i + 1)}
-      onTapCard={(i) => {
-        if (i < data.length) {
-          onCardPress(data[i]);
-        }
-      }}
-      backgroundColor="transparent"
-      cardHorizontalMargin={0}
-      cardVerticalMargin={0}
-      containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
-      disableTopSwipe
-      disableBottomSwipe
-    />
+    <View
+    style={containerStyle}
+    onTouchStart={onSwipeTouchStart}
+    onTouchEnd={onSwipeTouchEnd}
+    >
+      <Swiper
+        cards={data}
+        renderCard={renderCard}
+        keyExtractor={(card) => card.id}
+        stackSize={Math.min(data.length, 3)}
+        key={data.length}
+        stackSeparation={8}
+        infinite
+        cardIndex={safeIndex}
+        onSwiped={(i) => setCardIndex(i + 1)}
+        onTapCard={(i) => {
+          if (i < data.length) {
+            onCardPress(data[i]);
+          }
+        }}
+        backgroundColor="transparent"
+        cardHorizontalMargin={0}
+        cardVerticalMargin={0}
+        containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
+        disableTopSwipe
+        disableBottomSwipe
+      />
+    </View>
   );
 }
 

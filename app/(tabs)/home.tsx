@@ -21,6 +21,9 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
 
+  // scrolling lock
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
   const toggleFlag = (id: string) => {
     setFlaggedIds((prev) => {
       const next = new Set(prev);
@@ -85,7 +88,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#222]">
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false}  directionalLockEnabled={true} nestedScrollEnabled={true} scrollEnabled={scrollEnabled}>
         <Header />
 
         <ThemedText variant="bigName" className="text-left my-2 mx-4">
@@ -102,6 +106,8 @@ export default function HomeScreen() {
           onToggleFlag={toggleFlag}
           onCardPress={openEvent}
           limit={5}
+          onSwipeTouchStart={() => setScrollEnabled(false)}
+          onSwipeTouchEnd={() => setScrollEnabled(true)}
         />
 
         {/* RECOMMENDED */}
@@ -112,6 +118,8 @@ export default function HomeScreen() {
           onToggleFlag={toggleFlag}
           onCardPress={openEvent}
           limit={5}
+          onSwipeTouchStart={() => setScrollEnabled(false)}
+          onSwipeTouchEnd={() => setScrollEnabled(true)}
         />
 
         {/* FLAGGED */}
@@ -121,6 +129,8 @@ export default function HomeScreen() {
           flaggedIds={flaggedIds}
           onToggleFlag={toggleFlag}
           onCardPress={openEvent}
+          onSwipeTouchStart={() => setScrollEnabled(false)}
+          onSwipeTouchEnd={() => setScrollEnabled(true)}
         />
       </ScrollView>
 
