@@ -15,9 +15,14 @@ export const Header: React.FC = () => {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
-            await SecureStore.deleteItemAsync('jwt');
-            await SecureStore.deleteItemAsync('codeVerifier');
-            router.push('/');
+            try {
+              await SecureStore.deleteItemAsync('jwt');
+              await SecureStore.deleteItemAsync('codeVerifier');
+              router.replace('/(auth)/sign-in');
+            } catch (error) {
+              console.error('Error during logout:', error);
+              router.replace('/(auth)/sign-in');
+            }
           },
         },
       ],
