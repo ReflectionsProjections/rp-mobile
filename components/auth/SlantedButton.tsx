@@ -12,7 +12,7 @@ interface SlantedButtonProps extends PressableProps {
 
 export function SlantedButton({ children, ...rest }: SlantedButtonProps) {
   return (
-    <StyledPressable {...rest} className="relative min-w-[250px] h-[52px] bg-gray-200">
+    <StyledPressable {...rest} className="relative min-w-[250px] h-[52px] bg-gray-300">
       <StyledView className="flex-1 items-center justify-center skew-x-12">
         <ThemedText variant="h3" className="text-black">
           {children}
