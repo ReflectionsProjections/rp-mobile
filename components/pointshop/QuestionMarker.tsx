@@ -17,7 +17,7 @@ export const QuestionMarker: React.FC<QuestionMarkerProps> = ({
     className={`absolute items-end flex-row ${className}`.trim()}
     style={style}
   >
-    <QuestionSvg width={80} height={80} />
+    <QuestionSvg width={70} height={70} />
     {/* */}
     <Text
       className="text-[24px] font-RacingSansOne italic font-bold text-[#FFFFFF] -ml-7"

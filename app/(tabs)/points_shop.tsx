@@ -40,11 +40,11 @@ export default function PointsScreen() {
       />
 
       <Text
-        className="absolute z-10 text-[16px] font-bold text-black font-proRacing"
+        className="absolute z-10 text-[16px] font-bold text-black font-RacingSansOne"
         style={{
-          top: height * 0.7,
-          left: width * 0.65,
-          width: width * 0.35,
+          top: height * 0.65,
+          left: width * 0.64,
+          width: width * 0.33,
         }}
       >
         Attend events to earn points and unlock prizes!
