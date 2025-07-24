@@ -7,51 +7,41 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import ProfileImage from '@/assets/profile/red_helmet.svg';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 // Calculate image size based on 75% of screen width
-const IMAGE_SIZE = width * 0.75;
-
-// Static image assets
-const images = [require('../../assets/images/merc.jpeg'), require('../../assets/images/merc.jpeg')];
+const IMAGE_SIZE = width * 0.55;
 
 const ImageCarousel = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  // Update active dot on scroll
-  const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const newIndex = Math.round(e.nativeEvent.contentOffset.x / IMAGE_SIZE);
-    setActiveIndex(newIndex);
-  };
 
   return (
-    <View className="items-center my-4">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="overflow-hidden"
-        style={{ width: IMAGE_SIZE }}
-        snapToInterval={IMAGE_SIZE}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        onMomentumScrollEnd={onMomentumScrollEnd}
-      >
-        {images.map((src, i) => (
-          <Image
-            key={i}
-            source={src}
-            style={{ width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 8 }}
-          />
-        ))}
-      </ScrollView>
-      <View className="flex-row mt-2">
-        {images.map((_, i) => (
-          <View
-            key={i}
-            className={`w-2 h-2 rounded-full mx-1 ${i === activeIndex ? 'bg-gray-600' : 'bg-gray-400'}`}
-          />
-        ))}
-      </View>
+    <View className="items-center my-4 rounded-lg overflow-hidden h-[50%] w-[85%] mx-auto" style={{ position: 'relative' }}>
+      <LinearGradient
+        colors={["#FF9D9D", "#000000"]}
+        start={{ x: 0.5, y: 0.5 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+        }}
+      />
+      <ProfileImage
+        width={IMAGE_SIZE}
+        height={IMAGE_SIZE}
+        style={{
+          position: 'absolute',
+          bottom: -15,
+          zIndex: 1,
+        }}
+      />
     </View>
   );
 };
