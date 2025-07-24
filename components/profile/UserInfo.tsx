@@ -16,17 +16,22 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
     <>
       <View className="flex-row justify-between items-center">
         <View className="flex-row items-center">
-          <View className="w-2 bg-black h-[55px] mr-2.5" />
-          <View className="shrink">
-            <Text className="font-inter text-xl">{name.first}</Text>
-            <Text className="font-proRacing text-2xl font-bold">{name.last}</Text>
+          <View className="bg-[#D9D9D9] w-full py-2 flex-row justify-between items-center">
+            <View className="flex-row items-center">
+              <View className="w-3 bg-[#CA2523] h-[75px] mr-2.5" />
+              <View className="pl-1 flex-column">
+                <Text className="font-proRacing text-2xl text-[#CA2523]">{name.first}</Text>
+                <Text className="font-proRacing text-2xl font-bold text-[#CA2523]">{name.last}</Text>
+              </View>
+            </View>
+            <View className='mr-4'>
+              <LOGO width={60} height={60} />
+            </View>
           </View>
         </View>
-        <LOGO width={40} height={40} />
       </View>
-
-      <View className="h-0.5 bg-black my-3" />
-      <Text className="font-inter text-xl italic mt-[-5px] mb-5">
+      <View className="h-0.5 bg-white mt-2 mb-3" />
+      <Text className="font-inter text-xl italic mt-[-5px] mb-5 text-white">
         Roles: <Text className="font-bold not-italic">{roles.join(', ')}</Text>
       </Text>
       {foodWave && (
