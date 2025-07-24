@@ -146,6 +146,22 @@ export interface APIRoutes {
       response: { message: string };
     };
   };
+  '/attendee/favorites': {
+    GET: {
+      request: { userId: string };
+      response: Attendee;
+    };
+  };
+  '/attendee/favorites/:eventId': {
+    POST: {
+      request: { userId: string };
+      response: { message: string };
+    };
+    DELETE: {
+      request: { userId: string };
+      response: { message: string };
+    };
+  };
   '/auth': {
     PUT: {
       request: { email: string; role: Role };
