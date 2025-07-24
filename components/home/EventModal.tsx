@@ -3,6 +3,8 @@ import { Modal, View, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
+import { BlurView } from 'expo-blur';
+
 
 interface EventModalProps {
   visible: boolean;
@@ -11,6 +13,15 @@ interface EventModalProps {
   onClose: () => void;
   onToggleFlag: (id: string) => void;
 }
+
+const FULL_SCREEN: View['props']['style'] = {
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+};
+
 
 export const EventModal: React.FC<EventModalProps> = ({
   visible,
@@ -26,6 +37,9 @@ export const EventModal: React.FC<EventModalProps> = ({
         activeOpacity={1}
         onPress={onClose}
       >
+
+      <BlurView intensity={80} tint="dark" style={FULL_SCREEN} />
+
         <TouchableOpacity
           className="bg-[#dbdbdb] rounded-2xl p-5 w-[80%] h-[50%]"
           activeOpacity={1}
