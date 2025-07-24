@@ -48,8 +48,7 @@ const ScannerScreen = () => {
 
   const handleBarCodeScanned = async ({ data }: any) => {
     if (scanned) return;
-
-    setScanned(true);
+    setScanned(true); // Set immediately to prevent double scans
     setLoading(true);
 
     try {
@@ -110,9 +109,6 @@ const ScannerScreen = () => {
     <SafeAreaView className="flex-1 bg-black">
       <View className="flex-row items-center justify-between px-4 py-2">
         <Text className="text-white text-xl font-bold">QR Scanner</Text>
-        <TouchableOpacity className="bg-[#00adb5] px-4 py-2 rounded-lg" onPress={resetScan}>
-          <Text className="text-white font-semibold">Reset</Text>
-        </TouchableOpacity>
       </View>
 
       <View className="px-4 py-2">
@@ -135,6 +131,17 @@ const ScannerScreen = () => {
           facing="back"
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         >
+          {!scanned && !loading && (
+            <View className="absolute px-4 inset-0 justify-center items-center bg-black/40 z-10">
+              <Text className="text-green-500 text-lg font-bold">Ready to Scan!</Text>
+            </View>
+          )}
+          {loading && (
+            <View className="absolute px-4 inset-0 justify-center items-center bg-black/60 z-20">
+              <ActivityIndicator size="large" color="#00adb5" />
+              <Text className="text-white mt-4 text-center">Processing...</Text>
+            </View>
+          )}
           <View className="flex-1 items-center top-20">
             <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
               <View className="absolute top-0 left-0 w-12 h-12">
@@ -169,12 +176,15 @@ const ScannerScreen = () => {
           </View>
         </CameraView>
 
-        {loading && (
-          <View className="absolute inset-0 bg-black/50 justify-center items-center">
-            <View className="bg-[#333] p-6 rounded-lg">
-              <ActivityIndicator size="large" color="#00adb5" />
-              <Text className="text-white mt-4 text-center">Processing...</Text>
-            </View>
+        {scanned && !loading && (
+          <View className="absolute inset-0 justify-center items-center bg-black/40 z-20">
+            <Text className="text-white text-lg font-bold mb-4">Scan Complete</Text>
+            <TouchableOpacity
+              className="bg-[#00adb5] px-6 py-3 rounded-lg"
+              onPress={resetScan}
+            >
+              <Text className="text-white font-semibold">Scan Again</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
