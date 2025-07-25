@@ -1,9 +1,8 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
-import { ProgressBar } from '@/components/home/ProgressBar';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
@@ -12,6 +11,7 @@ import { api } from '@/api/api';
 
 import HomeBar from '@/assets/home/homeBar.svg';
 import LottieView from 'lottie-react-native';
+import Toast from 'react-native-toast-message';
 
 export default function HomeScreen() {
   // fetched cards
@@ -29,7 +29,17 @@ export default function HomeScreen() {
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
   const toggleFlag = async (id: string) => {
-    if (!user?.userId) return;
+    if (!user?.userId) {
+      console.log('showing toast');
+      Toast.show({
+        type: 'error',
+        text1: 'Registration Required',
+        text2: 'You must be registered to flag an event.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
     const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), { userId: user.userId });
     if (response.status === 200) {
       setFlaggedIds((prev) => {
@@ -61,8 +71,6 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (!user?.userId) return;
-
     const fetchEvents = async () => {
       const start = Date.now();
       try {
@@ -79,6 +87,11 @@ export default function HomeScreen() {
           description: event.description,
         }));
         setCards(formattedEvents);
+        // Only fetch favorites if user is registered
+        if (user?.userId) {
+          const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
+          setFlaggedIds(new Set(favResponse.data.favorites));
+        }
       } catch (e: any) {
         console.error('Failed to fetch or process events:', e);
         setError(e.message || 'Failed to load events');
@@ -89,18 +102,12 @@ export default function HomeScreen() {
       }
     };
 
-    const fetchFavorites = async (userId: string) => {
-      const response = await api.get(path('/attendee/favorites', { userId }));
-      setFlaggedIds(new Set(response.data.favorites));
-    };
-
     fetchEvents();
-    fetchFavorites(user.userId);
   }, [user?.userId]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
-      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center">
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay
