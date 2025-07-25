@@ -74,7 +74,7 @@ const ProfileScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center">
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay

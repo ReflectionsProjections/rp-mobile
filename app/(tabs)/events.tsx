@@ -39,7 +39,7 @@ const typeColors = {
 const EventsScreen = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedDay, setSelectedDay] = useState(3);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
@@ -94,7 +94,7 @@ const EventsScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center">
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay
