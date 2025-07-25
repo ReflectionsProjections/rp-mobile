@@ -3,9 +3,7 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
   SafeAreaView,
 } from 'react-native';
 import { Modal, Pressable } from 'react-native';
@@ -13,16 +11,17 @@ import BadgeSvg from '../../assets/images/badge.svg';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
 import { Event } from '../../api/types';
-import { getWeekday } from '@/lib/utils';
+import { getWeekday, formatAMPM } from '@/lib/utils';
 import { api } from '@/api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import LottieView from 'lottie-react-native';
 
 const dayTabs = [
-	{ label: "MON", dayNumber: 1, barColor: "#4F0202" },
-	{ label: "TUE", dayNumber: 2, barColor: "#831C1C" },
-	{ label: "WED", dayNumber: 3, barColor: "#B60000" },
-	{ label: "THU", dayNumber: 4, barColor: "#E20303" },
-	{ label: "FRI", dayNumber: 5, barColor: "#EF3F3F" },
+	{ label: "WED", dayNumber: 3, barColor: "#4F0202" },
+	{ label: "THU", dayNumber: 4, barColor: "#831C1C" },
+	{ label: "FRI", dayNumber: 5, barColor: "#B60000" },
+	{ label: "SAT", dayNumber: 6, barColor: "#E20303" },
+	{ label: "SUN", dayNumber: 0, barColor: "#EF3F3F" },
 ];
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -59,6 +58,7 @@ const EventsScreen = () => {
   }, [selectedEvent]);
 
   useEffect(() => {
+    const start = Date.now();
     const fetchEvents = async () => {
       try {
         const response = await api.get('/events');
@@ -67,7 +67,9 @@ const EventsScreen = () => {
         console.error('Failed to fetch or process events:', e);
         setError(e.message || 'Failed to load events');
       } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = 500 - elapsed;
+        setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
       }
     };
     fetchEvents();
@@ -80,21 +82,27 @@ const EventsScreen = () => {
   });
 
   const handleCloseModal = () => {
-	Animated.timing(slideY, {
-	  toValue: -SCREEN_HEIGHT,
-	  duration: 400,
-	  easing: Easing.out(Easing.cubic),
-	  useNativeDriver: true,
-	}).start(() => {
-	  setSelectedEvent(null);
-	});
+    Animated.timing(slideY, {
+      toValue: -SCREEN_HEIGHT,
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      setSelectedEvent(null);
+    });
   };
 
   if (loading) {
     return (
-      <View className="flex-1 bg-[#333333] justify-center items-center">
-        <ActivityIndicator size="large" color="#888" />
-      </View>
+      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+        <LottieView
+          source={require('@/assets/lottie/rp_animation.json')}
+          autoPlay
+          loop
+          style={{ width: 1000, height: 1000 }}
+          speed={4}
+        />
+      </SafeAreaView>
     );
   }
 
@@ -143,14 +151,11 @@ const EventsScreen = () => {
         <FlatList
           data={filteredEvents}
           keyExtractor={(item) => item.eventId}
-          contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
           renderItem={({ item, index }) => {
             const start = new Date(item.startTime);
             const end = new Date(item.endTime);
-            const pad = (n: number) => String(n).padStart(2, "0");
-            const timeString = `${pad(start.getHours())}:${pad(
-              start.getMinutes()
-            )}–${pad(end.getHours())}:${pad(end.getMinutes())}`;
+            const timeString = `${formatAMPM(start)}–${formatAMPM(end)}`;
 
             return (
               <TouchableOpacity onPress={() => setSelectedEvent(item)} className="mb-3">
@@ -158,23 +163,23 @@ const EventsScreen = () => {
                   colors={['#FFFFFF00', typeColors[item.eventType as keyof typeof typeColors]]} // Use your event type color and a secondary color
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0.5, y: 0 }}
-                  className="rounded-sm flex-row items-center h-20 overflow-hidden"
-                  style={{ width: SCREEN_WIDTH - 40, transform: [{ skewX: '-20deg' }] }}
+                  className="rounded-sm flex-row items-center h-[70px] overflow-hidden"
+                  style={{ width: SCREEN_WIDTH - 30, transform: [{ skewX: '-20deg' }] }}
                 >
                   {/* Remove skew for children */}
                   <View className="flex-row flex-1 h-full" style={{ transform: [{ skewX: '8deg' }] }}>
                     {/* Index */}
                     <View className="justify-center items-center w-12">
-                      <Text className="text-white text-2xl font-extrabold italic">{index + 1}</Text>
+                      <Text className="text-white text-2xl font-extrabold italic font-proRacingSlant">{index + 1}</Text>
                     </View>
                     {/* Event details */}
-                    <View className="flex-1 justify-center pl-2">
-                      <Text className="text-white text-lg font-bold" numberOfLines={1} style={{ fontFamily: 'RacingSansOne-Regular' }}>{item.name}</Text>
-                      <Text className="text-white text-xs opacity-80" numberOfLines={1} style={{ fontFamily: 'RacingSansOne-Regular' }}>{item.location}</Text>
+                    <View className="flex-1 justify-center pl-2 pr-2">
+                      <Text className="text-white text-lg font-extrabold font-magistralMedium" numberOfLines={1}>{item.name}</Text>
+                      <Text className="text-white text-xs opacity-80 font-magistral" numberOfLines={1}>{item.location}</Text>
                     </View>
                     {/* Time */}
-                    <View className="justify-center items-end pr-4 w-28">
-                      <Text className="text-white text-md font-bold">{timeString}</Text>
+                    <View className="justify-center items-end w-34 pr-2">
+                      <Text className="text-white text-md font-bold font-magistralMedium">{timeString}</Text>
                     </View>
                   </View>
                 </LinearGradient>
@@ -183,26 +188,27 @@ const EventsScreen = () => {
           }}
         />
       )}
+
       <Modal 
-	  	visible={!!selectedEvent} 
-	  	transparent
-	  	animationType="fade"
-	  >
+        visible={!!selectedEvent} 
+        transparent
+        animationType="fade"
+      >
         <Pressable
           className="flex-1 bg-black/60 justify-center items-center"
           onPress={handleCloseModal}
         >
           <Animated.View
             style={{
-				position: "absolute",
-				top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.3,
-				left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.7,
-				width: "100%",
-				height: "100%",
-				justifyContent: "center",
-				alignItems: "center",
-				overflow: "hidden",
-              	transform: [{ translateY: slideY }],
+                position: "absolute",
+                top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.3,
+                left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.7,
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                transform: [{ translateY: slideY }],
             }}
           >
             {/* Badge SVG as background */}
@@ -211,7 +217,7 @@ const EventsScreen = () => {
               height="100%"
               preserveAspectRatio="xMidYMid meet"
               style={{ position: 'absolute', top: 0, left: 0 }}
-			  color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
+              color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
             />
 
             {/* Overlayed content, centered in badge */}
@@ -223,9 +229,9 @@ const EventsScreen = () => {
                 {selectedEvent?.description}
               </Text>
             </View>
-			<View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
-			<Text className="text-xl text-[#B60000] text-center">{getWeekday(selectedEvent?.startTime)}</Text>
-			</View>
+            <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
+            <Text className="text-xl text-[#B60000] text-center">{getWeekday(selectedEvent?.startTime)}</Text>
+            </View>
           </Animated.View>
         </Pressable>
       </Modal>

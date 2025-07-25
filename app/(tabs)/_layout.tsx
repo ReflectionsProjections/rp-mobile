@@ -24,7 +24,7 @@ import FilledProfileIcon from '@/assets/icons/tabIcons/filled/filled_leaderIcon.
 
 const { width, height } = Dimensions.get('window');
 const HEIGHT = 0.15 * height;
-const BUTTON_SIZE = Math.min(width, height) * 0.2;
+const BUTTON_SIZE = Math.min(width, height) * 0.21;
 const ICON_SIZE = 36;
 
 const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> }[] = [
@@ -109,8 +109,8 @@ export default function TabLayout() {
               width: BUTTON_SIZE,
               height: BUTTON_SIZE,
               borderRadius: (BUTTON_SIZE) / 2,
-              backgroundColor: '#E5E5E5',
-              borderWidth: 4,
+              backgroundColor: activeTab === 'scanner' ? '#DF4F44' : '#E5E5E5',
+              borderWidth: 5,
               borderColor: '#DF4F44',
               alignItems: 'center',
               justifyContent: 'center',
@@ -120,7 +120,7 @@ export default function TabLayout() {
               elevation: 4,
             }}
           >
-            <QrCodeIcon width={ICON_SIZE} height={ICON_SIZE} color={activeTab === 'scanner' ? '#00ADB5' : '#DF4F44'} />
+            <QrCodeIcon width={ICON_SIZE} height={ICON_SIZE} color={activeTab === 'scanner' ? '#FFF' : '#DF4F44'} />
           </View>
         </TouchableOpacity>
       </View>
