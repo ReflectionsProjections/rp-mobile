@@ -20,7 +20,7 @@ RNText.defaultProps = {
   ...(RNText.defaultProps || {}),
   style: {
     ...(RNText.defaultProps?.style || {}),
-    fontFamily: 'ProRacing', // ← your loaded font key
+    fontFamily: 'ProRacing',
   },
 };
 
@@ -31,6 +31,8 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ProRacing: require('../assets/fonts/ProRacing-Regular.otf'),
     ProRacingSlant: require('../assets/fonts/ProRacingSlant.otf'),
+    Magistral: require('../assets/fonts/magistral-light.ttf'),
+    MagistralMedium: require('../assets/fonts/magistral-medium.ttf'),
   });
 
   useEffect(() => {

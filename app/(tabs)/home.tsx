@@ -11,6 +11,7 @@ import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
 
 import HomeBar from '@/assets/home/homeBar.svg';
+import LottieView from 'lottie-react-native';
 
 export default function HomeScreen() {
   // fetched cards
@@ -63,6 +64,7 @@ export default function HomeScreen() {
     if (!user?.userId) return;
 
     const fetchEvents = async () => {
+      const start = Date.now();
       try {
         const response = await api.get('/events');
         const formattedEvents = (response.data as ApiEvent[]).map((event: ApiEvent) => ({
@@ -81,7 +83,9 @@ export default function HomeScreen() {
         console.error('Failed to fetch or process events:', e);
         setError(e.message || 'Failed to load events');
       } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = 500 - elapsed;
+        setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
       }
     };
 
@@ -96,8 +100,14 @@ export default function HomeScreen() {
 
   if (loading || !user) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#00adb5" />
+      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+        <LottieView
+          source={require('@/assets/lottie/rp_animation.json')}
+          autoPlay
+          loop
+          style={{ width: 1000, height: 1000 }}
+          speed={4}
+        />
       </SafeAreaView>
     );
   }

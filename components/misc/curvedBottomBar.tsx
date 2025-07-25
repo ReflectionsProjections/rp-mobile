@@ -7,15 +7,18 @@ const { width, height } = Dimensions.get('window');
 const WIDTH = width;
 const HEIGHT = 0.1 * height;
 const CORNER_RADIUS = 0.05 * width;
-const CUTOUT_RADIUS = 0.09 * width;
+const FAB_RADIUS = 40; // or whatever your fab size is / 2
+const CUTOUT_RADIUS = FAB_RADIUS * 1.15;
+const CUTOUT_DEPTH = FAB_RADIUS * 1.22;
 
-const CUTOUT_LEFT_X = WIDTH / 2 - CUTOUT_RADIUS;
-const CUTOUT_RIGHT_X = WIDTH / 2 + CUTOUT_RADIUS;
+const CUTOUT_LEFT_X = WIDTH / 2 - CUTOUT_RADIUS + 6;
+const CUTOUT_RIGHT_X = WIDTH / 2 + CUTOUT_RADIUS - 6;
 
 const d = `
   M0,${HEIGHT}
   L0,${CORNER_RADIUS} Q0,0 ${CORNER_RADIUS},0
   L${CUTOUT_LEFT_X},0
+  A${CUTOUT_RADIUS},${CUTOUT_RADIUS} 0 0 0 ${WIDTH / 2},${CUTOUT_DEPTH}
   A${CUTOUT_RADIUS},${CUTOUT_RADIUS} 0 0 0 ${CUTOUT_RIGHT_X},0
   L${WIDTH - CORNER_RADIUS},0 Q${WIDTH},0 ${WIDTH},${CORNER_RADIUS}
   L${WIDTH},${HEIGHT}
@@ -46,8 +49,8 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    bottom: HEIGHT / 2 - CUTOUT_RADIUS,
-    left: WIDTH / 2 - 30,
+    bottom: HEIGHT - CUTOUT_DEPTH - FAB_RADIUS, // aligns the center of the FAB with the cutout
+    left: WIDTH / 2 - FAB_RADIUS,
     zIndex: 1,
   },
   fab: {

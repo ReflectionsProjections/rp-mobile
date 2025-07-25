@@ -8,6 +8,7 @@ import { api } from '@/api/api';
 import { RoleObject } from '@/api/types';
 
 import Background from '@/assets/images/profile_background.svg';
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -53,23 +54,34 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);	
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     const fetchAttendee = async () => {
+      const start = Date.now();
       try {
         const response = await api.get('/auth/info');
         setUser(response.data);
       } catch (err) {
         setError('Failed to load user info');
       } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = 500 - elapsed;
+        timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
       }
     };
     fetchAttendee();
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-500 justify-center items-center">
-        <ActivityIndicator size="large" color="#000" />
+      <SafeAreaView className="flex-1 z-10 justify-center items-center">
+        <LottieView
+          source={require('@/assets/lottie/rp_animation.json')}
+          autoPlay
+          loop
+		  style={{ width: 1000, height: 1000 }}
+		  speed={4}
+        />
       </SafeAreaView>
     );
   }
