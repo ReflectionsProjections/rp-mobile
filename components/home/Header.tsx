@@ -3,6 +3,7 @@ import { View, Image, TouchableOpacity, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import LOGO from '../../assets/images/logo.svg';
 
 export const Header: React.FC = () => {
   const handleLogout = () => {
@@ -31,8 +32,8 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <View className="flex-row p-4 justify-between items-center">
-      <Image source={require('../../assets/images/rp-logo.png')} className="w-8 h-8" />
+    <View className="flex-row p-4 justify-between items-center z-10">
+      <LOGO width={32} height={32} />
       <TouchableOpacity onPress={handleLogout}>
         <FontAwesome name="user-circle-o" size={28} color="#fff" />
       </TouchableOpacity>
