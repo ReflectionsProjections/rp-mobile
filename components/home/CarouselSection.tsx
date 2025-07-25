@@ -44,8 +44,14 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
       </ThemedText>
 
       <View className="self-center mb-3" style={{ width: CARD_WIDTH, height: containerHeight }}>
-        <SwipeDeck data={displayData} onCardPress={onCardPress} containerStyle={{ flex: 1 }} onSwipeTouchStart={onSwipeTouchStart}
-        onSwipeTouchEnd={onSwipeTouchEnd}/>
+        <SwipeDeck
+          data={displayData}
+          onCardPress={onCardPress}
+          containerStyle={{ flex: 1 }}
+          onSwipeTouchStart={onSwipeTouchStart}
+          onSwipeTouchEnd={onSwipeTouchEnd}
+          disableSwipeAway={displayData.length === 1}
+        />
       </View>
     </View>
   );

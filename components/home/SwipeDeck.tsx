@@ -22,6 +22,7 @@ interface SwipeDeckProps {
   containerStyle?: StyleProp<ViewStyle>;
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
+  disableSwipeAway?: boolean;
 }
 
 export default function SwipeDeck({
@@ -30,6 +31,7 @@ export default function SwipeDeck({
   containerStyle,
   onSwipeTouchStart = () => {},
   onSwipeTouchEnd = () => {},
+  disableSwipeAway = false,
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
@@ -113,6 +115,8 @@ export default function SwipeDeck({
         containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
         disableTopSwipe
         disableBottomSwipe
+        disableLeftSwipe={disableSwipeAway}
+        disableRightSwipe={disableSwipeAway}
       />
     </View>
   );
