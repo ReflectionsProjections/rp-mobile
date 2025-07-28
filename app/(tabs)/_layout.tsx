@@ -1,6 +1,6 @@
 import '@/global.css';
 import React, { useState } from 'react';
-import { Dimensions, View, TouchableOpacity } from 'react-native';
+import { Dimensions, View, TouchableOpacity, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SvgProps } from 'react-native-svg';
 
@@ -91,7 +91,7 @@ export default function TabLayout() {
           })}
         </View>
 
-        <TouchableOpacity
+        <Pressable
           className="absolute justify-center items-center"
           style={{
             bottom: HEIGHT - BUTTON_SIZE * 1.11,
@@ -122,7 +122,7 @@ export default function TabLayout() {
           >
             <QrCodeIcon width={ICON_SIZE} height={ICON_SIZE} color={activeTab === 'scanner' ? '#FFF' : '#DF4F44'} />
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

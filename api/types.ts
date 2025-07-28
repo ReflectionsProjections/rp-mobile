@@ -130,6 +130,11 @@ export interface APIRoutes {
       response: Attendee;
     };
   };
+  '/attendee/points': {
+    GET: {
+      response: { points: number };
+    };
+  };
   '/attendee/emails': {
     GET: {
       response: Array<{ email: string; userId: string }>;
