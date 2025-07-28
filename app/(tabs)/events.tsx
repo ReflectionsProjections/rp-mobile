@@ -152,6 +152,7 @@ const EventsScreen = () => {
           data={filteredEvents}
           keyExtractor={(item) => item.eventId}
           contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
+          ListFooterComponent={<Text className="text-white text-left pl-3 text-md font-extrabold italic font-proRacingSlant">End of Events</Text>}
           renderItem={({ item, index }) => {
             const start = new Date(item.startTime);
             const end = new Date(item.endTime);
