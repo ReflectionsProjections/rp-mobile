@@ -51,6 +51,7 @@ const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex
 
 const ProfileScreen = () => {
   const [user, setUser] = useState<RoleObject | null>(null);
+  const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);	
   useEffect(() => {
@@ -68,7 +69,18 @@ const ProfileScreen = () => {
         timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
       }
     };
+
+    const fetchPoints = async () => {
+      try {
+        const response = await api.get('/attendee/points');
+        setPoints(response.data.points || 0);
+      } catch (err) {
+        console.error('Failed to fetch points:', err);
+      }
+    };
+
     fetchAttendee();
+    fetchPoints();
     return () => clearTimeout(timeoutId);
   }, []);
 
@@ -98,7 +110,7 @@ const ProfileScreen = () => {
 
   return (
 	<View className="flex-1">
-		<Background width={width} height={height} style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+		<Background width={width} height={height} style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} preserveAspectRatio='none'/>
 		<SafeAreaView className="flex-1">
 		<ScrollView
 			showsVerticalScrollIndicator={false}
@@ -106,7 +118,7 @@ const ProfileScreen = () => {
 		>
 			<View className="p-5" style={{ position: 'relative' }}>
 			<LSeparator zIndex={-1} />
-			<ProfileHeader />
+			<ProfileHeader points={points}/>
 			<ImageCarousel />
 			<Separator />
 			<UserInfo
@@ -116,7 +128,7 @@ const ProfileScreen = () => {
 				}}
 				roles={user?.roles || []}
 			/>
-			<ColorPicker />
+			{/* <ColorPicker /> */}
 			</View>
 		</ScrollView>
 		</SafeAreaView>
