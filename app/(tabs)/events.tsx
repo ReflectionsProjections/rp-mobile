@@ -94,7 +94,7 @@ const EventsScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay
@@ -109,11 +109,11 @@ const EventsScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#333333] pt-10">
       <Text 
-		className="text-4xl font-bold text-white text-center tracking-wider"
-		style={{ fontFamily: 'ProRacing' }}
-	  >
-		Events
-	  </Text>
+        className="text-4xl font-bold text-white text-center tracking-wider"
+        style={{ fontFamily: 'ProRacing' }}
+      >
+		    Events
+	    </Text>
 
       <View className="flex-row justify-evenly my-4">
         {dayTabs.map((tab) => {
@@ -227,7 +227,7 @@ const EventsScreen = () => {
                 {selectedEvent?.name}
               </Text>
               <Text className="text-base text-[#B60000] text-center mb-2" numberOfLines={4} ellipsizeMode="tail">
-                {selectedEvent?.description}
+                {selectedEvent?.description === "none" ? "No description available" : selectedEvent?.description}
               </Text>
             </View>
             <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">

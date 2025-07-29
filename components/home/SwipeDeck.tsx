@@ -90,9 +90,9 @@ export default function SwipeDeck({
 
   return (
     <View
-    style={containerStyle}
-    onTouchStart={onSwipeTouchStart}
-    onTouchEnd={onSwipeTouchEnd}
+      style={containerStyle}
+      onTouchStart={onSwipeTouchStart}
+      onTouchEnd={onSwipeTouchEnd}
     >
       <Swiper
         cards={data}

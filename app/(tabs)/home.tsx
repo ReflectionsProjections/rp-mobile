@@ -30,7 +30,7 @@ export default function HomeScreen() {
 
   const toggleFlag = async (id: string) => {
     if (!user?.userId) {
-      console.log('showing toast');
+      closeEvent();
       Toast.show({
         type: 'error',
         text1: 'Registration Required',
@@ -107,7 +107,7 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay

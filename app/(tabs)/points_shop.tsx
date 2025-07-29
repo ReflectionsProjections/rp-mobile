@@ -12,24 +12,28 @@ const SPEEDO_WIDTH = width * 0.7;
 export default function PointsScreen() {
   const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorString, setErrorString] = useState<string | null>(null);
   useEffect(() => {
-      let timeoutId: ReturnType<typeof setTimeout>;
-  
-      const fetchPoints = async () => {
-        const start = Date.now();
-        try {
-          const response = await api.get('/attendee/points');
-          setPoints(response.data.points || 0);
-        } catch (err) {
-          console.error('Failed to fetch points:', err);
-        } finally {
-          const elapsed = Date.now() - start;
-          const remaining = 500 - elapsed;
-          timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
-        }
-      };
-      fetchPoints();
-    }, []);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const fetchPoints = async () => {
+      const start = Date.now();
+      try {
+        const response = await api.get('/attendee/points');
+        setPoints(response.data.points || 0);
+      } catch (err) {
+        setError('Failed to fetch points');
+        console.error('Failed to fetch points:', err);
+      } finally {
+        const elapsed = Date.now() - start;
+        const remaining = 500 - elapsed;
+        timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
+      }
+    };
+    fetchPoints();
+  }, []);
+
   return (
     <View className="flex-1 bg-rpRed relative">
       <Background
@@ -62,12 +66,12 @@ export default function PointsScreen() {
       <Text
         className="absolute z-10 text-[16px] font-bold text-black font-RacingSansOne"
         style={{
-          top: height * 0.65,
+          top: height * 0.63,
           left: width * 0.64,
           width: width * 0.33,
         }}
       >
-        Attend events to earn points and unlock prizes!
+        {error ? 'Make sure you are logged to track your points!' : 'Attend events to earn points and unlock prizes!'}
       </Text>
     </View>
   );
