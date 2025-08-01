@@ -22,7 +22,6 @@ interface SwipeDeckProps {
   containerStyle?: StyleProp<ViewStyle>;
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
-  disableSwipeAway?: boolean;
 }
 
 export default function SwipeDeck({
@@ -31,7 +30,6 @@ export default function SwipeDeck({
   containerStyle,
   onSwipeTouchStart = () => {},
   onSwipeTouchEnd = () => {},
-  disableSwipeAway = false,
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
@@ -54,6 +52,9 @@ export default function SwipeDeck({
       return <View style={[styles.card, styles.emptyCard]} />;
     }
 
+    // Show dots on current card and next card
+    const shouldShowDots = idx === safeIndex || idx === safeIndex + 1;
+
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -69,18 +70,18 @@ export default function SwipeDeck({
           {truncate(item.location, 20)}
         </ThemedText>
 
-        {idx === safeIndex && (
-          <View style={styles.footer}>
-            <View style={styles.points}>
-              <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
-            </View>
+        {/* Points - now always visible */}
+        <View style={styles.footer}>
+          <View style={styles.points}>
+            <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
           </View>
-        )}
+        </View>
 
-        {idx === safeIndex && (
+        {/* Dots - only show on current and next card, with correct active state */}
+        {shouldShowDots && (
           <View style={styles.dots}>
             {data.map((_, dotIdx) => (
-              <View key={dotIdx} style={[styles.dot, safeIndex === dotIdx && styles.dotActive]} />
+              <View key={dotIdx} style={[styles.dot, idx === dotIdx && styles.dotActive]} />
             ))}
           </View>
         )}
@@ -90,9 +91,9 @@ export default function SwipeDeck({
 
   return (
     <View
-    style={containerStyle}
-    onTouchStart={onSwipeTouchStart}
-    onTouchEnd={onSwipeTouchEnd}
+      style={containerStyle}
+      onTouchStart={onSwipeTouchStart}
+      onTouchEnd={onSwipeTouchEnd}
     >
       <Swiper
         cards={data}
@@ -103,7 +104,7 @@ export default function SwipeDeck({
         stackSeparation={8}
         infinite
         cardIndex={safeIndex}
-        onSwiped={(i) => setCardIndex(i + 1)}
+        onSwiped={(i) => setCardIndex((i + 1) % data.length)}
         onTapCard={(i) => {
           if (i < data.length) {
             onCardPress(data[i]);
@@ -115,8 +116,6 @@ export default function SwipeDeck({
         containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
         disableTopSwipe
         disableBottomSwipe
-        disableLeftSwipe={disableSwipeAway}
-        disableRightSwipe={disableSwipeAway}
       />
     </View>
   );

@@ -50,7 +50,7 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
           containerStyle={{ flex: 1 }}
           onSwipeTouchStart={onSwipeTouchStart}
           onSwipeTouchEnd={onSwipeTouchEnd}
-          disableSwipeAway={displayData.length === 1}
+          // disableSwipeAway={displayData.length === 1}
         />
       </View>
     </View>
