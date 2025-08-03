@@ -35,7 +35,6 @@ export default function SwipeDeck({
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
-  // Handle null/undefined data
   if (!data || data.length === 0) {
     return (
       <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -46,7 +45,6 @@ export default function SwipeDeck({
     );
   }
 
-  // Clamp the index to valid range
   const safeIndex = data.length > 0 ? Math.min(cardIndex, data.length - 1) : 0;
 
   const renderCard = (item: CardType | null, idx: number) => {
