@@ -60,6 +60,9 @@ export default {
     extra: {
       googleClientId: process.env.OAUTH_GOOGLE_CLIENT_ID,
       apiUrl: process.env.API_URL || 'https://api.reflectionsprojections.org',
+      eas: {
+        projectId: '31b01df4-91df-45dc-9131-17913e919c8a',
+      },
     },
   },
 };
