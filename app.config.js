@@ -18,6 +18,7 @@ export default {
       config: {
         usesNonExemptEncryption: false,
       },
+      googleServicesFile: './GoogleService-Info-RP.plist',
       infoPlist: {
         CFBundleURLTypes: [
           {
@@ -27,6 +28,7 @@ export default {
             ],
           },
         ],
+        UIBackgroundModes: ['remote-notification'],
       },
     },
     android: {
@@ -53,6 +55,8 @@ export default {
         },
       ],
       'expo-font',
+      '@react-native-firebase/app',
+      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,
