@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle } from 'react-native';
+// --- SwipeDeck.tsx ---
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
+  PanResponder,
+} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 
@@ -35,10 +43,24 @@ export default function SwipeDeck({
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
-  // Handle null/undefined data
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => {
+        onSwipeTouchStart();
+        return false;
+      },
+      onPanResponderRelease: () => {
+        onSwipeTouchEnd();
+      },
+      onPanResponderTerminate: () => {
+        onSwipeTouchEnd();
+      },
+    })
+  ).current;
+
   if (!data || data.length === 0) {
     return (
-      <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}> 
         <ThemedText variant="body" className="text-gray-500">
           No events available
         </ThemedText>
@@ -46,13 +68,10 @@ export default function SwipeDeck({
     );
   }
 
-  // Clamp the index to valid range
   const safeIndex = data.length > 0 ? Math.min(cardIndex, data.length - 1) : 0;
 
   const renderCard = (item: CardType | null, idx: number) => {
-    if (!item) {
-      return <View style={[styles.card, styles.emptyCard]} />;
-    }
+    if (!item) return <View style={[styles.card, styles.emptyCard]} />;
 
     return (
       <View style={styles.card}>
@@ -61,49 +80,44 @@ export default function SwipeDeck({
             {item.title}
           </ThemedText>
         </View>
-
         <ThemedText variant="body" className="text-[12px]">
           {item.time}
         </ThemedText>
         <ThemedText variant="body" className="text-[10px]">
           {truncate(item.location, 20)}
         </ThemedText>
-
-        {idx === safeIndex && (
-          <View style={styles.footer}>
-            <View style={styles.points}>
-              <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
-            </View>
+        <View style={styles.footer}>
+          <View style={styles.points}>
+            <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
           </View>
-        )}
-
-        {idx === safeIndex && (
-          <View style={styles.dots}>
-            {data.map((_, dotIdx) => (
-              <View key={dotIdx} style={[styles.dot, safeIndex === dotIdx && styles.dotActive]} />
-            ))}
-          </View>
-        )}
+        </View>
+        <View style={styles.dots} pointerEvents="none">
+          {data.map((_, dotIdx) => (
+            <View
+              key={dotIdx}
+              style={[styles.dot, dotIdx === idx && styles.dotActive]}
+            />
+          ))}
+        </View>
       </View>
     );
   };
 
   return (
     <View
-      style={containerStyle}
-      onTouchStart={onSwipeTouchStart}
-      onTouchEnd={onSwipeTouchEnd}
+      style={[containerStyle, { paddingHorizontal: 20 }]}
+      {...panResponder.panHandlers}
     >
       <Swiper
         cards={data}
         renderCard={renderCard}
         keyExtractor={(card) => card.id}
         stackSize={Math.min(data.length, 3)}
-        key={data.length}
-        stackSeparation={8}
+        stackSeparation={0}
         infinite
         cardIndex={safeIndex}
-        onSwiped={(i) => setCardIndex(i + 1)}
+        onSwipedLeft={() => setCardIndex((prev) => (prev + 1) % data.length)}
+        onSwipedRight={() => setCardIndex((prev) => (prev - 1 + data.length) % data.length)}
         onTapCard={(i) => {
           if (i < data.length) {
             onCardPress(data[i]);
@@ -112,11 +126,12 @@ export default function SwipeDeck({
         backgroundColor="transparent"
         cardHorizontalMargin={0}
         cardVerticalMargin={0}
-        containerStyle={containerStyle ? (StyleSheet.flatten(containerStyle) as object) : undefined}
         disableTopSwipe
         disableBottomSwipe
         disableLeftSwipe={disableSwipeAway}
         disableRightSwipe={disableSwipeAway}
+        horizontalThreshold={80}
+        swipeAnimationDuration={250}
       />
     </View>
   );
@@ -150,18 +165,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  footer: { flexDirection: 'row', justifyContent: 'flex-end' },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
   points: {
     backgroundColor: '#000',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  pointsText: { color: '#fff', fontSize: 12 },
-
+  pointsText: {
+    color: '#fff',
+    fontSize: 12,
+  },
   dots: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 12,
     left: 0,
     right: 0,
     flexDirection: 'row',
