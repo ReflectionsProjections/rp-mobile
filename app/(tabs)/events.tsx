@@ -236,14 +236,7 @@ const EventsScreen = () => {
                         {item.location}
                       </Text>
                     </View>
-                    {/* Time */}
-                    {/* <View className="justify-center items-end w-34 pr-2">
-                      <Text className="text-white text-md font-bold font-magistralMedium">
-                        {timeString}
-                      </Text>
-                    </View> */}
 
-                    + {/* Time (stacked) */}
  <View className="justify-center items-end w-34 pr-2">
    <Text className="text-white text-md font-bold font-magistralMedium">
      {startStr}
@@ -369,7 +362,13 @@ const EventsScreen = () => {
                 style={{ position: 'absolute', top: 0, left: 0 }}
                 color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
               />
-              {/* </View> */}
+              <View
+  className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6"
+>
+  <Text className="text-xl text-[#B60000] text-center">
+    {getWeekday(selectedEvent?.startTime)}
+  </Text>
+</View>
             </Animated.View>
 
             <Pressable
