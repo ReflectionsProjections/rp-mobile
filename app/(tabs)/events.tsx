@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
+  StyleSheet,
 } from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
@@ -44,6 +45,22 @@ const EventsScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
 
+
+
+const flip = useRef(new Animated.Value(0)).current;
+const [isFlipped, setIsFlipped] = useState(false);
+
+const rotateY = flip.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['0deg', '180deg'],
+});
+
+
+useEffect(() => {
+  if (selectedEvent) { flip.setValue(0); setIsFlipped(false); }
+}, [selectedEvent]);
+
+
   useEffect(() => {
     if (selectedEvent) {
       Animated.timing(slideY, {
@@ -82,6 +99,10 @@ const EventsScreen = () => {
   });
 
   const handleCloseModal = () => {
+    flip.stopAnimation();
+flip.setValue(0);
+setIsFlipped(false);
+
     Animated.timing(slideY, {
       toValue: -SCREEN_HEIGHT,
       duration: 400,
@@ -209,10 +230,14 @@ const EventsScreen = () => {
                 justifyContent: "center",
                 alignItems: "center",
                 overflow: "hidden",
-                transform: [{ translateY: slideY }],
+                // transform: [{ translateY: slideY } ,{ perspective: 1000 },{ rotateY }],
+                transform: [{ perspective: 1000 }, { rotateY }, { translateY: slideY }],
+
             }}
           >
-            {/* Badge SVG as background */}
+
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backfaceVisibility: 'hidden' }}>
+
             <BadgeSvg
               width="100%"
               height="100%"
@@ -221,21 +246,59 @@ const EventsScreen = () => {
               color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
             />
 
-            {/* Overlayed content, centered in badge */}
-            <View className="absolute top-[50%] left-0 right-0 bottom-0 items-center justify-center px-6">
+            <View className="absolute top-[30%] left-0 right-0 bottom-0 items-center justify-center px-6">
               <Text className="text-xl font-bold text-[#B60000] text-center mb-2" style={{ fontFamily: 'ProRacingSlant' }} numberOfLines={2} ellipsizeMode="tail">
                 {selectedEvent?.name}
               </Text>
-              <Text className="text-base text-[#B60000] text-center mb-2" numberOfLines={4} ellipsizeMode="tail">
+              <Text className="text-base text-[#B60000] text-center mb-2" numberOfLines={20} ellipsizeMode="tail">
                 {selectedEvent?.description === "none" ? "No description available" : selectedEvent?.description}
               </Text>
             </View>
             <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
             <Text className="text-xl text-[#B60000] text-center">{getWeekday(selectedEvent?.startTime)}</Text>
             </View>
+
+            </View>
+{/* <View
+  style={{
+    position: 'absolute',
+    width: CARD_W,
+    height: CARD_H,
+    backfaceVisibility: 'hidden',
+    transform: [{ rotateY: '180deg' }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+> */}
+
+ <View
+   style={{
+     position: 'absolute',
+     top: 0, left: 0, right: 0, bottom: 0,
+     backfaceVisibility: 'hidden',
+     transform: [{ rotateY: '180deg' }],
+   }}
+ >
+
+  <BadgeSvg
+    width="100%"
+    height="100%"
+    preserveAspectRatio="xMidYMid meet"
+    style={{ position: 'absolute', top: 0, left: 0 }}
+    color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
+  />
+</View>
+{/* 
+      <Pressable
+        onPress={(e) => { e.stopPropagation?.(); toggleFlip(); }}
+        style={[StyleSheet.absoluteFill, { zIndex: 2 }]}
+      /> */}
           </Animated.View>
         </Pressable>
+
+
       </Modal>
+
     </SafeAreaView>
   );
 };
