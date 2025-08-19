@@ -21,6 +21,16 @@ export default function PointsScreen() {
         <PointsGauge points={20} width={SPEEDO_WIDTH} />
       </View>
 
+      <View style={{ position: 'absolute', left: width * 0.13, bottom: height * 0.18, zIndex: 10 }}>
+        <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold', marginTop: 30, marginLeft: 100 }}>x15</Text>
+      </View>
+      <View style={{ position: 'absolute', left: width * 0.13, bottom: height * 0.35, zIndex: 10 }}>
+        <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold', marginLeft: 2 }}>x50</Text>
+      </View>
+      <View style={{ position: 'absolute', left: width * 0.35, bottom: height * 0.60, zIndex: 10 }}>
+        <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold', marginLeft: 8 }}>x100</Text>
+      </View>
+
       <Text
         className="absolute z-10 text-[16px] font-bold text-black font-proRacing"
         style={{
