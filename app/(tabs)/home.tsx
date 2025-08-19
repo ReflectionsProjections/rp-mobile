@@ -1,6 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView, ScrollView, View, StyleSheet, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
@@ -9,9 +9,14 @@ import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
 
-import HomeBar from '@/assets/home/homeBar.svg';
+// import HomeBar from '@/assets/home/homeBar.svg';
+import BackgroundSvg from '@/assets/home/home_background.svg';
+import CarSvg from '@/assets/home/home_car.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
 
 export default function HomeScreen() {
   // fetched cards
@@ -30,7 +35,7 @@ export default function HomeScreen() {
 
   const toggleFlag = async (id: string) => {
     if (!user?.userId) {
-      console.log('showing toast');
+      closeEvent();
       Toast.show({
         type: 'error',
         text1: 'Registration Required',
@@ -107,7 +112,13 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
+      <SafeAreaView className="flex-1 justify-center items-center bg-black">
+        <BackgroundSvg 
+          style={StyleSheet.absoluteFillObject} 
+          width={screenWidth}
+          height={screenHeight}
+          preserveAspectRatio="none"
+        />
         <LottieView
           source={require('@/assets/lottie/rp_animation.json')}
           autoPlay
@@ -121,58 +132,86 @@ export default function HomeScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <ThemedText className="text-black text-base">Error: {error}</ThemedText>
+      <SafeAreaView className="flex-1 justify-center items-center bg-black">
+        <BackgroundSvg 
+          style={StyleSheet.absoluteFillObject} 
+          width={screenWidth}
+          height={screenHeight}
+          preserveAspectRatio="none"
+        />
+        <ThemedText className="text-white text-base">Error: {error}</ThemedText>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#222]">
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} 
-        showsVerticalScrollIndicator={false}  directionalLockEnabled={true} nestedScrollEnabled={true} scrollEnabled={scrollEnabled}>
+    <SafeAreaView className="flex-1 bg-black">
+      {/* Background SVG - positioned absolutely behind all content */}
+      <BackgroundSvg 
+          style={StyleSheet.absoluteFillObject} 
+          width={screenWidth}
+          height={screenHeight}
+          preserveAspectRatio="none"
+        />
+      
+      <ScrollView 
+        contentContainerStyle={{ paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false}  
+        directionalLockEnabled={true} 
+        nestedScrollEnabled={true} 
+        scrollEnabled={scrollEnabled}
+      >
         <Header />
 
-        <ThemedText variant="bigName" className="text-left my-2 mx-4">
+        <ThemedText variant="bigName" className="text-left my-2 mx-4 text-white">
           R|P 2025
         </ThemedText>
 
-        <HomeBar className="mx-4" />
+        {/* <HomeBar className="mx-4" /> */}
 
         {/* NEXT LAP */}
-        <CarouselSection
-          title="NEXT LAP"
-          data={cards.slice(0, 1)}
-          flaggedIds={flaggedIds}
-          onToggleFlag={toggleFlag}
-          onCardPress={openEvent}
-          limit={5}
-          onSwipeTouchStart={() => setScrollEnabled(false)}
-          onSwipeTouchEnd={() => setScrollEnabled(true)}
-        />
+        <View style={{ marginTop: 20 }}>
+          <CarouselSection
+            title="NEXT LAP"
+            data={cards.slice(0, 1)}
+            flaggedIds={flaggedIds}
+            onToggleFlag={toggleFlag}
+            onCardPress={openEvent}
+            limit={5}
+            onSwipeTouchStart={() => setScrollEnabled(false)}
+            onSwipeTouchEnd={() => setScrollEnabled(true)}
+          />
+        </View>
 
         {/* RECOMMENDED */}
-        <CarouselSection
-          title="RECOMMENDED"
-          data={cards}
-          flaggedIds={flaggedIds}
-          onToggleFlag={toggleFlag}
-          onCardPress={openEvent}
-          limit={5}
-          onSwipeTouchStart={() => setScrollEnabled(false)}
-          onSwipeTouchEnd={() => setScrollEnabled(true)}
-        />
+        <View style={{ marginTop: -35 }}>
+          <CarouselSection
+            title="RECOMMENDED"
+            data={cards}
+            flaggedIds={flaggedIds}
+            onToggleFlag={toggleFlag}
+            onCardPress={openEvent}
+            limit={5}
+            onSwipeTouchStart={() => setScrollEnabled(false)}
+            onSwipeTouchEnd={() => setScrollEnabled(true)}
+          />
+        </View>
 
         {/* FLAGGED */}
-        <CarouselSection
-          title="FLAGGED"
-          data={cards.filter((c) => flaggedIds.has(c.id))}
-          flaggedIds={flaggedIds}
-          onToggleFlag={toggleFlag}
-          onCardPress={openEvent}
-          onSwipeTouchStart={() => setScrollEnabled(false)}
-          onSwipeTouchEnd={() => setScrollEnabled(true)}
-        />
+        <View style={{ marginTop: -20 }}>
+          <CarouselSection
+            title="FLAGGED"
+            data={cards.filter((c) => flaggedIds.has(c.id))}
+            flaggedIds={flaggedIds}
+            onToggleFlag={toggleFlag}
+            onCardPress={openEvent}
+            onSwipeTouchStart={() => setScrollEnabled(false)}
+            onSwipeTouchEnd={() => setScrollEnabled(true)}
+          />
+        </View>
+        <View style={{ alignItems: 'center', marginTop: -10 }}>
+          <CarSvg width={300} height={200} />
+        </View>
       </ScrollView>
 
       <EventModal
@@ -182,6 +221,7 @@ export default function HomeScreen() {
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />
+
     </SafeAreaView>
   );
 }

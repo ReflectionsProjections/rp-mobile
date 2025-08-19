@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
@@ -22,6 +22,9 @@ const FULL_SCREEN: View['props']['style'] = {
   right: 0,
 };
 
+const { width, height } = Dimensions.get('window');
+const MODAL_WIDTH = width * 0.8;
+const MODAL_MAX_HEIGHT = height * 0.8;
 
 export const EventModal: React.FC<EventModalProps> = ({
   visible,
@@ -41,13 +44,20 @@ export const EventModal: React.FC<EventModalProps> = ({
       <BlurView intensity={80} tint="dark" style={FULL_SCREEN} />
 
         <TouchableOpacity
-          className="bg-[#dbdbdb] rounded-2xl p-5 w-[80%] h-[50%]"
+          // className="bg-[#dbdbdb] rounded-2xl p-5 w-[80%] h-[50%]"
           activeOpacity={1}
           onPress={(e) => e.stopPropagation()}
+          style={{
+          width: MODAL_WIDTH,
+          maxHeight: MODAL_MAX_HEIGHT,
+          backgroundColor: '#dbdbdb',
+          borderRadius: 16,
+          padding: 16,
+        }}
         >
           {event && (
             <>
-              <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
+              <ScrollView contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={true}> 
                 <ThemedText className="text-2xl font-bold font">{event.title}</ThemedText>
                 <ThemedText className="mb-1">{event.time}</ThemedText>
                 <ThemedText className="mb-4 text-[#666]">{event.location}</ThemedText>
