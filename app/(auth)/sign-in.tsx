@@ -8,7 +8,7 @@ import * as AuthSession from 'expo-auth-session';
 import LottieView from 'lottie-react-native';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
-
+import * as WebBrowser from 'expo-web-browser';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { SlantedButton } from '@/components/auth/SlantedButton';
 import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
@@ -81,7 +81,7 @@ export default function SignInScreen() {
             <View className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]">
               <Text className="font-proRacing text-3xl text-center mt-5 mb-6 z-10">LOGIN</Text>
               
-              <LottieView
+              {/* <LottieView
                 source={require('@/assets/lottie/rp_animation.json')}
                 autoPlay
                 loop
@@ -94,7 +94,7 @@ export default function SignInScreen() {
                   top: -height * 0.36
                 }}
                 speed={1.5}
-              />
+              /> */}
 
               <View className="relative">
                 <SlantedButtonGroup>
@@ -116,15 +116,15 @@ export default function SignInScreen() {
 
               <View className="flex-row items-center justify-center">
                 <ThemedText variant="body" className="text-black-600">
-                  Don't have an account?{' '}
+                  Learn more{' '}
                 </ThemedText>
                 <Pressable
                   onPress={() => {
-
+                    WebBrowser.openBrowserAsync('https://reflectionsprojections.org');
                   }}
                 >
                   <ThemedText variant="body-bold" className="underline text-black">
-                    Register
+                    here!
                   </ThemedText>
                 </Pressable>
               </View>
