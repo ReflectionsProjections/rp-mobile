@@ -36,7 +36,7 @@ export default function ScannerScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get<Event[]>('/events');
+        const res = await api.get('/events');
         setEvents(res.data);
         if (res.data.length) setSelectedEventId(res.data[0].eventId);
       } catch (e) {
