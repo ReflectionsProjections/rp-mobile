@@ -23,6 +23,8 @@ export default function LoadingScreen() {
           const isValid = await validateAuthToken();
 
           if (isValid) {
+            // get roles, events, and user
+            // store in redux
             router.replace('/(tabs)/home');
           } else {
             await SecureStore.deleteItemAsync('jwt');

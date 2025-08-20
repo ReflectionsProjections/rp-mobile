@@ -15,11 +15,10 @@ prepare_react_native_project!
 
 target 'reflectionsprojections' do
   use_expo_modules!
-  use_frameworks! :linkage => :static
   pod 'Firebase', :modular_headers => true
   pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
   pod 'GoogleUtilities', :modular_headers => true
-
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
   else
@@ -57,13 +56,6 @@ target 'reflectionsprojections' do
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-        
-        # Fix for shell script build phases
-        target.build_phases.each do |build_phase|
-          if build_phase.respond_to?(:shell_script) && build_phase.shell_script.is_a?(Array)
-            build_phase.shell_script = build_phase.shell_script.join("\n")
-          end
-        end
         
         # Fix for resource bundle signing
         if target.respond_to?(:product_type) && target.product_type == "com.apple.product-type.bundle"
