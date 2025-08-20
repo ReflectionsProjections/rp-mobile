@@ -39,13 +39,16 @@ class FirebaseService {
       // Firebase is auto-initialized when the app starts
       // The google-services.json and GoogleService-Info.plist files handle the configuration
       console.log('Firebase initialized successfully');
-      
     } catch (error) {
       console.error('Firebase initialization error:', error);
     }
   }
 
-  public async requestUserPermission(): Promise<{ success: boolean; token?: string; error?: string }> {
+  public async requestUserPermission(): Promise<{
+    success: boolean;
+    token?: string;
+    error?: string;
+  }> {
     try {
       if (!Device.isDevice) {
         console.log('Must use physical device for Push Notifications');
@@ -66,8 +69,7 @@ class FirebaseService {
 
           const fcmToken = await messaging().getToken();
           console.log('FCM Token:', fcmToken);
-          
-  
+
           this.fcmToken = fcmToken;
           return { success: true, token: fcmToken };
         } catch (tokenError) {
@@ -75,7 +77,6 @@ class FirebaseService {
           return { success: false, error: 'Failed to get FCM token' };
         }
       } else {
-       
         return { success: false, error: 'Permission denied' };
       }
     } catch (error) {
@@ -131,7 +132,9 @@ class FirebaseService {
     try {
       await Promise.all([
         AsyncStorage.setItem(NOTIFICATION_PERMISSION_KEY, preferences.permissionGranted.toString()),
-        ...(preferences.fcmToken ? [AsyncStorage.setItem(NOTIFICATION_TOKEN_KEY, preferences.fcmToken)] : []),
+        ...(preferences.fcmToken
+          ? [AsyncStorage.setItem(NOTIFICATION_TOKEN_KEY, preferences.fcmToken)]
+          : []),
       ]);
     } catch (error) {
       console.error('Error storing notification preferences:', error);
@@ -142,9 +145,10 @@ class FirebaseService {
   public async checkNotificationPermission() {
     try {
       const authStatus = await messaging().hasPermission();
-      const granted = authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-      
+      const granted =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
       return {
         granted,
         status: authStatus,
@@ -162,17 +166,17 @@ class FirebaseService {
       'To receive updates, please enable notifications in your device settings.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Open Settings', 
+        {
+          text: 'Open Settings',
           onPress: () => {
             if (Platform.OS === 'ios') {
               Linking.openURL('app-settings:');
             } else {
               Linking.openSettings();
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   }
 
@@ -180,7 +184,7 @@ class FirebaseService {
     // Handle foreground messages
     const unsubscribe = messaging().onMessage(async (remoteMessage) => {
       console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      
+
       // Show local notification
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -190,7 +194,7 @@ class FirebaseService {
         },
         trigger: null, // Show immediately
       });
-      
+
       callback(remoteMessage);
     });
 
@@ -250,17 +254,17 @@ class FirebaseService {
     try {
       const { granted } = await this.checkNotificationPermission();
       const storedPrefs = await this.getStoredNotificationPreferences();
-      
+
       // If user previously had notifications enabled but they're now disabled
       if (storedPrefs.permissionGranted && !granted) {
         console.log('Notification permission lost');
         return {
           needsAttention: true,
           message: 'Please enable notifications in your device settings',
-          showGuidance: true
+          showGuidance: true,
         };
       }
-      
+
       return { needsAttention: false };
     } catch (error) {
       console.error('Error checking notification status on startup:', error);
@@ -269,4 +273,4 @@ class FirebaseService {
   }
 }
 
-export default FirebaseService; 
+export default FirebaseService;

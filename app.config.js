@@ -18,7 +18,7 @@ export default {
       config: {
         usesNonExemptEncryption: false,
       },
-      googleServicesFile: './GoogleService-Info-RP.plist',
+      googleServicesFile: './googleServices/GoogleService-Info-RP.plist',
       infoPlist: {
         CFBundleURLTypes: [
           {
@@ -37,6 +37,7 @@ export default {
         backgroundColor: '#ffffff',
       },
       package: 'com.reflectionsprojections',
+      googleServicesFile: './googleServices/google-services.json',
     },
     web: {
       bundler: 'metro',

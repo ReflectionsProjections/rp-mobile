@@ -167,6 +167,11 @@ export interface APIRoutes {
       response: { message: string };
     };
   };
+  '/attendee/qr': {
+    GET: {
+      response: { qrCode: string };
+    };
+  };
   '/auth': {
     PUT: {
       request: { email: string; role: Role };

@@ -11,17 +11,17 @@ export const useFirebaseNotifications = () => {
       try {
         setIsLoading(true);
         const firebaseService = FirebaseService.getInstance();
-        
+
         // Check notification status on startup
         const startupStatus = await firebaseService.checkNotificationStatusOnStartup();
         if (startupStatus.needsAttention && startupStatus.showGuidance) {
           firebaseService.showNotificationGuidance();
         }
-        
+
         // Get FCM token
         const token = await firebaseService.getFCMToken();
         setFcmToken(token);
-        
+
         // Set up notification handlers
         const unsubscribeMessage = await firebaseService.onMessageReceived((message) => {
           console.log('Foreground message received:', message);
@@ -85,4 +85,4 @@ export const useFirebaseNotifications = () => {
     registerForNotifications,
     unregisterFromNotifications,
   };
-}; 
+};

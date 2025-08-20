@@ -28,7 +28,11 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { fcmToken, isLoading: notificationsLoading, error: notificationsError } = useFirebaseNotifications();
+  const {
+    fcmToken,
+    isLoading: notificationsLoading,
+    error: notificationsError,
+  } = useFirebaseNotifications();
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),

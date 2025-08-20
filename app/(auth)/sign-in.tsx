@@ -1,6 +1,14 @@
 import '@/global.css';
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, Pressable, Text, Alert, Dimensions } from 'react-native';
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  Alert,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -80,7 +88,7 @@ export default function SignInScreen() {
 
             <View className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]">
               <Text className="font-proRacing text-3xl text-center mt-5 mb-6 z-10">LOGIN</Text>
-              
+
               {/* <LottieView
                 source={require('@/assets/lottie/rp_animation.json')}
                 autoPlay
