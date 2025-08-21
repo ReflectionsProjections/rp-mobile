@@ -34,7 +34,7 @@ const typeColors = {
 const EventsScreen = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(3);
+  const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
@@ -269,7 +269,6 @@ const EventsScreen = () => {
               height: '100%',
               justifyContent: 'center',
               alignItems: 'center',
-              overflow: 'hidden',
               // transform: [{ translateY: slideY } ,{ perspective: 1000 },{ rotateY }],
               transform: [{ perspective: 1000 }, { translateY: slideY }],
             }}
@@ -354,10 +353,10 @@ const EventsScreen = () => {
               style={{
                 position: 'absolute',
                 zIndex: 2,
-                width: CARD_W,
-                height: CARD_H,
-                top: SCREEN_HEIGHT / 2 - CARD_H / 2,
-                left: SCREEN_WIDTH / 2 - CARD_W / 2,
+                width: CARD_W * 0.6, // Reduce width to match badge area
+                height: CARD_H * 0.8, // Reduce height to match badge area
+                top: SCREEN_HEIGHT / 2 - (CARD_H * 0.8) / 2,
+                left: SCREEN_WIDTH / 2 - (CARD_W * 0.8) / 2,
               }}
             />
           </Animated.View>
