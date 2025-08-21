@@ -91,7 +91,7 @@ export default function ScannerScreen() {
           Camera access is required to scan QR codes
         </Text>
         <TouchableOpacity className="bg-[#00adb5] px-6 py-3 rounded-lg" onPress={requestPermission}>
-          <Text className="text-white font-semibold">Grant Permission</Text>
+          <Text className="text-white font-semibold">Continue</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );

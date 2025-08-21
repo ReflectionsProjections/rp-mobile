@@ -5,7 +5,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { api } from '@/api/api';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const QR_SIZE = SCREEN_WIDTH * 0.6;
+const QR_SIZE = SCREEN_WIDTH * 0.67;
 
 export default function ScannerScreen() {
   const [qrValue, setQrValue] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export default function ScannerScreen() {
         {!loading && qrValue && (
           <View
             className="transform rotate-[12.5deg] justify-center items-center rounded-[12px] p-5"
-            style={{ width: QR_SIZE + 40, height: QR_SIZE + 40 }}
+            style={{ width: QR_SIZE + 0, height: QR_SIZE - 60 }}
           >
             <QRCode value={qrValue} size={QR_SIZE} backgroundColor="transparent" color="#000" />
           </View>

@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Text, Animated, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { validateAuthToken } from '@/lib/auth';
+import { api } from '@/api/api';
 
 export default function LoadingScreen() {
   const router = useRouter();
@@ -23,9 +24,13 @@ export default function LoadingScreen() {
           const isValid = await validateAuthToken();
 
           if (isValid) {
-            // get roles, events, and user
-            // store in redux
-            router.replace('/(tabs)/home');
+            const roles = await api.get('/auth/info').then((res) => res.data.roles);
+            if (roles.length > 0) {
+              router.replace('/(tabs)/home');
+            } else {
+              Alert.alert('Make sure to register for the event first!');
+              router.replace('/(auth)/sign-in');
+            }
           } else {
             await SecureStore.deleteItemAsync('jwt');
             router.replace('/(auth)/sign-in');
