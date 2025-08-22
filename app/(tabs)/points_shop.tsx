@@ -71,7 +71,9 @@ export default function PointsScreen() {
           width: width * 0.33,
         }}
       >
-        {error ? 'Make sure you are logged to track your points!' : 'Attend events to earn points and unlock prizes!'}
+        {error
+          ? 'Make sure you are logged to track your points!'
+          : 'Attend events to earn points and unlock prizes!'}
       </Text>
     </View>
   );
