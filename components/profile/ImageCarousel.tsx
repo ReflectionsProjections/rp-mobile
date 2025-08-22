@@ -15,11 +15,13 @@ const { width } = Dimensions.get('window');
 const IMAGE_SIZE = width * 0.55;
 
 const ImageCarousel = () => {
-
   return (
-    <View className="items-center my-4 rounded-lg overflow-hidden h-[50%] w-[85%] mx-auto" style={{ position: 'relative' }}>
+    <View
+      className="items-center my-4 rounded-lg overflow-hidden h-[50%] w-[85%] mx-auto"
+      style={{ position: 'relative' }}
+    >
       <LinearGradient
-        colors={["#FF9D9D", "#000000"]}
+        colors={['#FF9D9D', '#000000']}
         start={{ x: 0.5, y: 0.5 }}
         end={{ x: 0.5, y: 1 }}
         style={{

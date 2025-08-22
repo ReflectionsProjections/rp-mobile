@@ -21,10 +21,12 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
               <View className="w-3 bg-[#CA2523] h-[75px] mr-2.5" />
               <View className="pl-1 flex-column">
                 <Text className="font-proRacing text-2xl text-[#CA2523]">{name.first}</Text>
-                <Text className="font-proRacing text-2xl font-bold text-[#CA2523]">{name.last}</Text>
+                <Text className="font-proRacing text-2xl font-bold text-[#CA2523]">
+                  {name.last}
+                </Text>
               </View>
             </View>
-            <View className='mr-4'>
+            <View className="mr-4">
               <LOGO width={60} height={60} />
             </View>
           </View>
