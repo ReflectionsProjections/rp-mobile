@@ -28,7 +28,6 @@ import { googleAuth } from '@/lib/auth';
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { width, height } = Dimensions.get('window');
   const handleEmailLogin = async () => {
     try {
       setIsLoading(true);
@@ -51,8 +50,13 @@ export default function SignInScreen() {
       });
 
       await SecureStore.setItemAsync('jwt', response.data.token);
-
-      router.replace('/(tabs)/home');
+      const roles = await api.get('/auth/info').then((res) => res.data.roles);
+      if (roles.length > 0) {
+        router.replace('/(tabs)/home');
+      } else {
+        Alert.alert('Make sure to register for the event first!');
+        await SecureStore.deleteItemAsync('jwt');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert(
