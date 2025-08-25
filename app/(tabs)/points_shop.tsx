@@ -72,7 +72,7 @@ export default function PointsScreen() {
         }}
       >
         {error
-          ? 'Make sure you are logged to track your points!'
+          ? 'Make sure you have registered for R|P to track your points!'
           : 'Attend events to earn points and unlock prizes!'}
       </Text>
     </View>
