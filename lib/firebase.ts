@@ -1,4 +1,5 @@
-import messaging from '@react-native-firebase/messaging';
+import { getApp } from '@react-native-firebase/app';
+import { getMessaging, requestPermission, hasPermission, AuthorizationStatus, getToken, onMessage, onNotificationOpenedApp, getInitialNotification, onTokenRefresh, deleteToken } from '@react-native-firebase/messaging';
 import { Alert, Platform, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -22,6 +23,7 @@ Notifications.setNotificationHandler({
 class FirebaseService {
   private static instance: FirebaseService;
   private fcmToken: string | null = null;
+  private messaging: any;
 
   private constructor() {
     this.initializeFirebase();
@@ -36,8 +38,9 @@ class FirebaseService {
 
   private async initializeFirebase() {
     try {
-      // Firebase is auto-initialized when the app starts
-      // The google-services.json and GoogleService-Info.plist files handle the configuration
+      // Initialize Firebase messaging
+      const app = getApp();
+      this.messaging = getMessaging(app);
       console.log('Firebase initialized successfully');
     } catch (error) {
       console.error('Firebase initialization error:', error);
@@ -55,19 +58,14 @@ class FirebaseService {
         return { success: false, error: 'Must use physical device' };
       }
 
-      const authStatus = await messaging().requestPermission();
+      const authStatus = await requestPermission(this.messaging);
       const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
         try {
-          // Make sure we're registered for remote messages on iOS
-          if (Platform.OS === 'ios') {
-            await messaging().registerDeviceForRemoteMessages();
-          }
-
-          const fcmToken = await messaging().getToken();
+          const fcmToken = await getToken(this.messaging);
           console.log('FCM Token:', fcmToken);
 
           this.fcmToken = fcmToken;
@@ -144,10 +142,10 @@ class FirebaseService {
   // Check current notification permission status
   public async checkNotificationPermission() {
     try {
-      const authStatus = await messaging().hasPermission();
+      const authStatus = await hasPermission(this.messaging);
       const granted =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
 
       return {
         granted,
@@ -182,7 +180,7 @@ class FirebaseService {
 
   public async onMessageReceived(callback: (message: any) => void) {
     // Handle foreground messages
-    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+    const unsubscribe = onMessage(this.messaging, async (remoteMessage: any) => {
       console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
 
       // Show local notification
@@ -203,14 +201,13 @@ class FirebaseService {
 
   public async onNotificationOpenedApp(callback: (message: any) => void) {
     // Handle background/quit state messages
-    messaging().onNotificationOpenedApp((remoteMessage) => {
+    onNotificationOpenedApp(this.messaging, (remoteMessage: any) => {
       console.log('Notification caused app to open from background state:', remoteMessage);
       callback(remoteMessage);
     });
 
     // Check if app was opened from a notification
-    messaging()
-      .getInitialNotification()
+    getInitialNotification(this.messaging)
       .then((remoteMessage) => {
         if (remoteMessage) {
           console.log('Notification caused app to open from quit state:', remoteMessage);
@@ -221,7 +218,7 @@ class FirebaseService {
 
   public async onTokenRefresh(callback: (token: string) => void) {
     // Handle token refresh
-    const unsubscribe = messaging().onTokenRefresh((token) => {
+    const unsubscribe = onTokenRefresh(this.messaging, (token: string) => {
       console.log('FCM token refreshed:', token);
       this.fcmToken = token;
       callback(token);
@@ -234,7 +231,7 @@ class FirebaseService {
   public async unregisterForNotifications() {
     try {
       // Delete the FCM token from the device
-      await messaging().deleteToken();
+      await deleteToken(this.messaging);
 
       // Clear stored preferences
       await this.storeNotificationPreferences({
