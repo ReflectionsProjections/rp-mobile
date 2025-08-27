@@ -130,6 +130,11 @@ export interface APIRoutes {
       response: Attendee;
     };
   };
+  '/attendee/points': {
+    GET: {
+      response: { points: number };
+    };
+  };
   '/attendee/emails': {
     GET: {
       response: Array<{ email: string; userId: string }>;
@@ -144,6 +149,27 @@ export interface APIRoutes {
     POST: {
       request: { userId: string };
       response: { message: string };
+    };
+  };
+  '/attendee/favorites': {
+    GET: {
+      request: { userId: string };
+      response: Attendee;
+    };
+  };
+  '/attendee/favorites/:eventId': {
+    POST: {
+      request: { userId: string };
+      response: { message: string };
+    };
+    DELETE: {
+      request: { userId: string };
+      response: { message: string };
+    };
+  };
+  '/attendee/qr': {
+    GET: {
+      response: { qrCode: string };
     };
   };
   '/auth': {

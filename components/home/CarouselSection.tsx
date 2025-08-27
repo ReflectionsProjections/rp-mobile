@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Dimensions } from 'react-native';
+import { View, Dimensions, StyleSheet } from 'react-native';
 import SwipeDeck from '@/components/home/SwipeDeck';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
@@ -19,6 +19,8 @@ interface CarouselSectionProps {
   onCardPress(item: CardType): void;
   /* Maximum number of cards to display */
   limit?: number;
+  onSwipeTouchStart?: () => void;
+  onSwipeTouchEnd?: () => void;
 }
 
 export const CarouselSection: React.FC<CarouselSectionProps> = ({
@@ -28,20 +30,60 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   onToggleFlag,
   onCardPress,
   limit,
+  onSwipeTouchStart,
+  onSwipeTouchEnd,
 }) => {
   const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
 
   const containerHeight = CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
 
   return (
-    <View className="mt-6 mb-6">
-      <ThemedText variant="title" className="mx-4 mb-2">
-        {title}
-      </ThemedText>
+    <View style={styles.container}>
+      <View style={styles.titleContainer}>
+        <ThemedText variant="title" style={styles.title}>
+          {title}
+        </ThemedText>
+        <View style={styles.titleUnderline} />
+      </View>
 
-      <View className="self-center mb-3" style={{ width: CARD_WIDTH, height: containerHeight }}>
-        <SwipeDeck data={displayData} onCardPress={onCardPress} containerStyle={{ flex: 1 }} />
+      <View style={[styles.swipeContainer, { width: CARD_WIDTH, height: containerHeight }]}>
+        <SwipeDeck
+          data={displayData}
+          onCardPress={onCardPress}
+          containerStyle={{ flex: 1 }}
+          onSwipeTouchStart={onSwipeTouchStart}
+          onSwipeTouchEnd={onSwipeTouchEnd}
+          disableSwipeAway={displayData.length === 1}
+        />
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  titleContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  title: {
+    fontSize: 28,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    marginBottom: 8,
+  },
+  titleUnderline: {
+    width: 80,
+    height: 2,
+    backgroundColor: '#CA2523',
+    borderRadius: 1,
+  },
+  swipeContainer: {
+    alignSelf: 'center',
+  },
+});

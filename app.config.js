@@ -18,6 +18,7 @@ export default {
       config: {
         usesNonExemptEncryption: false,
       },
+      googleServicesFile: './googleServices/GoogleService-Info-RP.plist',
       infoPlist: {
         CFBundleURLTypes: [
           {
@@ -27,6 +28,7 @@ export default {
             ],
           },
         ],
+        UIBackgroundModes: ['remote-notification'],
       },
     },
     android: {
@@ -35,6 +37,7 @@ export default {
         backgroundColor: '#ffffff',
       },
       package: 'com.reflectionsprojections',
+      googleServicesFile: './googleServices/google-services.json',
     },
     web: {
       bundler: 'metro',
@@ -53,6 +56,8 @@ export default {
         },
       ],
       'expo-font',
+      '@react-native-firebase/app',
+      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,

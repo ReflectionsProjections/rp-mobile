@@ -1,45 +1,87 @@
 import React, { useEffect, useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
+import BadgeBackSvg from '../../assets/images/badgeback.svg';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
-import { Event } from '../../api/types';
+import { Event, RoleObject, path } from '../../api/types';
+import { getWeekday, formatAMPM } from '@/lib/utils';
+import { api } from '@/api/api';
+import { LinearGradient } from 'expo-linear-gradient';
+import LottieView from 'lottie-react-native';
+import { Header } from '@/components/home/Header';
+import { DayTabs } from '@/components/events/DayTabs';
+import { EventListItem } from '@/components/events/EventListItem';
 
 const dayTabs = [
-  { label: 'MON', dayNumber: 1, barColor: '#4caf50' },
-  { label: 'TUE', dayNumber: 2, barColor: '#ff9800' },
-  { label: 'WED', dayNumber: 3, barColor: '#ffffff' },
-  { label: 'THU', dayNumber: 4, barColor: '#ffeb3b' },
-  { label: 'FRI', dayNumber: 5, barColor: '#3f51b5' },
+  { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
+  { label: 'WED', dayNumber: 3, barColor: '#831C1C' },
+  { label: 'THU', dayNumber: 4, barColor: '#B60000' },
+  { label: 'FRI', dayNumber: 5, barColor: '#E20303' },
+  { label: 'SAT', dayNumber: 6, barColor: '#EF3F3F' },
 ];
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const typeColors = {
-  SPECIAL: '#4caf50',
-  SPEAKER: '#4caf50',
-  CORPORATE: '#ff9800',
-  MEALS: '#f44336',
-  PARTNERS: '#9c27b0',
-  CHECKIN: '#607d8b',
-  DEFAULT: '#388e3c', //backp
+  SPECIAL: '#4caf50ff',
+  SPEAKER: '#4caf50ff',
+  CORPORATE: '#ff9800ff',
+  MEALS: '#f44336ff',
+  PARTNERS: '#9c27b0ff',
+  CHECKIN: '#607d8bff',
+  DEFAULT: '#388e3cff',
 };
 
 const EventsScreen = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
+  const [error, setError] = useState<string | null>(null);
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
+  const itemAnimations = useRef<Record<string, Animated.Value>>({});
+  const [user, setUser] = useState<RoleObject | null>(null);
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+
+  // ADD
+  const CARD_W = SCREEN_WIDTH * 0.85;
+  const CARD_H = SCREEN_HEIGHT * 0.75;
+
+  const flip = useRef(new Animated.Value(0)).current;
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const rotateY = flip.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const toggleFlip = () => {
+    Animated.spring(flip, {
+      toValue: isFlipped ? 0 : 1,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 40,
+    }).start(() => setIsFlipped((p) => !p));
+  };
+
+  const frontRotate = flip.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const backRotate = flip.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg'],
+  });
+
+  useEffect(() => {
+    if (selectedEvent) {
+      flip.setValue(0);
+      setIsFlipped(false);
+    }
+  }, [selectedEvent]);
 
   useEffect(() => {
     if (selectedEvent) {
@@ -55,25 +97,42 @@ const EventsScreen = () => {
   }, [selectedEvent]);
 
   useEffect(() => {
+    // Initialize selected tab to today's weekday (Tue-Sat), default Tuesday
+    const today = new Date().getDay();
+    if (today >= 2 && today <= 6) {
+      setSelectedDay(today);
+    } else {
+      setSelectedDay(2);
+    }
+  }, []);
+
+  useEffect(() => {
+    const start = Date.now();
     const fetchEvents = async () => {
       try {
-        const response = await fetch('https://api.reflectionsprojections.org/events', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const data = await response.json();
-        setEvents(data);
-      } catch (err) {
-        console.error('Failed to fetch events:', err);
+        const response = await api.get('/events');
+        setEvents(response.data as Event[]);
+      } catch (e: any) {
+        console.error('Failed to fetch or process events:', e);
+        setError(e.message || 'Failed to load events');
       } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = 500 - elapsed;
+        setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
       }
     };
-
     fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    // Fetch user info and favorites
+    const fetchUser = async () => {
+      try {
+        const response = await api.get('/auth/info');
+        setUser(response.data);
+      } catch {}
+    };
+    fetchUser();
   }, []);
 
   const filteredEvents = events.filter((item) => {
@@ -82,121 +141,185 @@ const EventsScreen = () => {
     return eventDate.getDay() === selectedDay;
   });
 
+  const handleCloseModal = () => {
+    flip.stopAnimation();
+    flip.setValue(0);
+    setIsFlipped(false);
+
+    Animated.timing(slideY, {
+      toValue: -SCREEN_HEIGHT,
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      setSelectedEvent(null);
+    });
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 bg-[#333333] justify-center items-center">
-        <ActivityIndicator size="large" color="#888" />
-      </View>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <LottieView
+          source={require('@/assets/lottie/rp_animation.json')}
+          autoPlay
+          loop
+          style={{ width: 1000, height: 1000 }}
+          speed={4}
+        />
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#333333] pt-10">
-      <Text className="text-3xl font-bold text-white text-center mb-4">Events</Text>
+    <SafeAreaView className="flex-1 bg-[#333333] pt-12">
+      <Header/>
+      <Text
+        className="text-[32px] font-bold text-white text-center tracking-wider drop-shadow-sm"
+        style={{ fontFamily: 'ProRacingSlant' }}
+      >
+        Events
+      </Text>
 
-      <View className="h-[35px] mb-3">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ alignItems: 'center', paddingHorizontal: 12, gap: 10 }}
-          className="h-[60px] flex-grow-0"
-        >
-          {dayTabs.map((tab) => {
-            const isActive = tab.dayNumber === selectedDay;
-            return (
-              <TouchableOpacity
-                key={tab.label}
-                onPress={() => setSelectedDay(tab.dayNumber)}
-                className={`flex-row items-center rounded h-12 px-3 ${
-                  isActive ? 'bg-white' : 'bg-black'
-                }`}
-              >
-                <View
-                  className="w-[6px] h-6 mr-2 rounded"
-                  style={{ backgroundColor: tab.barColor }}
-                />
-                <Text
-                  className={`text-base font-bold tracking-wider ${
-                    isActive ? 'text-black' : 'text-white'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
 
       {filteredEvents.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-[#cccccc] text-base">No events for this day.</Text>
+          <Text className="text-white text-lg">No events for this day.</Text>
         </View>
       ) : (
         <FlatList
           data={filteredEvents}
           keyExtractor={(item) => item.eventId}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
+          ListFooterComponent={
+            <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">End of Events</Text>
+          }
           renderItem={({ item, index }) => {
-            const bgColor = typeColors[item.eventType] || typeColors.DEFAULT;
-
-            let timeString = '—';
-            if (item.startTime && item.endTime) {
-              const start = new Date(item.startTime);
-              const end = new Date(item.endTime);
-              const pad = (n: number) => String(n).padStart(2, '0');
-              const hh1 = pad(start.getHours());
-              const mm1 = pad(start.getMinutes());
-              const hh2 = pad(end.getHours());
-              const mm2 = pad(end.getMinutes());
-              timeString = `${hh1}:${mm1}–${hh2}:${mm2}`;
+            if (!itemAnimations.current[item.eventId]) {
+              itemAnimations.current[item.eventId] = new Animated.Value(0);
             }
-
+            const anim = itemAnimations.current[item.eventId];
+            Animated.timing(anim, {
+              toValue: 1,
+              duration: 350,
+              delay: index * 80,
+              useNativeDriver: true,
+            }).start();
             return (
-              <TouchableOpacity onPress={() => setSelectedEvent(item)}>
-                <View
-                  className="flex-row rounded-none mx-3 my-1.5 py-3 px-4"
-                  style={{ backgroundColor: bgColor }}
-                >
-                  <Text className="text-xl font-bold text-black w-8">{index + 1}.</Text>
-
-                  <View className="flex-1 pl-2">
-                    <Text className="text-lg font-bold text-black">{item.name || 'No Name'}</Text>
-                    <Text className="text-sm text-black mt-0.5">{item.location || 'TBD'}</Text>
-                  </View>
-
-                  <Text className="text-base font-bold text-black ml-3">{timeString}</Text>
-                </View>
-              </TouchableOpacity>
+              <EventListItem
+                item={item}
+                index={index}
+                width={SCREEN_WIDTH - 30}
+                anim={anim}
+                onPress={() => setSelectedEvent(item)}
+              />
             );
           }}
         />
       )}
-      <Modal visible={!!selectedEvent} transparent>
+
+      <Modal visible={!!selectedEvent} transparent animationType="fade">
         <Pressable
-          className="flex-1 justify-center items-center bg-black/60"
-          onPress={() => setSelectedEvent(null)}
+          className="flex-1 bg-black/60 justify-center items-center"
+          onPress={handleCloseModal}
         >
           <Animated.View
-            className="absolute justify-center items-center overflow-hidden"
-            style={[
-              {
-                top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.4,
-                left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.75,
-                width: SCREEN_WIDTH * 0.95,
-                height: SCREEN_HEIGHT * 0.85,
-              },
-              { transform: [{ translateY: slideY }] },
-            ]}
+            style={{
+              position: 'absolute',
+              top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.3,
+              left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.7,
+              width: '100%',
+              height: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              transform: [{ perspective: 1000 }, { translateY: slideY }],
+            }}
           >
-            <BadgeSvg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" />
+            <Animated.View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backfaceVisibility: 'hidden',
+                transform: [{ perspective: 1000 }, { rotateY: frontRotate }],
+              }}
+            >
+              <BadgeSvg
+                width="100%"
+                height="100%"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ position: 'absolute', top: 0, left: 0 }}
+                color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
+              />
 
-            <View className="absolute top-[65%] left-[10%] right-[10%] items-center">
-              <Text className="text-black text-lg font-bold">{selectedEvent?.name}</Text>
-              <Text className="text-black text-sm mt-2 text-center">
-                {selectedEvent?.description}
-              </Text>
-            </View>
+              <View className="absolute top-[30%] left-0 right-0 bottom-0 items-center justify-center px-6">
+                <Text
+                  className="text-xl font-bold text-[#B60000] text-center mb-2"
+                  style={{ fontFamily: 'ProRacingSlant' }}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {selectedEvent?.name}
+                </Text>
+                <Text
+                  className="text-base text-[#B60000] text-center mb-2"
+                  numberOfLines={20}
+                  ellipsizeMode="tail"
+                >
+                  {selectedEvent?.description === 'none'
+                    ? 'No description available'
+                    : selectedEvent?.description}
+                </Text>
+              </View>
+              <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
+                <Text className="text-xl text-[#B60000] text-center">
+                  {getWeekday(selectedEvent?.startTime)}
+                </Text>
+              </View>
+            </Animated.View>
+
+            <Animated.View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backfaceVisibility: 'hidden',
+                transform: [{ perspective: 1000 }, { rotateY: backRotate }],
+              }}
+            >
+              <BadgeBackSvg
+                width="100%"
+                height="100%"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ position: 'absolute', top: 0, left: 0 }}
+                color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
+              />
+              <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
+                <Text className="text-xl text-[#B60000] text-center">
+                  {getWeekday(selectedEvent?.startTime)}
+                </Text>
+              </View>
+            </Animated.View>
+
+            <Pressable
+              onPress={(e) => {
+                toggleFlip();
+              }}
+              pointerEvents="box-only"
+              style={{
+                position: 'absolute',
+                zIndex: 2,
+                width: CARD_W * 1.12, // Reduce width to match badge area
+                height: CARD_H * 0.833, // Reduce height to match badge area
+                top: SCREEN_HEIGHT / 2 - (CARD_H * 0.333) / 2,
+                left: SCREEN_WIDTH / 2 - (CARD_W * 1.12) / 2,
+                borderRadius: 20,
+              }}
+            />
           </Animated.View>
         </Pressable>
       </Modal>
