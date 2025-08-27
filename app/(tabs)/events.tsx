@@ -346,17 +346,17 @@ const EventsScreen = () => {
 
             <Pressable
               onPress={(e) => {
-                e.stopPropagation?.();
                 toggleFlip();
               }}
               pointerEvents="box-only"
               style={{
                 position: 'absolute',
                 zIndex: 2,
-                width: CARD_W * 0.6, // Reduce width to match badge area
-                height: CARD_H * 0.8, // Reduce height to match badge area
-                top: SCREEN_HEIGHT / 2 - (CARD_H * 0.8) / 2,
-                left: SCREEN_WIDTH / 2 - (CARD_W * 0.8) / 2,
+                width: CARD_W * 1.12, // Reduce width to match badge area
+                height: CARD_H * 0.833, // Reduce height to match badge area
+                top: SCREEN_HEIGHT / 2 - (CARD_H * 0.333) / 2,
+                left: SCREEN_WIDTH / 2 - (CARD_W * 1.12) / 2,
+                borderRadius: 20,
               }}
             />
           </Animated.View>

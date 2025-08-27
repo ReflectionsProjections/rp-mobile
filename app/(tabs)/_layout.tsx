@@ -11,8 +11,8 @@ import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
 import ProfileScreen from './profile';
-import ScannerScreen from './scanner_staff';
-import ScannerUserScreen from './scanner_user';
+import ScannerStaffScreen from './scanner/scanner_staff';
+import ScannerUserScreen from './scanner/scanner_user';
 
 import HomeIcon from '@/assets/icons/tabIcons/final_homeIcon.svg';
 import EventsIcon from '@/assets/icons/tabIcons/final_eventsIcon.svg';
@@ -24,6 +24,7 @@ import FilledHomeIcon from '@/assets/icons/tabIcons/filled/filled_homeIcon.svg';
 import FilledEventsIcon from '@/assets/icons/tabIcons/filled/filled_eventsIcon.svg';
 import FilledPointsIcon from '@/assets/icons/tabIcons/filled/filled_shopIcon.svg';
 import FilledProfileIcon from '@/assets/icons/tabIcons/filled/filled_leaderIcon.svg';
+import ScannerGuestScreen from './scanner/scanner_guest';
 
 const { width, height } = Dimensions.get('window');
 const HEIGHT = 0.15 * height;
@@ -60,9 +61,11 @@ export default function TabLayout() {
       case 'profile':
         return <ProfileScreen />;
       case 'scanner':
-        if (roles?.includes('STAFF')) {
-          return <ScannerScreen />;
-        } else {
+        if (roles === null || roles.length === 0) {
+          return <ScannerGuestScreen />;
+        } else if (roles.includes('STAFF')) {
+          return <ScannerStaffScreen />;
+        } else if (roles.includes('USER')) {
           return <ScannerUserScreen />;
         }
       default:
