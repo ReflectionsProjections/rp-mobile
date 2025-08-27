@@ -8,6 +8,8 @@ module.exports = {
         inter: ['Inter', 'System'],
         proRacing: ['ProRacing', 'System'],
         proRacingSlant: ['ProRacingSlant', 'System'],
+        magistral: ['Magistral', 'System'],
+        magistralMedium: ['MagistralMedium', 'System'],
       },
     },
   },

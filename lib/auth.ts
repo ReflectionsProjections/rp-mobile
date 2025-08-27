@@ -65,3 +65,14 @@ export async function googleAuth(): Promise<{
     return null;
   }
 }
+
+export const logout = async () => {
+  try {
+    await SecureStore.deleteItemAsync('jwt');
+    await SecureStore.deleteItemAsync('codeVerifier');
+    return true;
+  } catch (error) {
+    console.error('Error during logout:', error);
+    return false;
+  }
+};
