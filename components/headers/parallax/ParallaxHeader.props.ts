@@ -1,10 +1,5 @@
-import {
-  ImageSourcePropType,
-  StyleProp,
-  TextStyle,
-  ViewStyle,
-} from "react-native";
-import { ReactNode } from "react";
+import { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { ReactNode } from 'react';
 
 /**
  * Types for the ParallaxHeader component props
@@ -87,7 +82,7 @@ export interface ParallaxHeaderProps {
    * Tint color for the blur effect
    * @default 'rgba(0, 0, 0, 0.6)'
    */
-  blurTint?: "light" | "dark" | "default";
+  blurTint?: 'light' | 'dark' | 'default';
 
   /**
    * Custom style for the title text
@@ -223,17 +218,17 @@ export interface ParallaxHeaderProps {
 export const DEFAULT_PARALLAX_HEADER_PROPS = {
   expandedHeight: 380,
   collapsedHeight: 90,
-  headerBackgroundColor: "#000000",
-  headerTextColor: "#FFFFFF",
+  headerBackgroundColor: '#000000',
+  headerTextColor: '#FFFFFF',
   enableBlur: true,
   blurIntensity: 60,
-  blurTint: "dark" as const,
+  blurTint: 'dark' as const,
   bottomSpacing: 0,
   enableFloatingCover: true,
   coverScaleAmount: 1.0,
   collapsedBackgroundOpacity: 1.0,
   showGradientOverlay: true,
-  gradientColors: ["transparent", "rgba(0,0,0,0.7)"],
+  gradientColors: ['transparent', 'rgba(0,0,0,0.7)'],
   animationConfig: {
     dampingRatio: 1,
     stiffness: 300,
@@ -242,7 +237,7 @@ export const DEFAULT_PARALLAX_HEADER_PROPS = {
     restSpeedThreshold: 0.01,
   },
   coverImageShadow: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.5,
     shadowRadius: 8,

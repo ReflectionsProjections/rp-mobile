@@ -1,5 +1,16 @@
 import { getApp } from '@react-native-firebase/app';
-import { getMessaging, requestPermission, hasPermission, AuthorizationStatus, getToken, onMessage, onNotificationOpenedApp, getInitialNotification, onTokenRefresh, deleteToken } from '@react-native-firebase/messaging';
+import {
+  getMessaging,
+  requestPermission,
+  hasPermission,
+  AuthorizationStatus,
+  getToken,
+  onMessage,
+  onNotificationOpenedApp,
+  getInitialNotification,
+  onTokenRefresh,
+  deleteToken,
+} from '@react-native-firebase/messaging';
 import { Alert, Platform, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -207,13 +218,12 @@ class FirebaseService {
     });
 
     // Check if app was opened from a notification
-    getInitialNotification(this.messaging)
-      .then((remoteMessage) => {
-        if (remoteMessage) {
-          console.log('Notification caused app to open from quit state:', remoteMessage);
-          callback(remoteMessage);
-        }
-      });
+    getInitialNotification(this.messaging).then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('Notification caused app to open from quit state:', remoteMessage);
+        callback(remoteMessage);
+      }
+    });
   }
 
   public async onTokenRefresh(callback: (token: string) => void) {

@@ -1,16 +1,13 @@
-import { Animated, ScrollView } from "react-native";
-import React, { forwardRef } from "react";
-import { HEADER_HEIGHT, IMG_HEADER_HEIGHT } from "../constants";
-import { useAnimateScrollView } from "../hooks/useAnimatedScrollView";
-import { AnimatedHeader } from "./AnimatedHeader";
-import AnimatedNavbar from "./AnimatedNavBar";
+import { Animated, ScrollView } from 'react-native';
+import React, { forwardRef } from 'react';
+import { HEADER_HEIGHT, IMG_HEADER_HEIGHT } from '../constants';
+import { useAnimateScrollView } from '../hooks/useAnimatedScrollView';
+import { AnimatedHeader } from './AnimatedHeader';
+import AnimatedNavbar from './AnimatedNavBar';
 
-import type { AnimatedScrollViewProps } from "../types/index";
+import type { AnimatedScrollViewProps } from '../types/index';
 
-export const AnimatedScrollView = forwardRef<
-  ScrollView,
-  AnimatedScrollViewProps
->(
+export const AnimatedScrollView = forwardRef<ScrollView, AnimatedScrollViewProps>(
   (
     {
       TopNavBarComponent,
@@ -36,8 +33,10 @@ export const AnimatedScrollView = forwardRef<
     const imageHeight = headerMaxHeight || IMG_HEADER_HEIGHT;
     const headerNavHeight = topBarHeight || HEADER_HEIGHT;
     const headerElevation = topBarElevation || 0;
-    const [scroll, onScroll, scale, translateYDown, translateYUp] =
-      useAnimateScrollView(imageHeight, disableScale);
+    const [scroll, onScroll, scale, translateYDown, translateYUp] = useAnimateScrollView(
+      imageHeight,
+      disableScale,
+    );
 
     return (
       <>
@@ -49,9 +48,7 @@ export const AnimatedScrollView = forwardRef<
           {...props}
         >
           <AnimatedHeader
-            HeaderComponent={
-              renderHeaderComponent ? renderHeaderComponent!() : HeaderComponent
-            }
+            HeaderComponent={renderHeaderComponent ? renderHeaderComponent!() : HeaderComponent}
             headerImage={headerImage}
             imageStyle={imageStyle}
             imageHeight={imageHeight}
@@ -59,9 +56,7 @@ export const AnimatedScrollView = forwardRef<
             translateYUp={translateYUp}
             scale={scale}
             OverlayHeaderContent={
-              renderOveralComponent
-                ? renderOveralComponent!()
-                : OverlayHeaderContent
+              renderOveralComponent ? renderOveralComponent!() : OverlayHeaderContent
             }
           />
           {children}
@@ -72,14 +67,10 @@ export const AnimatedScrollView = forwardRef<
           scroll={scroll}
           imageHeight={imageHeight}
           OverflowHeaderComponent={
-            renderHeaderNavBarComponent
-              ? renderHeaderNavBarComponent!()
-              : HeaderNavbarComponent
+            renderHeaderNavBarComponent ? renderHeaderNavBarComponent!() : HeaderNavbarComponent
           }
           TopNavbarComponent={
-            renderTopNavBarComponent
-              ? renderTopNavBarComponent()
-              : TopNavBarComponent
+            renderTopNavBarComponent ? renderTopNavBarComponent() : TopNavBarComponent
           }
         />
       </>

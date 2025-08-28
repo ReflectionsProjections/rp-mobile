@@ -8,7 +8,11 @@ import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
-import { AnimatedScrollView, HeaderNavBar, HeaderComponentWrapper } from '@/components/headers/parallax';
+import {
+  AnimatedScrollView,
+  HeaderNavBar,
+  HeaderComponentWrapper,
+} from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // import HomeBar from '@/assets/home/homeBar.svg';
@@ -46,8 +50,8 @@ export default function HomeScreen() {
       Animated.stagger(
         120,
         sectionAnims.map((a) =>
-          Animated.timing(a, { toValue: 1, duration: 400, useNativeDriver: true })
-        )
+          Animated.timing(a, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ),
       ).start();
     }
   }, [loading, cards.length]);
@@ -133,7 +137,7 @@ export default function HomeScreen() {
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
-      <Header/>
+      <Header />
     </HeaderNavBar>
   );
 
@@ -157,15 +161,18 @@ export default function HomeScreen() {
 
   const renderTopNavBarComponent = () => (
     <HeaderNavBar isHeader={true}>
-      <View style={{
+      <View
+        style={{
           position: 'relative',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-      }}>
-          <Header/>
-          <View style={{
+        }}
+      >
+        <Header />
+        <View
+          style={{
             position: 'absolute',
             top: 0,
             left: 0,
@@ -173,21 +180,22 @@ export default function HomeScreen() {
             bottom: 0,
             justifyContent: 'center',
             alignItems: 'center',
-          }}>
-            <ThemedText
-                variant="bigName"
-                style={{ 
-                    fontSize: 20, 
-                    textAlign: 'center', 
-                    color: '#fff',
-                    textShadowColor: 'rgba(0,0,0,0.5)',
-                    textShadowOffset: { width: 0, height: 2 },
-                    textShadowRadius: 6,
-                }}
-            >
-                VROOOM
-            </ThemedText>
-          </View>
+          }}
+        >
+          <ThemedText
+            variant="bigName"
+            style={{
+              fontSize: 20,
+              textAlign: 'center',
+              color: '#fff',
+              textShadowColor: 'rgba(0,0,0,0.5)',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 6,
+            }}
+          >
+            VROOOM
+          </ThemedText>
+        </View>
       </View>
     </HeaderNavBar>
   );
@@ -257,7 +265,10 @@ export default function HomeScreen() {
               opacity: sectionAnims[0],
               transform: [
                 {
-                  translateY: sectionAnims[0].interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+                  translateY: sectionAnims[0].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
                 },
               ],
             },
@@ -283,7 +294,10 @@ export default function HomeScreen() {
               opacity: sectionAnims[1],
               transform: [
                 {
-                  translateY: sectionAnims[1].interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+                  translateY: sectionAnims[1].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
                 },
               ],
             },
@@ -309,7 +323,10 @@ export default function HomeScreen() {
               opacity: sectionAnims[2],
               transform: [
                 {
-                  translateY: sectionAnims[2].interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+                  translateY: sectionAnims[2].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
                 },
               ],
             },

@@ -8,11 +8,11 @@ interface FadeInWrapperProps {
   style?: ViewStyle;
 }
 
-export const FadeInWrapper: React.FC<FadeInWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const FadeInWrapper: React.FC<FadeInWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 500,
-  style 
+  style,
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
@@ -58,11 +58,11 @@ interface FloatingAnimationProps {
   style?: ViewStyle;
 }
 
-export const FloatingAnimation: React.FC<FloatingAnimationProps> = ({ 
-  children, 
-  amplitude = 3, 
+export const FloatingAnimation: React.FC<FloatingAnimationProps> = ({
+  children,
+  amplitude = 3,
   duration = 2000,
-  style 
+  style,
 }) => {
   const floatAnim = useRef(new Animated.Value(0)).current;
 
@@ -79,7 +79,7 @@ export const FloatingAnimation: React.FC<FloatingAnimationProps> = ({
           duration: duration / 2,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     animation.start();
     return () => animation.stop();
@@ -111,11 +111,11 @@ interface StaggeredAnimationProps {
   style?: ViewStyle;
 }
 
-export const StaggeredAnimation: React.FC<StaggeredAnimationProps> = ({ 
-  children, 
-  index, 
+export const StaggeredAnimation: React.FC<StaggeredAnimationProps> = ({
+  children,
+  index,
   delay,
-  style 
+  style,
 }) => {
   return (
     <FadeInWrapper delay={delay + index * 100} style={style}>

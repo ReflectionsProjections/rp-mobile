@@ -1,5 +1,13 @@
 import React from 'react';
-import { Modal, View, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Pressable } from 'react-native';
+import {
+  Modal,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
@@ -37,12 +45,9 @@ export const EventModal: React.FC<EventModalProps> = ({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <BlurView intensity={80} tint="dark" style={FULL_SCREEN} />
-        
+
         {/* Background touchable area for closing */}
-        <Pressable
-          style={StyleSheet.absoluteFillObject}
-          onPress={onClose}
-        />
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
 
         <View style={styles.modalContainer}>
           {event && (
@@ -53,10 +58,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                   <ThemedText variant="h1" style={styles.eventTitle}>
                     {event.title}
                   </ThemedText>
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={onClose}
-                  >
+                  <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                     <FontAwesome name="times" size={20} color="#666" />
                   </TouchableOpacity>
                 </View>
@@ -80,9 +82,14 @@ export const EventModal: React.FC<EventModalProps> = ({
                         {event.time}
                       </ThemedText>
                     </View>
-                    
+
                     <View style={styles.detailRow}>
-                      <FontAwesome name="map-marker" size={16} color="#CA2523" style={styles.icon} />
+                      <FontAwesome
+                        name="map-marker"
+                        size={16}
+                        color="#CA2523"
+                        style={styles.icon}
+                      />
                       <ThemedText variant="body" style={styles.detailText}>
                         {event.location}
                       </ThemedText>
@@ -95,16 +102,16 @@ export const EventModal: React.FC<EventModalProps> = ({
                       DESCRIPTION
                     </ThemedText>
                     <ThemedText variant="body" style={styles.descriptionText}>
-                      {'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'}
+                      {
+                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+                      }
                     </ThemedText>
                   </View>
 
                   {/* Points Badge */}
                   <View style={styles.pointsContainer}>
                     <View style={styles.pointsBadge}>
-                      <ThemedText style={styles.pointsText}>
-                        {event.pts} PTS
-                      </ThemedText>
+                      <ThemedText style={styles.pointsText}>{event.pts} PTS</ThemedText>
                     </View>
                   </View>
                 </ScrollView>

@@ -1,23 +1,21 @@
-import { View, StyleSheet, Dimensions, SafeAreaView } from "react-native";
-import React, { isValidElement } from "react";
-import type { HeaderNavBarProps } from "../../types";
-import { BlurView } from "expo-blur";
+import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import React, { isValidElement } from 'react';
+import type { HeaderNavBarProps } from '../../types';
+import { BlurView } from 'expo-blur';
 
-const WIDTH = Dimensions.get("window").width;
+const WIDTH = Dimensions.get('window').width;
 
 export const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   children,
   headerHeight = 100,
   intensity = 50,
-  tint = "systemUltraThinMaterialDark",
+  tint = 'systemUltraThinMaterialDark',
   isHeader = false,
   showTint = true,
   // @ts-ignore
   ...props
 }) => {
-  const childrenArray = React.Children.toArray(children).filter((child) =>
-    isValidElement(child)
-  );
+  const childrenArray = React.Children.toArray(children).filter((child) => isValidElement(child));
   const childCount = childrenArray.length;
 
   const renderChildren = () => {
@@ -26,7 +24,11 @@ export const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     }
 
     if (childCount === 1) {
-      return <View style={isHeader ? styles.noContainer : styles.centerContainer}>{childrenArray[0]}</View>;
+      return (
+        <View style={isHeader ? styles.noContainer : styles.centerContainer}>
+          {childrenArray[0]}
+        </View>
+      );
     }
 
     if (childCount === 2) {
@@ -67,7 +69,7 @@ export const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         styles.container,
         {
           height: headerHeight,
-          backgroundColor: "transparent",
+          backgroundColor: 'transparent',
         },
       ]}
       intensity={showTint ? intensity : 0}
@@ -83,34 +85,34 @@ export const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: WIDTH,
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     zIndex: 100,
   },
   safeArea: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   contentContainer: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   leftContainer: {
     flex: 1,
-    alignItems: "flex-start",
-    justifyContent: "center",
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
   centerContainer: {
     flex: 2,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rightContainer: {
     flex: 1,
-    alignItems: "flex-end",
-    justifyContent: "center",
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   noContainer: {
     flex: 1,

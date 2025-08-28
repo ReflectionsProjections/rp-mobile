@@ -1,7 +1,7 @@
-import React from "react";
-import { StyleSheet, Animated } from "react-native";
-import { useAnimateNavbar } from "../hooks/useAnimatedNavBar";
-import type { AnimatedNavbarProps } from "../types/index";
+import React from 'react';
+import { StyleSheet, Animated } from 'react-native';
+import { useAnimateNavbar } from '../hooks/useAnimatedNavBar';
+import type { AnimatedNavbarProps } from '../types/index';
 
 const AnimatedNavbar = ({
   scroll,
@@ -51,13 +51,13 @@ const AnimatedNavbar = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
-    width: "100%",
-    backgroundColor: "transparent",
+    width: '100%',
+    backgroundColor: 'transparent',
   },
   overflowHeader: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
 });
 

@@ -172,7 +172,7 @@ const EventsScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#333333] pt-12">
-      <Header/>
+      <Header />
       <Text
         className="text-[32px] font-bold text-white text-center tracking-wider drop-shadow-sm"
         style={{ fontFamily: 'ProRacingSlant' }}
@@ -192,7 +192,9 @@ const EventsScreen = () => {
           keyExtractor={(item) => item.eventId}
           contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
           ListFooterComponent={
-            <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">End of Events</Text>
+            <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">
+              End of Events
+            </Text>
           }
           renderItem={({ item, index }) => {
             if (!itemAnimations.current[item.eventId]) {

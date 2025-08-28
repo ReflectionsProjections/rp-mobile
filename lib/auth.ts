@@ -44,12 +44,18 @@ export async function googleAuth(): Promise<{
     };
 
     const redirectUri = AuthSession.makeRedirectUri({
-      scheme: Platform.OS === 'android' ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
+      scheme:
+        Platform.OS === 'android'
+          ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME
+          : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
       path: OAUTH_CONFIG.REDIRECT_PATH,
     });
 
     const request = new AuthSession.AuthRequest({
-      clientId: Platform.OS === 'android' ? OAUTH_CONFIG.ANDROID_GOOGLE_CLIENT_ID : OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
+      clientId:
+        Platform.OS === 'android'
+          ? OAUTH_CONFIG.ANDROID_GOOGLE_CLIENT_ID
+          : OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
       scopes: ['openid', 'email', 'profile'],
       redirectUri,
       responseType: AuthSession.ResponseType.Code,

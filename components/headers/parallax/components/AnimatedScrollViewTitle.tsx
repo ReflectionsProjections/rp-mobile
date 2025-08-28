@@ -1,10 +1,8 @@
-import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
-import React from "react";
-import { AnimatedScrollViewTitleProps } from "../types";
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import React from 'react';
+import { AnimatedScrollViewTitleProps } from '../types';
 
-export const AnimatedScrollViewTitle: React.FC<
-  AnimatedScrollViewTitleProps
-> = ({
+export const AnimatedScrollViewTitle: React.FC<AnimatedScrollViewTitleProps> = ({
   children,
   size,
   style,
@@ -42,10 +40,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   text: {
-    color: "white",
+    color: 'white',
 
-    fontWeight: "700",
+    fontWeight: '700',
 
-    textAlign: "left",
+    textAlign: 'left',
   },
 });
