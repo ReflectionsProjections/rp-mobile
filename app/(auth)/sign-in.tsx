@@ -34,7 +34,10 @@ export default function SignInScreen() {
       setIsLoading(true);
 
       const redirectUri = AuthSession.makeRedirectUri({
-        scheme: Platform.OS === 'android' ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
+        scheme:
+          Platform.OS === 'android'
+            ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME
+            : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
         path: OAUTH_CONFIG.REDIRECT_PATH,
       });
 
@@ -48,7 +51,7 @@ export default function SignInScreen() {
         code: result.params.code,
         redirectUri: redirectUri,
         codeVerifier: codeVerifier,
-        });
+      });
 
       await SecureStore.setItemAsync('jwt', response.data.token);
       const roles = await api.get('/auth/info').then((res) => res.data.roles);

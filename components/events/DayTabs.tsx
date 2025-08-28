@@ -40,5 +40,3 @@ export const DayTabs: React.FC<Props> = ({ tabs, selectedDay, onSelectDay }) => 
     </View>
   );
 };
-
-

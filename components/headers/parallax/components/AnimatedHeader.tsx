@@ -1,12 +1,6 @@
-import {
-  Animated,
-  ImageBackground,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import React from "react";
-import type { AnimatedHeaderProps } from "../types";
+import { Animated, ImageBackground, StyleSheet, useWindowDimensions, View } from 'react-native';
+import React from 'react';
+import type { AnimatedHeaderProps } from '../types';
 
 export const AnimatedHeader = ({
   HeaderComponent,
@@ -19,18 +13,17 @@ export const AnimatedHeader = ({
   OverlayHeaderContent,
 }: AnimatedHeaderProps) => {
   const { width } = useWindowDimensions();
-  const AnimatedImageBackground =
-    Animated.createAnimatedComponent(ImageBackground);
+  const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
   const opacity = translateYDown.interpolate({
     inputRange: [-imageHeight * 0.3, 0, imageHeight * 0.3],
     outputRange: [0, 1, 0],
-    extrapolate: "clamp",
+    extrapolate: 'clamp',
   });
 
   const headerOpacity = translateYDown.interpolate({
     inputRange: [0, 100],
     outputRange: [1, 0],
-    extrapolate: "clamp",
+    extrapolate: 'clamp',
   });
 
   return (
@@ -97,10 +90,10 @@ export const AnimatedHeader = ({
               <Animated.View
                 style={[
                   {
-                    position: "absolute",
+                    position: 'absolute',
                     bottom: 0,
 
-                    width: "100%",
+                    width: '100%',
                   },
                 ]}
               >
@@ -123,11 +116,7 @@ export const AnimatedHeader = ({
           style={[
             { height: imageHeight, width: width * 1.2 },
             {
-              transform: [
-                { scale },
-                { translateY: translateYUp },
-                { translateY: translateYDown },
-              ],
+              transform: [{ scale }, { translateY: translateYUp }, { translateY: translateYDown }],
             },
             imageStyle,
           ]}
@@ -139,13 +128,13 @@ export const AnimatedHeader = ({
 
 const styles = StyleSheet.create({
   imgContainer: {
-    alignItems: "center",
-    overflow: "hidden",
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   overlayContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 10,
-    pointerEvents: "box-none", // allows scroll under overlay
+    pointerEvents: 'box-none', // allows scroll under overlay
   },
 });

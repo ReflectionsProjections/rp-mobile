@@ -1,4 +1,4 @@
-import { BlurTint } from "expo-blur";
+import { BlurTint } from 'expo-blur';
 import type {
   FlatListProps,
   ImageStyle,
@@ -6,8 +6,8 @@ import type {
   StyleProp,
   TextStyle,
   ViewStyle,
-} from "react-native";
-import { Animated, ImageSourcePropType } from "react-native";
+} from 'react-native';
+import { Animated, ImageSourcePropType } from 'react-native';
 
 type AnimatedViewProps = {
   renderHeaderNavBarComponent?: () => JSX.Element;

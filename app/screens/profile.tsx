@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, ScrollView, View, ActivityIndicator, Text, Dimensions, TouchableOpacity, Alert, Animated } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Text,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
+  Animated,
+} from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
@@ -58,7 +68,7 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -145,9 +155,9 @@ const ProfileScreen = () => {
           duration: 2000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
-    
+
     setTimeout(() => {
       pulseAnimation.start();
     }, 2000);
@@ -213,20 +223,22 @@ const ProfileScreen = () => {
         style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         preserveAspectRatio="none"
       />
-      
+
       <SafeAreaView style={{ position: 'absolute', top: 90, left: 20, zIndex: 10 }}>
         <Animated.View
           style={{
             opacity: backButtonAnim,
-            transform: [{
-              scale: Animated.multiply(
-                backButtonAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-                pulseAnim
-              )
-            }]
+            transform: [
+              {
+                scale: Animated.multiply(
+                  backButtonAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  }),
+                  pulseAnim,
+                ),
+              },
+            ],
           }}
         >
           <TouchableOpacity
@@ -269,9 +281,9 @@ const ProfileScreen = () => {
               roles={user?.roles || []}
             />
             {/* <ColorPicker /> */}
-            
+
             <Separator />
-            
+
             <Animated.View
               style={{
                 opacity: fadeAnim,
@@ -281,112 +293,124 @@ const ProfileScreen = () => {
               <Animated.View
                 style={{
                   opacity: notificationAnim,
-                  transform: [{
-                    translateX: notificationAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [-10, 0],
-                    })
-                  }]
+                  transform: [
+                    {
+                      translateX: notificationAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-10, 0],
+                      }),
+                    },
+                  ],
                 }}
               >
-                <View style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  paddingVertical: 20,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  marginTop: 20,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{
-                    color: '#fff',
-                    fontSize: 18,
-                    fontWeight: '700',
-                    fontFamily: 'ProRacing',
-                    marginBottom: 6,
-                    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 2,
-                  }}>
-                    NOTIFICATIONS
-                  </Text>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 1,
-                  }}>
-                    Receive updates about events and merch
-                  </Text>
+                <View
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    paddingVertical: 20,
+                    paddingHorizontal: 24,
+                    borderRadius: 12,
+                    marginTop: 20,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 18,
+                        fontWeight: '700',
+                        fontFamily: 'ProRacing',
+                        marginBottom: 6,
+                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                    >
+                      NOTIFICATIONS
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 1,
+                      }}
+                    >
+                      Receive updates about events and merch
+                    </Text>
+                  </View>
+                  <AnimatedSwitch
+                    value={notificationsEnabled}
+                    onValueChange={handleNotificationToggle}
+                    width={60}
+                    height={36}
+                    onColor="#4CD964"
+                    offColor="rgba(255, 255, 255, 0.4)"
+                    thumbColor="#fff"
+                    thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
+                    thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
+                    iconAnimationType="fade"
+                  />
                 </View>
-                <AnimatedSwitch
-                  value={notificationsEnabled}
-                  onValueChange={handleNotificationToggle}
-                  width={60}
-                  height={36}
-                  onColor="#4CD964"
-                  offColor="rgba(255, 255, 255, 0.4)"
-                  thumbColor="#fff"
-                  thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
-                  thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
-                  iconAnimationType="fade"
-                />
-              </View>
               </Animated.View>
 
               <Animated.View
                 style={{
                   opacity: logoutAnim,
-                  transform: [{
-                    translateY: logoutAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [20, 0],
-                    })
-                  }]
+                  transform: [
+                    {
+                      translateY: logoutAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
+                    },
+                  ],
                 }}
               >
                 <TouchableOpacity
-                onPress={handleLogout}
-                style={{
-                  backgroundColor: 'rgba(220, 53, 69, 0.9)',
-                  paddingVertical: 18,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  marginTop: 16,
-                  alignItems: 'center',
-                  borderWidth: 2,
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }}
-              >
-                <Text style={{
-                  color: '#fff',
-                  fontSize: 18,
-                  fontWeight: '700',
-                  fontFamily: 'ProRacing',
-                  textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 2,
-                }}>
-                  LOG OUT
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
+                  onPress={handleLogout}
+                  style={{
+                    backgroundColor: 'rgba(220, 53, 69, 0.9)',
+                    paddingVertical: 18,
+                    paddingHorizontal: 24,
+                    borderRadius: 12,
+                    marginTop: 16,
+                    alignItems: 'center',
+                    borderWidth: 2,
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontSize: 18,
+                      fontWeight: '700',
+                      fontFamily: 'ProRacing',
+                      textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                  >
+                    LOG OUT
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
             </Animated.View>
           </View>
         </ScrollView>

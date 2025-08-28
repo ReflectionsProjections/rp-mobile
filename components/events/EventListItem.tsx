@@ -48,7 +48,10 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
     <Animated.View style={{ opacity: anim, transform: [{ translateY }] }}>
       <TouchableOpacity onPress={onPress} className="mb-3">
         <LinearGradient
-          colors={["#FFFFFF00", typeColors[(item.eventType as keyof typeof typeColors) || 'DEFAULT']]}
+          colors={[
+            '#FFFFFF00',
+            typeColors[(item.eventType as keyof typeof typeColors) || 'DEFAULT'],
+          ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0.5, y: 0 }}
           className="rounded-lg flex-row items-center h-16 overflow-hidden shadow-lg shadow-black/40"
@@ -56,10 +59,15 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
         >
           <View className="flex-row flex-1 h-full" style={{ transform: [{ skewX: '8deg' }] }}>
             <View className="justify-center items-center w-12">
-              <Text className="text-white text-xl font-extrabold italic font-proRacingSlant">{index + 1}</Text>
+              <Text className="text-white text-xl font-extrabold italic font-proRacingSlant">
+                {index + 1}
+              </Text>
             </View>
             <View className="flex-1 justify-center pl-2 pr-2">
-              <Text className="text-white text-base font-extrabold font-magistralMedium" numberOfLines={1}>
+              <Text
+                className="text-white text-base font-extrabold font-magistralMedium"
+                numberOfLines={1}
+              >
                 {item.name}
               </Text>
               <Text className="text-white/80 text-xs font-magistral" numberOfLines={1}>
@@ -72,14 +80,21 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
                     name="car-sports"
                     color="#e3e3e3"
                     size={24}
-                    style={{ position: 'absolute', left: `${proximityWidth}%`, transform: [{ translateX: -8 }] }}
+                    style={{
+                      position: 'absolute',
+                      left: `${proximityWidth}%`,
+                      transform: [{ translateX: -8 }],
+                    }}
                   />
                 </View>
               </View>
             </View>
             <View className="justify-center items-end w-34 pr-2">
               <Text className="text-white text-lg font-bold font-magistralMedium">{startStr}</Text>
-              <Text className="text-white text-sm opacity-80 font-magistralMedium" style={{ marginTop: -2 }}>
+              <Text
+                className="text-white text-sm opacity-80 font-magistralMedium"
+                style={{ marginTop: -2 }}
+              >
                 {endStr}
               </Text>
             </View>
@@ -89,5 +104,3 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
     </Animated.View>
   );
 };
-
-

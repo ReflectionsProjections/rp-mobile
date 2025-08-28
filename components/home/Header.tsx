@@ -11,10 +11,10 @@ export const Header: React.FC = () => {
 
   const handleLogoPress = () => {
     if (isSpinning) return; // Prevent multiple spins
-    
+
     setIsSpinning(true);
     spinValue.setValue(0);
-    
+
     Animated.timing(spinValue, {
       toValue: 1,
       duration: 1000,

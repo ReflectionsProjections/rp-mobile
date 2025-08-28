@@ -54,8 +54,8 @@ export default function SwipeDeck({
   if (!data || data.length === 0) {
     return (
       <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ThemedText 
-          variant="body" 
+        <ThemedText
+          variant="body"
           style={{
             color: '#000',
             fontSize: 16,
@@ -77,8 +77,8 @@ export default function SwipeDeck({
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <ThemedText 
-            variant="body-bold" 
+          <ThemedText
+            variant="body-bold"
             style={{
               color: '#000',
               fontSize: 20,
@@ -88,8 +88,8 @@ export default function SwipeDeck({
             {item.title}
           </ThemedText>
         </View>
-        <ThemedText 
-          variant="body" 
+        <ThemedText
+          variant="body"
           style={{
             color: '#000',
             fontSize: 14,
@@ -99,8 +99,8 @@ export default function SwipeDeck({
         >
           {item.time}
         </ThemedText>
-        <ThemedText 
-          variant="body" 
+        <ThemedText
+          variant="body"
           style={{
             color: '#000',
             fontSize: 12,

@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { StyleSheet, Pressable } from "react-native";
+import React, { useEffect } from 'react';
+import { StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,8 +8,8 @@ import Animated, {
   useDerivedValue,
   withTiming,
   withSequence,
-} from "react-native-reanimated";
-import { AnimatedSwitchProps } from "./AnimatedSwitch.types";
+} from 'react-native-reanimated';
+import { AnimatedSwitchProps } from './AnimatedSwitch.types';
 
 export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
   value,
@@ -17,9 +17,9 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
   disabled = false,
   width = 56,
   height = 32,
-  onColor = "#4CD964",
-  offColor = "#E9E9EA",
-  thumbColor = "#FFFFFF",
+  onColor = '#4CD964',
+  offColor = '#E9E9EA',
+  thumbColor = '#FFFFFF',
   thumbSize,
   thumbInset = 2,
   springConfig = {
@@ -40,7 +40,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
 
   animateIcons = true,
 
-  iconAnimationType = "fade",
+  iconAnimationType = 'fade',
 }) => {
   const finalThumbSize = thumbSize ?? height - thumbInset * 2;
   const moveDistance = width - finalThumbSize - thumbInset * 2;
@@ -55,13 +55,13 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
     position.value = value ? 1 : 0;
 
     if (animateIcons) {
-      if (iconAnimationType === "fade") {
+      if (iconAnimationType === 'fade') {
         iconOpacity.value = withTiming(value ? 1 : 0, { duration: 200 });
-      } else if (iconAnimationType === "rotate") {
+      } else if (iconAnimationType === 'rotate') {
         iconRotation.value = withTiming(value ? 1 : 0, { duration: 300 });
-      } else if (iconAnimationType === "scale") {
+      } else if (iconAnimationType === 'scale') {
         iconScale.value = withTiming(value ? 1 : 0, { duration: 200 });
-      } else if (iconAnimationType === "bounce") {
+      } else if (iconAnimationType === 'bounce') {
         iconBounce.value = withSequence(
           withTiming(1.2, { duration: 100 }),
           withTiming(1, { duration: 100 }),
@@ -101,19 +101,19 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
 
   const thumbIconStyle = useAnimatedStyle(() => {
     switch (iconAnimationType) {
-      case "fade":
+      case 'fade':
         return {
           opacity: iconOpacity.value,
         };
-      case "rotate":
+      case 'rotate':
         return {
           transform: [{ rotate: `${iconRotation.value * 180}deg` }],
         };
-      case "scale":
+      case 'scale':
         return {
           transform: [{ scale: iconScale.value * 0.6 + 0.4 }],
         };
-      case "bounce":
+      case 'bounce':
         return {
           transform: [{ scale: iconBounce.value }],
         };
@@ -131,21 +131,19 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
 
   const trackIconStyle = useAnimatedStyle(() => {
     switch (iconAnimationType) {
-      case "fade":
+      case 'fade':
         return {
           opacity: value ? iconOpacity.value : 1 - iconOpacity.value,
         };
-      case "scale":
+      case 'scale':
         return {
           transform: [
             {
-              scale: value
-                ? iconScale.value * 0.5 + 0.5
-                : (1 - iconScale.value) * 0.5 + 0.5,
+              scale: value ? iconScale.value * 0.5 + 0.5 : (1 - iconScale.value) * 0.5 + 0.5,
             },
           ],
         };
-      case "rotate":
+      case 'rotate':
         return {
           transform: [
             {
@@ -155,7 +153,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
             },
           ],
         };
-      case "bounce":
+      case 'bounce':
         return {
           transform: [{ scale: iconBounce.value }],
         };
@@ -169,10 +167,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
       onPress={handlePress}
       disabled={disabled}
       testID={testID}
-      style={({ pressed }) => [
-        { opacity: pressed || disabled ? 0.7 : 1 },
-        style,
-      ]}
+      style={({ pressed }) => [{ opacity: pressed || disabled ? 0.7 : 1 }, style]}
     >
       <Animated.View
         style={[
@@ -182,7 +177,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
             width,
             height,
             borderRadius: height / 2,
-            overflow: "hidden",
+            overflow: 'hidden',
           },
         ]}
       >
@@ -198,7 +193,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
           <Animated.View
             style={[
               styles.trackIconContainer,
-              { justifyContent: "flex-start", alignItems: "flex-start" },
+              { justifyContent: 'flex-start', alignItems: 'flex-start' },
               trackIconStyle,
             ]}
           >
@@ -210,7 +205,7 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
           <Animated.View
             style={[
               styles.trackIconContainer,
-              { justifyContent: "flex-end", alignItems: "flex-end" },
+              { justifyContent: 'flex-end', alignItems: 'flex-end' },
               trackIconStyle,
             ]}
           >
@@ -251,35 +246,35 @@ export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
 
 const styles = StyleSheet.create({
   track: {
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   thumb: {
-    position: "absolute",
+    position: 'absolute',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 2,
   },
   backgroundImage: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
   trackIconContainer: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
     padding: 8,
     zIndex: 1,
   },
   thumbIconContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    height: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
 });
 

@@ -1,4 +1,4 @@
-import type { ImageSourcePropType, ImageStyle, ViewStyle } from "react-native";
+import type { ImageSourcePropType, ImageStyle, ViewStyle } from 'react-native';
 
 export interface AnimatedSwitchProps {
   value: boolean;
@@ -28,5 +28,5 @@ export interface AnimatedSwitchProps {
   backgroundImageStyle?: ImageStyle;
   // Animation properties
   animateIcons?: boolean;
-  iconAnimationType?: "fade" | "rotate" | "scale" | "bounce";
+  iconAnimationType?: 'fade' | 'rotate' | 'scale' | 'bounce';
 }

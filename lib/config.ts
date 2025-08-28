@@ -12,8 +12,9 @@ export const OAUTH_CONFIG = {
     'YOUR_GOOGLE_CLIENT_ID',
 
   IOS_REDIRECT_SCHEME: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
-  ANDROID_REDIRECT_SCHEME: 'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
-  
+  ANDROID_REDIRECT_SCHEME:
+    'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
+
   REDIRECT_PATH: '/(auth)/callback',
 };
 
