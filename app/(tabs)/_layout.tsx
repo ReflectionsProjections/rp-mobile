@@ -10,15 +10,15 @@ import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
-import ProfileScreen from './profile';
 import ScannerStaffScreen from './scanner/scanner_staff';
 import ScannerUserScreen from './scanner/scanner_user';
+import LeaderboardScreen from './leaderboard';
 
 import HomeIcon from '@/assets/icons/tabIcons/final_homeIcon.svg';
 import EventsIcon from '@/assets/icons/tabIcons/final_eventsIcon.svg';
 import QrCodeIcon from '@/assets/icons/tabIcons/rp_qr.svg';
 import PointsIcon from '@/assets/icons/tabIcons/final_shopIcon.svg';
-import ProfileIcon from '@/assets/icons/tabIcons/final_leaderIcon.svg';
+import LeaderboardIcon from '@/assets/icons/tabIcons/final_leaderIcon.svg';
 
 import FilledHomeIcon from '@/assets/icons/tabIcons/filled/filled_homeIcon.svg';
 import FilledEventsIcon from '@/assets/icons/tabIcons/filled/filled_eventsIcon.svg';
@@ -35,7 +35,7 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
   { key: 'home', icon: HomeIcon, filledIcon: FilledHomeIcon },
   { key: 'events', icon: EventsIcon, filledIcon: FilledEventsIcon },
   { key: 'points', icon: PointsIcon, filledIcon: FilledPointsIcon },
-  { key: 'profile', icon: ProfileIcon, filledIcon: FilledProfileIcon },
+  { key: 'leaderboard', icon: LeaderboardIcon, filledIcon: FilledProfileIcon },
 ];
 
 export default function TabLayout() {
@@ -58,8 +58,8 @@ export default function TabLayout() {
         return <EventsScreen />;
       case 'points':
         return <PointsShopScreen />;
-      case 'profile':
-        return <ProfileScreen />;
+      case 'leaderboard':
+        return <LeaderboardScreen />;
       case 'scanner':
         if (roles === null || roles.length === 0) {
           return <ScannerGuestScreen />;
