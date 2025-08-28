@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { OAUTH_CONFIG } from './config';
+import { Platform } from 'react-native';
 
 // Complete the auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -43,12 +44,12 @@ export async function googleAuth(): Promise<{
     };
 
     const redirectUri = AuthSession.makeRedirectUri({
-      scheme: OAUTH_CONFIG.REDIRECT_SCHEME,
+      scheme: Platform.OS === 'android' ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
       path: OAUTH_CONFIG.REDIRECT_PATH,
     });
 
     const request = new AuthSession.AuthRequest({
-      clientId: OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
+      clientId: Platform.OS === 'android' ? OAUTH_CONFIG.ANDROID_GOOGLE_CLIENT_ID : OAUTH_CONFIG.IOS_GOOGLE_CLIENT_ID,
       scopes: ['openid', 'email', 'profile'],
       redirectUri,
       responseType: AuthSession.ResponseType.Code,
