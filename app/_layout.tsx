@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import React, { useLayoutEffect } from 'react';
 import { Text } from 'react-native';
 import Toast from 'react-native-toast-message';
+import AppProvider from '@/app-provider';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -47,19 +48,21 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen
-          name="(auth)"
-          options={{
-            headerShown: false,
-            animation: 'ios_from_left',
-          }}
-        />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-      <Toast />
-    </ThemeProvider>
+    <AppProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen
+            name="(auth)"
+            options={{
+              headerShown: false,
+              animation: 'ios_from_left',
+            }}
+          />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="auto" />
+        <Toast />
+      </ThemeProvider>
+    </AppProvider>
   );
 }
