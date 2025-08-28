@@ -17,7 +17,7 @@ const IMAGE_SIZE = width * 0.55;
 const ImageCarousel = () => {
   return (
     <View
-      className="items-center my-4 rounded-lg overflow-hidden h-[50%] w-[85%] mx-auto"
+      className="items-center my-4 rounded-lg overflow-hidden h-[35%] w-[85%] mx-auto"
       style={{ position: 'relative' }}
     >
       <LinearGradient

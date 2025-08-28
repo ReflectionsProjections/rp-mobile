@@ -6,7 +6,7 @@ import { ThemedText } from '../themed/ThemedText';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = 120;
+const CARD_HEIGHT = 130;
 
 export interface CardType {
   id: string;
@@ -54,8 +54,16 @@ export default function SwipeDeck({
   if (!data || data.length === 0) {
     return (
       <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ThemedText variant="body" className="text-gray-500">
-          No events available
+        <ThemedText
+          variant="body"
+          style={{
+            color: '#000',
+            fontSize: 16,
+            textAlign: 'center',
+            fontFamily: 'magistral',
+          }}
+        >
+          No events flagged yet!
         </ThemedText>
       </View>
     );
@@ -69,14 +77,38 @@ export default function SwipeDeck({
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <ThemedText variant="body" className="text-[14px] leading-[14px]">
+          <ThemedText
+            variant="body-bold"
+            style={{
+              color: '#000',
+              fontSize: 20,
+              fontFamily: 'magistral-medium',
+            }}
+          >
             {item.title}
           </ThemedText>
         </View>
-        <ThemedText variant="body" className="text-[12px]">
+        <ThemedText
+          variant="body"
+          style={{
+            color: '#000',
+            fontSize: 14,
+            marginBottom: 4,
+            fontFamily: 'magistral',
+          }}
+        >
           {item.time}
         </ThemedText>
-        <ThemedText variant="body" className="text-[10px]">
+        <ThemedText
+          variant="body"
+          style={{
+            color: '#000',
+            fontSize: 12,
+            textShadowColor: 'rgba(0, 0, 0, 0.3)',
+            textShadowOffset: { width: 0, height: 1 },
+            textShadowRadius: 1,
+          }}
+        >
           {truncate(item.location, 20)}
         </ThemedText>
         <View style={styles.footer}>
@@ -134,54 +166,66 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: '#dbdbdb',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 3,
-    marginTop: 10,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   emptyCard: {
     backgroundColor: 'transparent',
     shadowOpacity: 0,
+    borderWidth: 0,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    marginTop: 8,
   },
   points: {
-    backgroundColor: '#000',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: '#CA2523',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   pointsText: {
     color: '#fff',
     fontSize: 12,
+    fontFamily: 'ProRacing',
+    fontWeight: 'bold',
   },
   dots: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 16,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#555',
-    marginHorizontal: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    marginHorizontal: 3,
   },
   dotActive: {
-    backgroundColor: '#eee',
+    backgroundColor: '#CA2523',
   },
 });

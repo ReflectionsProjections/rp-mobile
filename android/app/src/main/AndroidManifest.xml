@@ -28,6 +28,12 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="reflectionsprojections"/>
       </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>
