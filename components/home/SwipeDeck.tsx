@@ -1,8 +1,10 @@
 // --- SwipeDeck.tsx ---
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect} from 'react';
 import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
+import { api } from '@/api/api';
+import { Role } from '../../api/types';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -24,6 +26,7 @@ interface SwipeDeckProps {
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
   disableSwipeAway?: boolean;
+  title: string;
 }
 
 export default function SwipeDeck({
@@ -33,8 +36,18 @@ export default function SwipeDeck({
   onSwipeTouchStart = () => {},
   onSwipeTouchEnd = () => {},
   disableSwipeAway = false,
+  title = "",
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
+  const [roles, setRoles] = useState<Role[] | null>([]);
+
+    useEffect(() => {
+      const fetchUser = async () => {
+        const response = await api.get('/auth/info');
+        setRoles(response.data.roles);
+      };
+      fetchUser();
+    }, []);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -50,8 +63,24 @@ export default function SwipeDeck({
       },
     }),
   ).current;
-
-  if (!data || data.length === 0) {
+  console.log(title)
+  if(title=="FLAGGED" && (roles===null || roles.length===0)) {
+    return (
+      <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ThemedText
+          variant="body"
+          style={{
+            color: '#000',
+            fontSize: 16,
+            textAlign: 'center',
+            fontFamily: 'magistral',
+          }}
+        >
+          Please sign in to see flagged events!
+        </ThemedText>
+      </View>
+    );
+  }else if (!data || data.length === 0) {
     return (
       <View style={[styles.card, { justifyContent: 'center', alignItems: 'center' }]}>
         <ThemedText

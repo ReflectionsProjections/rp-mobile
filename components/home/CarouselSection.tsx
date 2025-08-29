@@ -1,8 +1,8 @@
-import React from 'react';
 import { View, Dimensions, StyleSheet } from 'react-native';
 import SwipeDeck from '@/components/home/SwipeDeck';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
+import React from 'react';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -36,7 +36,6 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
 
   const containerHeight = CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
-
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
@@ -54,6 +53,7 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
           onSwipeTouchStart={onSwipeTouchStart}
           onSwipeTouchEnd={onSwipeTouchEnd}
           disableSwipeAway={displayData.length === 1}
+          title={title}
         />
       </View>
     </View>

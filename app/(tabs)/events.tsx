@@ -5,21 +5,18 @@ import BadgeSvg from '../../assets/images/badge.svg';
 import BadgeBackSvg from '../../assets/images/badgeback.svg';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
-import { Event, RoleObject, path } from '../../api/types';
+import { Event } from '../../api/types';
 import { getWeekday, formatAMPM } from '@/lib/utils';
 import { api } from '@/api/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import LottieView from 'lottie-react-native';
-import { Header } from '@/components/home/Header';
-import { DayTabs } from '@/components/events/DayTabs';
-import { EventListItem } from '@/components/events/EventListItem';
 
 const dayTabs = [
-  { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
-  { label: 'WED', dayNumber: 3, barColor: '#831C1C' },
-  { label: 'THU', dayNumber: 4, barColor: '#B60000' },
-  { label: 'FRI', dayNumber: 5, barColor: '#E20303' },
-  { label: 'SAT', dayNumber: 6, barColor: '#EF3F3F' },
+  { label: 'WED', dayNumber: 3, barColor: '#4F0202' },
+  { label: 'THU', dayNumber: 4, barColor: '#831C1C' },
+  { label: 'FRI', dayNumber: 5, barColor: '#B60000' },
+  { label: 'SAT', dayNumber: 6, barColor: '#E20303' },
+  { label: 'SUN', dayNumber: 0, barColor: '#EF3F3F' },
 ];
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -37,13 +34,10 @@ const typeColors = {
 const EventsScreen = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(2);
+  const [selectedDay, setSelectedDay] = useState(3);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
-  const itemAnimations = useRef<Record<string, Animated.Value>>({});
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
 
   // ADD
   const CARD_W = SCREEN_WIDTH * 0.85;
@@ -97,16 +91,6 @@ const EventsScreen = () => {
   }, [selectedEvent]);
 
   useEffect(() => {
-    // Initialize selected tab to today's weekday (Tue-Sat), default Tuesday
-    const today = new Date().getDay();
-    if (today >= 2 && today <= 6) {
-      setSelectedDay(today);
-    } else {
-      setSelectedDay(2);
-    }
-  }, []);
-
-  useEffect(() => {
     const start = Date.now();
     const fetchEvents = async () => {
       try {
@@ -122,17 +106,6 @@ const EventsScreen = () => {
       }
     };
     fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    // Fetch user info and favorites
-    const fetchUser = async () => {
-      try {
-        const response = await api.get('/auth/info');
-        setUser(response.data);
-      } catch {}
-    };
-    fetchUser();
   }, []);
 
   const filteredEvents = events.filter((item) => {
@@ -171,16 +144,41 @@ const EventsScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#333333] pt-12">
-      <Header />
+    <SafeAreaView className="flex-1 bg-[#333333] pt-10">
       <Text
-        className="text-[32px] font-bold text-white text-center tracking-wider drop-shadow-sm"
-        style={{ fontFamily: 'ProRacingSlant' }}
+        className="text-4xl font-bold text-white text-center tracking-wider"
+        style={{ fontFamily: 'ProRacing' }}
       >
         Events
       </Text>
 
-      <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
+      <View className="flex-row justify-evenly my-4">
+        {dayTabs.map((tab) => {
+          const isActive = tab.dayNumber === selectedDay;
+          return (
+            <TouchableOpacity
+              key={tab.label}
+              onPress={() => setSelectedDay(tab.dayNumber)}
+              className={`w-[16%] h-8 flex-row items-center ${isActive ? 'bg-black' : 'bg-white'}`}
+              activeOpacity={0.85}
+            >
+              <View
+                className="h-[80%] pl-2 ml-1"
+                style={{
+                  width: 10,
+                  backgroundColor: tab.barColor,
+                }}
+              />
+              <Text
+                className={`ml-2 text-base font-bold italic ${isActive ? 'text-white' : 'text-black'}`}
+                style={{ fontFamily: 'RacingSansOne-Regular' }}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       {filteredEvents.length === 0 ? (
         <View className="flex-1 justify-center items-center">
@@ -192,29 +190,67 @@ const EventsScreen = () => {
           keyExtractor={(item) => item.eventId}
           contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
           ListFooterComponent={
-            <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">
+            <Text className="text-white text-left pl-3 text-md font-extrabold italic font-proRacingSlant">
               End of Events
             </Text>
           }
           renderItem={({ item, index }) => {
-            if (!itemAnimations.current[item.eventId]) {
-              itemAnimations.current[item.eventId] = new Animated.Value(0);
-            }
-            const anim = itemAnimations.current[item.eventId];
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 350,
-              delay: index * 80,
-              useNativeDriver: true,
-            }).start();
+            const start = new Date(item.startTime);
+            const end = new Date(item.endTime);
+            const timeString = `${formatAMPM(start)}–${formatAMPM(end)}`;
+            const startStr = formatAMPM(start);
+            const endStr = formatAMPM(end);
+
             return (
-              <EventListItem
-                item={item}
-                index={index}
-                width={SCREEN_WIDTH - 30}
-                anim={anim}
-                onPress={() => setSelectedEvent(item)}
-              />
+              <TouchableOpacity onPress={() => setSelectedEvent(item)} className="mb-3">
+                <LinearGradient
+                  colors={['#FFFFFF00', typeColors[item.eventType as keyof typeof typeColors]]} // Use your event type color and a secondary color
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0.5, y: 0 }}
+                  className="rounded-sm flex-row items-center h-[70px] overflow-hidden"
+                  style={{ width: SCREEN_WIDTH - 30, transform: [{ skewX: '-20deg' }] }}
+                >
+                  {/* Remove skew for children */}
+                  <View
+                    className="flex-row flex-1 h-full"
+                    style={{ transform: [{ skewX: '8deg' }] }}
+                  >
+                    {/* Index */}
+                    <View className="justify-center items-center w-12">
+                      <Text className="text-white text-2xl font-extrabold italic font-proRacingSlant">
+                        {index + 1}
+                      </Text>
+                    </View>
+                    {/* Event details */}
+                    <View className="flex-1 justify-center pl-2 pr-2">
+                      <Text
+                        className="text-white text-lg font-extrabold font-magistralMedium"
+                        numberOfLines={1}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text
+                        className="text-white text-xs opacity-80 font-magistral"
+                        numberOfLines={1}
+                      >
+                        {item.location}
+                      </Text>
+                    </View>
+
+ <View className="justify-center items-end w-34 pr-2">
+   <Text className="text-white text-md font-bold font-magistralMedium">
+     {startStr}
+   </Text>
+   <Text
+     className="text-white text-sm opacity-80 font-magistralMedium"
+     style={{ marginTop: -2 }}
+   >
+     {endStr}
+   </Text>
+ </View>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
             );
           }}
         />
@@ -234,9 +270,12 @@ const EventsScreen = () => {
               height: '100%',
               justifyContent: 'center',
               alignItems: 'center',
+              overflow: 'hidden',
+              // transform: [{ translateY: slideY } ,{ perspective: 1000 },{ rotateY }],
               transform: [{ perspective: 1000 }, { translateY: slideY }],
             }}
           >
+            {/* <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backfaceVisibility: 'hidden' }}> */}
             <Animated.View
               style={{
                 position: 'absolute',
@@ -282,6 +321,29 @@ const EventsScreen = () => {
               </View>
             </Animated.View>
 
+            {/* </View> */}
+
+            {/* <View
+  style={{
+    position: 'absolute',
+    width: CARD_W,
+    height: CARD_H,
+    backfaceVisibility: 'hidden',
+    transform: [{ rotateY: '180deg' }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+> */}
+
+            {/* <View
+   style={{
+     position: 'absolute',
+     top: 0, left: 0, right: 0, bottom: 0,
+     backfaceVisibility: 'hidden',
+     transform: [{ rotateY: '180deg' }],
+   }}
+ > */}
+
             <Animated.View
               style={{
                 position: 'absolute',
@@ -300,26 +362,28 @@ const EventsScreen = () => {
                 style={{ position: 'absolute', top: 0, left: 0 }}
                 color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
               />
-              <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
-                <Text className="text-xl text-[#B60000] text-center">
-                  {getWeekday(selectedEvent?.startTime)}
-                </Text>
-              </View>
+              <View
+  className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6"
+>
+  <Text className="text-xl text-[#B60000] text-center">
+    {getWeekday(selectedEvent?.startTime)}
+  </Text>
+</View>
             </Animated.View>
 
             <Pressable
               onPress={(e) => {
+                e.stopPropagation?.();
                 toggleFlip();
               }}
               pointerEvents="box-only"
               style={{
                 position: 'absolute',
                 zIndex: 2,
-                width: CARD_W * 1.12, // Reduce width to match badge area
-                height: CARD_H * 0.833, // Reduce height to match badge area
-                top: SCREEN_HEIGHT / 2 - (CARD_H * 0.333) / 2,
-                left: SCREEN_WIDTH / 2 - (CARD_W * 1.12) / 2,
-                borderRadius: 20,
+                width: CARD_W,
+                height: CARD_H,
+                top: SCREEN_HEIGHT / 2 - CARD_H / 2,
+                left: SCREEN_WIDTH / 2 - CARD_W / 2,
               }}
             />
           </Animated.View>
