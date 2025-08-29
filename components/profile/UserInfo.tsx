@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import LOGO from '../../assets/images/logo.svg';
 
-interface UserInfoProps {
+export interface UserInfoProps {
   name: {
     first: string;
     last: string;
