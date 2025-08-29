@@ -7,6 +7,7 @@ import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
+import UserInfo from '@/components/profile/UserInfo';
 import { api } from '@/api/api';
 import {
   AnimatedScrollView,
@@ -29,6 +30,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<RoleObject | null>(null);
+  const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
+
 
   // flags + modal state
   const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
@@ -57,7 +60,7 @@ export default function HomeScreen() {
   }, [loading, cards.length]);
 
   const toggleFlag = async (id: string) => {
-    if (!user?.userId) {
+    if (!hasUserRole || !user?.userId) {
       closeEvent();
       Toast.show({
         type: 'error',
@@ -68,6 +71,7 @@ export default function HomeScreen() {
       });
       return;
     }
+
     const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
       userId: user.userId,
     });
@@ -108,19 +112,20 @@ export default function HomeScreen() {
         const formattedEvents = (response.data as ApiEvent[]).map((event: ApiEvent) => ({
           id: event.eventId,
           title: event.name,
-          time: new Date(event.startTime).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
+          time: new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           location: event.location,
           pts: event.points,
           description: event.description,
         }));
         setCards(formattedEvents);
-        // Only fetch favorites if user is registered
-        if (user?.userId) {
-          const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
+
+        if (hasUserRole && user?.userId) {
+          const favResponse = await api.get(
+            path('/attendee/favorites', { userId: user.userId })
+          );
           setFlaggedIds(new Set(favResponse.data.favorites));
+        } else {
+          setFlaggedIds(new Set());
         }
       } catch (e: any) {
         console.error('Failed to fetch or process events:', e);
@@ -133,7 +138,7 @@ export default function HomeScreen() {
     };
 
     fetchEvents();
-  }, [user?.userId]);
+  }, [hasUserRole, user?.userId]);
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
