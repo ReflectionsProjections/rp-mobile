@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
+import { api } from '@/api/api';
 import {
   LeaderboardTabs,
   LeaderboardList,
@@ -25,6 +26,7 @@ import Reanimated, {
   useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
+import { Role } from '../../api/types';
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
@@ -33,12 +35,12 @@ const LeaderboardScreen = () => {
   const userName = 'Leila Johnson'; // Replace with user id once data, or username...
   const dailyPoints = 15;
   const globalPoints = 250;
-
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
   const outerScrollRef = useRef<any>(null);
   const pulse = useSharedValue(1);
   const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+  const [roles, setRoles] = useState<Role[] | null>([]);
 
   React.useEffect(() => {
     pulse.value = withRepeat(
@@ -49,6 +51,8 @@ const LeaderboardScreen = () => {
   }, []);
 
   const handleRankPress = () => {
+    if (roles === null) return;
+
     listRef.current?.scrollToUser();
 
     const userIndex = (activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData).findIndex(
@@ -91,12 +95,21 @@ const LeaderboardScreen = () => {
 
   const data = activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData;
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await api.get('/auth/info');
+      setRoles(response.data.roles);
+    };
+    fetchUser();
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#222' }}>
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
-        headerMaxHeight={360}
+        headerMaxHeight={roles === null ? 360 : 260}
+        contentContainerStyle={{ backgroundColor: '#222', paddingBottom: 24 }}
         renderHeaderNavBarComponent={() => (
           <HeaderNavBar isHeader={true} showTint={false}>
             <Header />
@@ -134,68 +147,69 @@ const LeaderboardScreen = () => {
                   LEADERBOARD
                 </ThemedText>
               </FadeInWrapper>
-
-              <FadeInWrapper delay={600}>
-                <Pressable
-                  onPress={handleRankPress}
-                  accessibilityRole="button"
-                  accessibilityHint="Jumps to your position in the leaderboard"
-                  hitSlop={12}
-                  style={{ alignItems: 'center', marginTop: 24, marginBottom: 24 }}
-                >
-                  <View>
+              {roles === null && (
+                <FadeInWrapper delay={600}>
+                  <Pressable
+                    onPress={handleRankPress}
+                    accessibilityRole="button"
+                    accessibilityHint="Jumps to your position in the leaderboard"
+                    hitSlop={12}
+                    style={{ alignItems: 'center', marginTop: 24, marginBottom: 24 }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          color: '#fff',
+                          fontWeight: 'bold',
+                          fontSize: 24,
+                          textShadowColor: 'rgba(0,0,0,0.5)',
+                          textShadowOffset: { width: 0, height: 2 },
+                          textShadowRadius: 6,
+                          fontFamily: 'magistral-medium',
+                        }}
+                      >
+                        You are{' '}
+                        <Text style={{ color: '#CA2523' }}>
+                          #{activeTab === 0 ? dailyUserRank : globalUserRank}
+                        </Text>
+                      </Text>
+                    </View>
                     <Text
                       style={{
                         color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: 24,
+                        fontSize: 18,
+                        marginTop: 10,
                         textShadowColor: 'rgba(0,0,0,0.5)',
                         textShadowOffset: { width: 0, height: 2 },
                         textShadowRadius: 6,
-                        fontFamily: 'magistral-medium',
+                        fontFamily: 'magistral',
+                        alignItems: 'center',
                       }}
                     >
-                      You are{' '}
-                      <Text style={{ color: '#CA2523' }}>
-                        #{activeTab === 0 ? dailyUserRank : globalUserRank}
+                      <Text style={{ color: '#CA2523', fontSize: 24 }}>
+                        {activeTab === 0 ? dailyPoints : globalPoints}
+                      </Text>{' '}
+                      LAP POINTS
+                    </Text>
+                    <Reanimated.View
+                      style={[
+                        { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
+                        pulseStyle,
+                      ]}
+                    >
+                      <Ionicons
+                        name="chevron-down"
+                        size={16}
+                        color="#fff"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
+                        Tap to jump
                       </Text>
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 18,
-                      marginTop: 10,
-                      textShadowColor: 'rgba(0,0,0,0.5)',
-                      textShadowOffset: { width: 0, height: 2 },
-                      textShadowRadius: 6,
-                      fontFamily: 'magistral',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ color: '#CA2523', fontSize: 24 }}>
-                      {activeTab === 0 ? dailyPoints : globalPoints}
-                    </Text>{' '}
-                    LAP POINTS
-                  </Text>
-                  <Reanimated.View
-                    style={[
-                      { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
-                      pulseStyle,
-                    ]}
-                  >
-                    <Ionicons
-                      name="chevron-down"
-                      size={16}
-                      color="#fff"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
-                      Tap to jump
-                    </Text>
-                  </Reanimated.View>
-                </Pressable>
-              </FadeInWrapper>
+                    </Reanimated.View>
+                  </Pressable>
+                </FadeInWrapper>
+              )}
             </View>
           </HeaderComponentWrapper>
         )}

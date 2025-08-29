@@ -196,7 +196,7 @@ PODS:
     - hermes-engine/Pre-built (= 0.79.2)
   - hermes-engine/Pre-built (0.79.2)
   - lottie-ios (4.5.0)
-  - lottie-react-native (7.3.2):
+  - lottie-react-native (7.2.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1650,7 +1650,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (13.12.5):
+  - react-native-webview (13.16.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2277,7 +2277,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.12.1):
+  - RNSVG (15.11.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2300,9 +2300,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.12.1)
+    - RNSVG/common (= 15.11.2)
     - Yoga
-  - RNSVG/common (15.12.1):
+  - RNSVG/common (15.11.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2326,7 +2326,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNVectorIcons (10.3.0):
+  - RNVectorIcons (10.2.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2756,7 +2756,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 314be5250afa5692b57b4dd1705959e1973a8ebe
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  lottie-react-native: cb19cdfe51bf6f5104abc5fca5a65970283c284b
+  lottie-react-native: 1bb4ef48a76eff4c985df63e2f8bf3afb139e7e0
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
@@ -2792,7 +2792,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 444c5701aece79629bb73bd9e7ad8937ae65238c
   react-native-blur: 77d93dcc4aabc9ea137278b49dbb2dc005ad236b
   react-native-safe-area-context: 5928d84c879db2f9eb6969ca70e68f58623dbf25
-  react-native-webview: 867eed3781a421e9e1e156e3d443f971c226f087
+  react-native-webview: f0d598682cbc88a97d66da4121873d3467f76635
   React-NativeModulesApple: df8e5bc59e78ca3040ffbf41336889f3bd0fad68
   React-oscompat: ef5df1c734f19b8003e149317d041b8ce1f7d29c
   React-perflogger: 9a151e0b4c933c9205fd648c246506a83f31395d
@@ -2832,8 +2832,8 @@ SPEC CHECKSUMS:
   RNGoogleSignin: db4aa231a90bdc4cea8b749ec68b168c8f747ec2
   RNReanimated: a3f55346df73f35c38bf0b446294d3d0b1ac8cf9
   RNScreens: a25b818417609cbd805474dffd2d28b229704cfc
-  RNSVG: 680e961f640e381aab730a04b2371969686ed9f7
-  RNVectorIcons: d7d40d54aa3281f36b840bc1caaefa163166af34
+  RNSVG: 4470464e129f6bc58b78b961850b054dbbea8ef7
+  RNVectorIcons: fe9afebb925c9ce70f441b611d679e402ecb3f6e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 50518ade05048235d91a78b803336dbb5b159d5d
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
