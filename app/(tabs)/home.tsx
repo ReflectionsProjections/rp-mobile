@@ -1,5 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
@@ -15,7 +16,6 @@ import {
 } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// import HomeBar from '@/assets/home/homeBar.svg';
 import BackgroundSvg from '@/assets/home/home_background.svg';
 import CarSvg from '@/assets/home/home_car.svg';
 import LottieView from 'lottie-react-native';
@@ -24,21 +24,18 @@ import Toast from 'react-native-toast-message';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  // fetched cards
   const [cards, setCards] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<RoleObject | null>(null);
 
-  // flags + modal state
   const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // scrolling lock
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  // staggered section animations
   const sectionAnims = React.useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -56,6 +53,36 @@ export default function HomeScreen() {
     }
   }, [loading, cards.length]);
 
+  const fetchFavorites = async () => {
+    if (!user?.userId) return;
+    try {
+      const favResponse = await api.get('/attendee/favorites', {
+        params: { userId: user.userId },
+      });
+      const data: any = favResponse.data;
+      const favs: string[] = data.favoriteEvents;
+      setFlaggedIds(new Set(favs));
+      setRefreshKey((prev) => prev + 1);
+    } catch (e) {
+      console.error('Failed to fetch favorites:', e);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user?.userId) {
+        console.log('[HomeScreen] fetching favorites on focus for user', user.userId);
+        fetchFavorites();
+      }
+    }, [user?.userId])
+  );
+
+  useEffect(() => {
+    if (user?.userId) {
+      fetchFavorites();
+    }
+  }, [user?.userId]);
+
   const toggleFlag = async (id: string) => {
     if (!user?.userId) {
       closeEvent();
@@ -68,15 +95,17 @@ export default function HomeScreen() {
       });
       return;
     }
-    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
-      userId: user.userId,
-    });
+    const route = path('/attendee/favorites/:eventId', { eventId: id });
+    let response;
+    if (!flaggedIds.has(id)) {
+      response = await api.post(route, { userId: user.userId });
+    } else {
+      response = await api.delete(route, { data: { userId: user.userId } });
+    }
     if (response.status === 200) {
-      setFlaggedIds((prev) => {
-        const next = new Set(prev);
-        prev.has(id) ? next.delete(id) : next.add(id);
-        return next;
-      });
+      const updatedFavorites: string[] = (response.data as any).favorites || [];
+      setFlaggedIds(new Set(updatedFavorites));
+      setRefreshKey((prev) => prev + 1);
     } else {
       console.error('Failed to toggle flag:', response.data);
     }
@@ -117,11 +146,6 @@ export default function HomeScreen() {
           description: event.description,
         }));
         setCards(formattedEvents);
-        // Only fetch favorites if user is registered
-        if (user?.userId) {
-          const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
-          setFlaggedIds(new Set(favResponse.data.favorites));
-        }
       } catch (e: any) {
         console.error('Failed to fetch or process events:', e);
         setError(e.message || 'Failed to load events');
@@ -134,6 +158,7 @@ export default function HomeScreen() {
 
     fetchEvents();
   }, [user?.userId]);
+
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
@@ -276,6 +301,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="NEXT LAP"
+            key={`next-${refreshKey}`}
             data={cards.slice(0, 1)}
             flaggedIds={flaggedIds}
             onToggleFlag={toggleFlag}
@@ -305,6 +331,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="RECOMMENDED"
+            key={`rec-${refreshKey}`}
             data={cards}
             flaggedIds={flaggedIds}
             onToggleFlag={toggleFlag}
@@ -334,6 +361,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="FLAGGED"
+            key={`flag-${refreshKey}`}
             data={cards.filter((c) => flaggedIds.has(c.id))}
             flaggedIds={flaggedIds}
             onToggleFlag={toggleFlag}

@@ -54,6 +54,8 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
           onSwipeTouchStart={onSwipeTouchStart}
           onSwipeTouchEnd={onSwipeTouchEnd}
           disableSwipeAway={displayData.length === 1}
+            flaggedIds={flaggedIds}      
+  onToggleFlag={onToggleFlag}    
         />
       </View>
     </View>
