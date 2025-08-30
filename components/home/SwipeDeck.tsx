@@ -1,6 +1,7 @@
 // --- SwipeDeck.tsx ---
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder } from 'react-native';
+import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 
@@ -24,6 +25,8 @@ interface SwipeDeckProps {
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
   disableSwipeAway?: boolean;
+  flaggedIds?: Set<string>;
+  onToggleFlag?: (id: string) => void;
 }
 
 export default function SwipeDeck({
@@ -33,6 +36,8 @@ export default function SwipeDeck({
   onSwipeTouchStart = () => {},
   onSwipeTouchEnd = () => {},
   disableSwipeAway = false,
+  flaggedIds = new Set<string>(),
+  onToggleFlag = () => {},
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
 
@@ -87,6 +92,13 @@ export default function SwipeDeck({
           >
             {item.title}
           </ThemedText>
+          <TouchableOpacity onPress={() => onToggleFlag(item.id)} style={styles.flagButton}>
+            <Ionicons
+              name={flaggedIds.has(item.id) ? 'star' : 'star-outline'}
+              size={20}
+              color={flaggedIds.has(item.id) ? '#FFD700' : '#aaa'}
+            />
+          </TouchableOpacity>
         </View>
         <ThemedText
           variant="body"
@@ -181,6 +193,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     shadowOpacity: 0,
     borderWidth: 0,
+  },
+  flagButton: {
+    padding: 4,
   },
   cardHeader: {
     flexDirection: 'row',
