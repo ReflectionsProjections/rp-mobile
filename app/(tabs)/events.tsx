@@ -177,17 +177,16 @@ const EventsScreen = () => {
     });
   };
 
+  // Component for rendering each event row, allows hooks for swipeableRef
   const EventRow: React.FC<{ item: Event; index: number }> = ({ item, index }) => {
     const swipeableRef = useRef<Swipeable>(null);
     const renderLeft = () => (
-      <View style={{ backgroundColor: '#FFD700', justifyContent: 'center', alignItems: 'center', width: SCREEN_WIDTH, height:70}}>
-        <View style={{ width: 60, alignItems: 'center' }}>
-          <Ionicons
-            name={flaggedIds.has(item.eventId) ? 'star-outline' : 'star'}
-            size={24}
-            color="#fff"
-          />
-        </View>
+      <View style={{ backgroundColor: '#FFD700', justifyContent: 'center', alignItems: 'center', width: 60 }}>
+        <Ionicons
+          name={flaggedIds.has(item.eventId) ? 'star-outline' : 'star'}
+          size={24}
+          color="#fff"
+        />
       </View>
     );
     const startDate = new Date(item.startTime);
