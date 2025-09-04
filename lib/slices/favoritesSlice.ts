@@ -128,7 +128,9 @@ const favoritesSlice = createSlice({
         state.eventsLastFetched = Date.now();
       })
       .addCase(toggleFavorite.pending, (state, action) => {
-        // Optimistic update
+        if (!state.favoriteEventIds) {
+          state.favoriteEventIds = [];
+        }
         const { eventId } = action.meta.arg;
         if (state.favoriteEventIds.includes(eventId)) {
           state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== eventId);
@@ -137,7 +139,9 @@ const favoritesSlice = createSlice({
         }
       })
       .addCase(toggleFavorite.rejected, (state, action) => {
-        // Revert optimistic update
+        if (!state.favoriteEventIds) {
+          state.favoriteEventIds = [];
+        }
         const { eventId } = action.meta.arg;
         if (action.payload) {
           if (state.favoriteEventIds.includes(eventId)) {

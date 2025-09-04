@@ -5,15 +5,15 @@ import BadgeSvg from '../../assets/images/badge.svg';
 import BadgeBackSvg from '../../assets/images/badgeback.svg';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
-import { Event, RoleObject, path } from '../../api/types';
+import { Event } from '../../api/types';
 import { getWeekday } from '@/lib/utils';
-import { api } from '@/api/api';
 import LottieView from 'lottie-react-native';
 import { Header } from '@/components/home/Header';
 import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
+import { useAppSelector } from '@/lib/store';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -36,16 +36,15 @@ const typeColors = {
 };
 
 const EventsScreen = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  // Get data from Redux
+  const events = useAppSelector((state: any) => state.favorites.events) || [];
+  
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
   const itemAnimations = useRef<Record<string, Animated.Value>>({});
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
-
   // ADD
   const CARD_W = SCREEN_WIDTH * 0.85;
   const CARD_H = SCREEN_HEIGHT * 0.75;
@@ -107,36 +106,14 @@ const EventsScreen = () => {
     }
   }, []);
 
+  // Update loading state based on Redux data
   useEffect(() => {
-    const start = Date.now();
-    const fetchEvents = async () => {
-      try {
-        const response = await api.get('/events');
-        setEvents(response.data as Event[]);
-      } catch (e: any) {
-        console.error('Failed to fetch or process events:', e);
-        setError(e.message || 'Failed to load events');
-      } finally {
-        const elapsed = Date.now() - start;
-        const remaining = 500 - elapsed;
-        setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
-      }
-    };
-    fetchEvents();
-  }, []);
+    if (events.length > 0) {
+      setLoading(false);
+    }
+  }, [events]);
 
-  useEffect(() => {
-    // Fetch user info and favorites
-    const fetchUser = async () => {
-      try {
-        const response = await api.get('/auth/info');
-        setUser(response.data);
-      } catch {}
-    };
-    fetchUser();
-  }, []);
-
-  const filteredEvents = events.filter((item) => {
+  const filteredEvents = events.filter((item: Event) => {
     if (!item.startTime) return false;
     const eventDate = new Date(item.startTime);
     return eventDate.getDay() === selectedDay;

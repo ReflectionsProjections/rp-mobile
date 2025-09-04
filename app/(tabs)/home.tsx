@@ -87,14 +87,7 @@ export default function HomeScreen() {
   }, [isLoading, cards.length]);
 
   const toggleFlag = async (id: string) => {
-    console.log('toggleFlag called with id:', id);
-    console.log('hasUserRole:', hasUserRole);
-    console.log('user:', user);
-    console.log('user?.userId:', user?.userId);
-    console.log('favorites before toggle:', favorites);
-    
     if (!hasUserRole || !user?.userId) {
-      console.log('Flagging blocked - missing role or userId');
       closeEvent();
       Toast.show({
         type: 'error',
@@ -107,12 +100,8 @@ export default function HomeScreen() {
     }
 
     try {
-      console.log('Attempting to toggle favorite for event:', id, 'user:', user.userId);
       await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
-      console.log('Favorite toggled successfully');
-      console.log('favorites after toggle:', favorites);
     } catch (error) {
-      console.error('Failed to toggle flag:', error);
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -134,12 +123,10 @@ export default function HomeScreen() {
   };
 
   const handleSwipeTouchStart = () => {
-    // Removed setScrollEnabled dispatch
     setScrollEnabled(false);
   };
 
   const handleSwipeTouchEnd = () => {
-    // Removed setScrollEnabled dispatch
     setScrollEnabled(true);
   };
 
@@ -288,7 +275,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="NEXT LAP"
-            data={cards.slice(0, 1)}
+            data={cards.slice(0, 1) || []}
             flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
@@ -317,7 +304,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="RECOMMENDED"
-            data={cards}
+            data={cards || []}
             flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
@@ -346,7 +333,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="FLAGGED"
-            data={flaggedCards}
+            data={flaggedCards || []}
             flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}

@@ -102,9 +102,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                       DESCRIPTION
                     </ThemedText>
                     <ThemedText variant="body" style={styles.descriptionText}>
-                      {
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-                      }
+                      {event.description}
                     </ThemedText>
                   </View>
 
