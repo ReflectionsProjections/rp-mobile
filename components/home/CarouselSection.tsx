@@ -14,7 +14,7 @@ const STACK_SIZE = 3;
 interface CarouselSectionProps {
   title: string;
   data: CardType[];
-  flaggedIds: Set<string>;
+  flaggedIds: string[];
   onToggleFlag(id: string): void;
   onCardPress(item: CardType): void;
   /* Maximum number of cards to display */

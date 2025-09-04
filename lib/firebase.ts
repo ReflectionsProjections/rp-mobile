@@ -15,6 +15,7 @@ import { Alert, Platform, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '@/api/api';
 
 // Storage keys for notification preferences
 const NOTIFICATION_PERMISSION_KEY = 'notification_permission_granted';
@@ -78,7 +79,7 @@ class FirebaseService {
         try {
           const fcmToken = await getToken(this.messaging);
           console.log('FCM Token:', fcmToken);
-
+          await api.post('/notifications/register', { deviceId: fcmToken });
           this.fcmToken = fcmToken;
           return { success: true, token: fcmToken };
         } catch (tokenError) {

@@ -4,7 +4,8 @@ import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Provider } from 'react-redux';
-import { store } from './lib/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './lib/store';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,9 +30,11 @@ persistQueryClient({
 export default function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </PersistGate>
     </Provider>
   );
 }

@@ -1,15 +1,16 @@
 // apps/tabs/home.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
-import { useHomeData } from '@/hooks/useHomeData';
+
 import { useToggleFavorite } from '@/api/tanstack/favorites';
-import { useAppDispatch, useAppSelector } from '@/lib/store';
-import { setScrollEnabled, openModal, closeModal } from '@/lib/slices/uiSlice';
+import { useDataInitialization } from '@/hooks/useDataInitialization';
+import { useAppSelector } from '@/lib/store';
+
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -24,23 +25,49 @@ import Toast from 'react-native-toast-message';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const dispatch = useAppDispatch();
-  const scrollEnabled = useAppSelector((state: any) => state.ui.scrollEnabled);
+  // Initialize data when component mounts
+  const { isLoading: initLoading } = useDataInitialization();
   
-  const {
-    cards,
-    flaggedCards,
-    user,
-    favoriteIds,
-    isLoading,
-    error,
-    hasUserRole,
-  } = useHomeData();
+  // Get data directly from Redux
+  const events = useAppSelector((state: any) => state.favorites.events) || [];
+  const favorites = useAppSelector((state: any) => state.favorites.favoriteEventIds) || [];
+  const user = useAppSelector((state: any) => state.user.profile);
 
   const toggleFavoriteMutation = useToggleFavorite();
 
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
+  // Transform events to cards format
+  const cards = useMemo(() => {
+    if (!events) return [];
+    
+    return events.map((event: any) => ({
+      id: event.eventId,
+      title: event.name,
+      time: new Date(event.startTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      location: event.location,
+      pts: event.points,
+      description: event.description,
+    }));
+  }, [events]);
+
+  // Get flagged cards
+  const flaggedCards = useMemo(() => {
+    return cards.filter((c: CardType) => favorites?.includes(c.id));
+  }, [cards, favorites]);
+
+  // Check if user has USER role
+  const hasUserRole = useMemo(() => {
+    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'USER');
+  }, [user?.roles]);
+
+  const isLoading = !events || events.length === 0;
+  const error = null;
 
   const sectionAnims = React.useRef([
     new Animated.Value(0),
@@ -60,7 +87,14 @@ export default function HomeScreen() {
   }, [isLoading, cards.length]);
 
   const toggleFlag = async (id: string) => {
+    console.log('toggleFlag called with id:', id);
+    console.log('hasUserRole:', hasUserRole);
+    console.log('user:', user);
+    console.log('user?.userId:', user?.userId);
+    console.log('favorites before toggle:', favorites);
+    
     if (!hasUserRole || !user?.userId) {
+      console.log('Flagging blocked - missing role or userId');
       closeEvent();
       Toast.show({
         type: 'error',
@@ -73,7 +107,10 @@ export default function HomeScreen() {
     }
 
     try {
+      console.log('Attempting to toggle favorite for event:', id, 'user:', user.userId);
       await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+      console.log('Favorite toggled successfully');
+      console.log('favorites after toggle:', favorites);
     } catch (error) {
       console.error('Failed to toggle flag:', error);
       Toast.show({
@@ -89,21 +126,21 @@ export default function HomeScreen() {
   const openEvent = (evt: CardType) => {
     setSelectedEvent(evt);
     setModalVisible(true);
-    dispatch(openModal('eventModal'));
   };
 
   const closeEvent = () => {
     setModalVisible(false);
     setSelectedEvent(null);
-    dispatch(closeModal('eventModal'));
   };
 
   const handleSwipeTouchStart = () => {
-    dispatch(setScrollEnabled(false));
+    // Removed setScrollEnabled dispatch
+    setScrollEnabled(false);
   };
 
   const handleSwipeTouchEnd = () => {
-    dispatch(setScrollEnabled(true));
+    // Removed setScrollEnabled dispatch
+    setScrollEnabled(true);
   };
 
   const renderHeaderNavBarComponent = () => (
@@ -172,7 +209,7 @@ export default function HomeScreen() {
   );
 
   // Loading screen
-  if (isLoading) {
+  if (initLoading || isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
@@ -202,9 +239,11 @@ export default function HomeScreen() {
           height={screenHeight}
           preserveAspectRatio="none"
         />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error?.toString()}</Text>
-        </View>
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -250,7 +289,7 @@ export default function HomeScreen() {
           <CarouselSection
             title="NEXT LAP"
             data={cards.slice(0, 1)}
-            flaggedIds={favoriteIds}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
@@ -279,7 +318,7 @@ export default function HomeScreen() {
           <CarouselSection
             title="RECOMMENDED"
             data={cards}
-            flaggedIds={favoriteIds}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
@@ -308,7 +347,7 @@ export default function HomeScreen() {
           <CarouselSection
             title="FLAGGED"
             data={flaggedCards}
-            flaggedIds={favoriteIds}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             onSwipeTouchStart={handleSwipeTouchStart}
@@ -320,7 +359,7 @@ export default function HomeScreen() {
       <EventModal
         visible={modalVisible}
         event={selectedEvent}
-        isFlagged={selectedEvent ? favoriteIds.has(selectedEvent.id) : false}
+        isFlagged={selectedEvent ? favorites.includes(selectedEvent.id) : false}
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />
