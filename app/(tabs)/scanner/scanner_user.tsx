@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView, View, Dimensions, Text, ActivityIndicator } from 'react-native';
 import BackgroundSvg from '@/assets/images/qrbackground.svg';
 import QRCode from 'react-native-qrcode-svg';
@@ -11,19 +11,31 @@ export default function ScannerScreen() {
   const [qrValue, setQrValue] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchQRCode = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/attendee/qr');
+      setQrValue(res.data.qrCode);
+      setError(null);
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get('/attendee/qr');
-        setQrValue(res.data.qrCode);
-      } catch (e: any) {
-        console.error(e);
-        setError(e.message);
-      } finally {
-        setLoading(false);
+    fetchQRCode();
+    intervalRef.current = setInterval(fetchQRCode, 10000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
-    })();
+    };
   }, []);
 
   return (
