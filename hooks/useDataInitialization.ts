@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { useUserProfile } from '@/api/tanstack/user';
+import { useAttendeePoints } from '@/api/tanstack/attendee';
 import { fetchEvents, fetchUserFavorites } from '@/lib/slices/favoritesSlice';
 
 /**
@@ -13,8 +14,10 @@ export function useDataInitialization() {
   const hasEvents = useAppSelector((state: any) => (state.favorites?.events || []).length > 0);
   const hasFavorites = useAppSelector((state: any) => (state.favorites?.favoriteEventIds || []).length > 0);
   const hasUser = useAppSelector((state: any) => !!state.user?.profile);
+  const hasAttendeeData = useAppSelector((state: any) => !!state.attendee?.attendee);
   
   const { data: user, isLoading: userLoading } = useUserProfile();
+  const { data: points, isLoading: pointsLoading } = useAttendeePoints();
 
   useEffect(() => {
     if (user && !hasEvents) {
@@ -29,8 +32,9 @@ export function useDataInitialization() {
   }, [user?.userId, hasFavorites, dispatch]);
 
   return {
-    isInitialized: hasEvents && hasFavorites && hasUser,
-    isLoading: userLoading,
+    isInitialized: hasEvents && hasFavorites && hasUser && hasAttendeeData,
+    isLoading: userLoading || pointsLoading,
     hasUser: !!user,
+    points: points || 0,
   };
 }

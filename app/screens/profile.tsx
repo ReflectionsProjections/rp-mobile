@@ -74,9 +74,7 @@ const ProfileScreen = () => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const notificationAnim = useRef(new Animated.Value(0)).current;
-  const logoutAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-
   const handleLogout = () => {
     Alert.alert(
       'Log Out',
@@ -130,11 +128,6 @@ const ProfileScreen = () => {
         }),
       ]),
       Animated.timing(notificationAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoutAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
@@ -338,56 +331,57 @@ const ProfileScreen = () => {
                 </View>
               </Animated.View>
 
-              <Animated.View
-                style={{
-                  opacity: logoutAnim,
-                  transform: [
-                    {
-                      translateY: logoutAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [20, 0],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <TouchableOpacity
-                  onPress={handleLogout}
-                  style={{
-                    backgroundColor: 'rgba(220, 53, 69, 0.9)',
-                    paddingVertical: 18,
-                    paddingHorizontal: 24,
-                    borderRadius: 12,
-                    marginTop: 16,
-                    alignItems: 'center',
-                    borderWidth: 2,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
-                    zIndex: 100,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 18,
-                      fontWeight: '700',
-                      fontFamily: 'ProRacing',
-                      textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 2,
-                    }}
-                  >
-                    LOG OUT
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
             </Animated.View>
           </View>
         </ScrollView>
+        
+        {/* Logout button */}
+        <Animated.View style={{ 
+          paddingHorizontal: 20, 
+          paddingBottom: 20, 
+          opacity: notificationAnim, 
+          transform: [
+            {
+              translateX: notificationAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-10, 0],
+              }),
+            },
+          ], 
+        }}>
+          <TouchableOpacity
+            onPress={handleLogout}
+            activeOpacity={0.8}
+            style={{
+              backgroundColor: 'rgba(220, 53, 69, 0.9)',
+              paddingVertical: 18,
+              paddingHorizontal: 24,
+              borderRadius: 12,
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                color: '#fff',
+                fontSize: 18,
+                fontWeight: '700',
+                fontFamily: 'ProRacing',
+                textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}
+            >
+              LOG OUT
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
       </SafeAreaView>
     </View>
   );
