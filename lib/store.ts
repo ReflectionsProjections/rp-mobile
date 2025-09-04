@@ -4,16 +4,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import userSlice from './slices/userSlice';
 import favoritesSlice from './slices/favoritesSlice';
+import attendeeSlice from './slices/attendeeSlice';
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['favorites', 'user'], // Only persist these slices
+  whitelist: ['favorites', 'user', 'attendee'], // Only persist these slices
 };
 
 const rootReducer = combineReducers({
   user: userSlice,
   favorites: favoritesSlice,
+  attendee: attendeeSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

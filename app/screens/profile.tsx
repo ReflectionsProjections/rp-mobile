@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
   View,
-  ActivityIndicator,
   Text,
   Dimensions,
   TouchableOpacity,
@@ -13,9 +12,9 @@ import {
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
-import ColorPicker from '@/components/profile/ColorPicker';
+// import ColorPicker from '@/components/profile/ColorPicker';
 import { useUserProfile } from '@/api/tanstack/user';
-import { api } from '@/api/api';
+import { useAttendeePoints } from '@/api/tanstack/attendee';
 import { logout } from '@/lib/auth';
 import { router } from 'expo-router';
 import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
@@ -64,9 +63,7 @@ const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex
 
 const ProfileScreen = () => {
   const { data: user, isLoading: userLoading, error: userError } = useUserProfile();
-  const [points, setPoints] = useState<number>(0);
-  const [pointsLoading, setPointsLoading] = useState(true);
-  const [pointsError, setPointsError] = useState<string | null>(null);
+  const { data: points, isLoading: pointsLoading, error: pointsError } = useAttendeePoints();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   
   const loading = userLoading || pointsLoading;
@@ -165,27 +162,6 @@ const ProfileScreen = () => {
       pulseAnimation.start();
     }, 2000);
 
-    let timeoutId: ReturnType<typeof setTimeout>;
-    
-    const fetchPoints = async () => {
-      const start = Date.now();
-      try {
-        setPointsLoading(true);
-        const response = await api.get('/attendee/points');
-        setPoints(response.data.points || 0);
-        setPointsError(null);
-      } catch (err: any) {
-        console.error('Failed to fetch points:', err);
-        setPointsError(err.message || 'Failed to load points');
-      } finally {
-        const elapsed = Date.now() - start;
-        const remaining = 500 - elapsed;
-        timeoutId = setTimeout(() => setPointsLoading(false), remaining > 0 ? remaining : 0);
-      }
-    };
-
-    fetchPoints();
-    return () => clearTimeout(timeoutId);
   }, []);
 
   if (loading) {
