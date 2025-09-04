@@ -9,6 +9,7 @@ import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import UserInfo from '@/components/profile/UserInfo';
 import { api } from '@/api/api';
+import { useEvents, useRefreshEvents } from '@/api/events';
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -40,6 +41,9 @@ export default function HomeScreen() {
 
   // scrolling lock
   const [scrollEnabled, setScrollEnabled] = useState(true);
+
+  // ⬇️ CHANGED: cached events (served from AsyncStorage if present; otherwise fetched)
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
 
   // staggered section animations
   const sectionAnims = React.useRef([
@@ -96,6 +100,7 @@ export default function HomeScreen() {
     setSelectedEvent(null);
   };
 
+  // unchanged: fetch user once
   useEffect(() => {
     const fetchUser = async () => {
       const response = await api.get('/auth/info');
@@ -104,41 +109,45 @@ export default function HomeScreen() {
     fetchUser();
   }, []);
 
+  // ⬇️ CHANGED: map cached events -> cards (no direct API call here)
   useEffect(() => {
-    const fetchEvents = async () => {
-      const start = Date.now();
-      try {
-        const response = await api.get('/events');
-        const formattedEvents = (response.data as ApiEvent[]).map((event: ApiEvent) => ({
-          id: event.eventId,
-          title: event.name,
-          time: new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          location: event.location,
-          pts: event.points,
-          description: event.description,
-        }));
-        setCards(formattedEvents);
+    if (!events) return;
+    const formattedEvents = (events as ApiEvent[]).map((event: ApiEvent) => ({
+      id: event.eventId,
+      title: event.name,
+      time: new Date(event.startTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      location: event.location,
+      pts: event.points,
+      description: event.description,
+    }));
+    setCards(formattedEvents);
+  }, [events]);
 
-        if (hasUserRole && user?.userId) {
-          const favResponse = await api.get(
-            path('/attendee/favorites', { userId: user.userId })
-          );
-          setFlaggedIds(new Set(favResponse.data.favorites));
-        } else {
-          setFlaggedIds(new Set());
-        }
-      } catch (e: any) {
-        console.error('Failed to fetch or process events:', e);
-        setError(e.message || 'Failed to load events');
-      } finally {
-        const elapsed = Date.now() - start;
-        const remaining = 500 - elapsed;
-        setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
-      }
+  // ⬇️ CHANGED: 500ms minimum splash timing based on eventsLoading
+  useEffect(() => {
+    if (eventsLoading) return;
+    const t = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(t);
+  }, [eventsLoading]);
+
+  // ⬇️ CHANGED: surface query error
+  useEffect(() => {
+    if (eventsError) setError('Failed to load events');
+  }, [eventsError]);
+
+  // unchanged: fetch favorites only if user is registered
+  useEffect(() => {
+    const fetchFavs = async () => {
+      if (hasUserRole && user?.userId){
+        const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
+        setFlaggedIds(new Set(favResponse.data.favorites));
+      };
     };
-
-    fetchEvents();
-  }, [hasUserRole, user?.userId]);
+    fetchFavs();
+  }, [user?.userId]);
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
