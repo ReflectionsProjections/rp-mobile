@@ -53,7 +53,7 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
             typeColors[(item.eventType as keyof typeof typeColors) || 'DEFAULT'],
           ]}
           start={{ x: 0, y: 0 }}
-          end={{ x: 0.5, y: 0 }}
+          end={{ x: 0.3, y: 0 }}
           className="rounded-lg flex-row items-center h-16 overflow-hidden shadow-lg shadow-black/40"
           style={{ width, transform: [{ skewX: '-20deg' }] }}
         >

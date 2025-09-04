@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
-import LottieView from 'lottie-react-native';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
 import * as WebBrowser from 'expo-web-browser';
