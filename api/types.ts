@@ -362,6 +362,12 @@ export interface APIRoutes {
       response: { count: number };
     };
   };
+  '/notifications/register': {
+    POST: {
+      request: { deviceId: string }; // FCM token
+      response: never;
+    }
+  }
 }
 
 type ExtractPathParams<Path extends string> = Path extends `${string}:${infer Param}/${infer Rest}`

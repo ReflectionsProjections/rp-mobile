@@ -1,10 +1,10 @@
 import '@/global.css';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Dimensions, View, TouchableOpacity, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SvgProps } from 'react-native-svg';
-import { api } from '../../api/api';
 import { Role } from '../../api/types';
+import { useUserProfile } from '@/api/tanstack/user';
 
 import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
@@ -38,17 +38,31 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
   { key: 'leaderboard', icon: LeaderboardIcon, filledIcon: FilledProfileIcon },
 ];
 
+// Separate component to handle scanner routing with user data
+function ScannerRouter() {
+  const { data: user, isLoading } = useUserProfile();
+  
+  if (isLoading) {
+    return <ScannerGuestScreen />;
+  }
+  
+  if (!user || !user.roles || user.roles.length === 0) {
+    return <ScannerGuestScreen />;
+  }
+  
+  if (user.roles.includes('STAFF')) {
+    return <ScannerStaffScreen />;
+  }
+  
+  if (user.roles.includes('USER')) {
+    return <ScannerUserScreen />;
+  }
+  
+  return <ScannerGuestScreen />;
+}
+
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
-  const [roles, setRoles] = useState<Role[] | null>([]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await api.get('/auth/info');
-      setRoles(response.data.roles);
-    };
-    fetchUser();
-  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -61,13 +75,7 @@ export default function TabLayout() {
       case 'leaderboard':
         return <LeaderboardScreen />;
       case 'scanner':
-        if (roles === null || roles.length === 0) {
-          return <ScannerGuestScreen />;
-        } else if (roles.includes('STAFF')) {
-          return <ScannerStaffScreen />;
-        } else if (roles.includes('USER')) {
-          return <ScannerUserScreen />;
-        }
+        return <ScannerRouter />;
       default:
         return <HomeScreen />;
     }

@@ -1,19 +1,24 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
+import { Event } from '@/api/types';
 
 interface FavoritesState {
-  favoriteEventIds: Set<string>;
+  favoriteEventIds: string[];
+  events: Event[];
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
+  eventsLastFetched: number | null;
 }
 
 const initialState: FavoritesState = {
-  favoriteEventIds: new Set(),
+  favoriteEventIds: [],
+  events: [],
   loading: false,
   error: null,
   lastFetched: null,
+  eventsLastFetched: null,
 };
 
 export const fetchUserFavorites = createAsyncThunk(
@@ -21,9 +26,21 @@ export const fetchUserFavorites = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await api.get(path('/attendee/favorites', { userId }));
-      return response.data.favorites as string[];
+      return (response.data as any).favorites as string[];
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch favorites');
+    }
+  }
+);
+
+export const fetchEvents = createAsyncThunk(
+  'favorites/fetchEvents',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/events');
+      return response.data as Event[];
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch events');
     }
   }
 );
@@ -33,7 +50,7 @@ export const toggleFavorite = createAsyncThunk(
   async ({ eventId, userId }: { eventId: string; userId: string }, { getState, rejectWithValue }) => {
     try {
       const state = getState() as any;
-      const isCurrentlyFavorite = state.favorites.favoriteEventIds.has(eventId);
+      const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
       
       if (isCurrentlyFavorite) {
         await api.delete(path('/attendee/favorites/:eventId', { eventId }), {
@@ -57,20 +74,30 @@ const favoritesSlice = createSlice({
   initialState,
   reducers: {
     setFavorites: (state, action: PayloadAction<string[]>) => {
-      state.favoriteEventIds = new Set(action.payload);
+      state.favoriteEventIds = action.payload;
       state.lastFetched = Date.now();
       state.error = null;
     },
+    setEvents: (state, action: PayloadAction<Event[]>) => {
+      state.events = action.payload;
+      state.eventsLastFetched = Date.now();
+    },
     addFavorite: (state, action: PayloadAction<string>) => {
-      state.favoriteEventIds.add(action.payload);
+      if (!state.favoriteEventIds.includes(action.payload)) {
+        state.favoriteEventIds.push(action.payload);
+      }
     },
     removeFavorite: (state, action: PayloadAction<string>) => {
-      state.favoriteEventIds.delete(action.payload);
+      state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== action.payload);
     },
     clearFavorites: (state) => {
-      state.favoriteEventIds.clear();
+      state.favoriteEventIds = [];
       state.lastFetched = null;
       state.error = null;
+    },
+    clearEvents: (state) => {
+      state.events = [];
+      state.eventsLastFetched = null;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -88,7 +115,7 @@ const favoritesSlice = createSlice({
       })
       .addCase(fetchUserFavorites.fulfilled, (state, action) => {
         state.loading = false;
-        state.favoriteEventIds = new Set(action.payload);
+        state.favoriteEventIds = action.payload;
         state.lastFetched = Date.now();
         state.error = null;
       })
@@ -96,23 +123,27 @@ const favoritesSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchEvents.fulfilled, (state, action) => {
+        state.events = action.payload;
+        state.eventsLastFetched = Date.now();
+      })
       .addCase(toggleFavorite.pending, (state, action) => {
         // Optimistic update
         const { eventId } = action.meta.arg;
-        if (state.favoriteEventIds.has(eventId)) {
-          state.favoriteEventIds.delete(eventId);
+        if (state.favoriteEventIds.includes(eventId)) {
+          state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== eventId);
         } else {
-          state.favoriteEventIds.add(eventId);
+          state.favoriteEventIds.push(eventId);
         }
       })
       .addCase(toggleFavorite.rejected, (state, action) => {
         // Revert optimistic update
         const { eventId } = action.meta.arg;
         if (action.payload) {
-          if (state.favoriteEventIds.has(eventId)) {
-            state.favoriteEventIds.delete(eventId);
+          if (state.favoriteEventIds.includes(eventId)) {
+            state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== eventId);
           } else {
-            state.favoriteEventIds.add(eventId);
+            state.favoriteEventIds.push(eventId);
           }
         }
         state.error = action.payload as string;
@@ -122,9 +153,11 @@ const favoritesSlice = createSlice({
 
 export const { 
   setFavorites, 
+  setEvents,
   addFavorite, 
   removeFavorite, 
   clearFavorites, 
+  clearEvents,
   setError, 
   clearError 
 } = favoritesSlice.actions;
