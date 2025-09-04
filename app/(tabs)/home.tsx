@@ -15,9 +15,7 @@ import {
 } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// import HomeBar from '@/assets/home/homeBar.svg';
-import BackgroundSvg from '@/assets/home/home_background.svg';
-import CarSvg from '@/assets/home/home_car.svg';
+import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 

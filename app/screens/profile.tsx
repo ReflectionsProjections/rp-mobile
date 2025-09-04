@@ -394,6 +394,7 @@ const ProfileScreen = () => {
                     shadowOpacity: 0.3,
                     shadowRadius: 8,
                     elevation: 8,
+                    zIndex: 100,
                   }}
                 >
                   <Text

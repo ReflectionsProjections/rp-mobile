@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
+import { View, PanResponder, Animated, Pressable, Text, StyleSheet, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {
@@ -25,6 +25,9 @@ import Reanimated, {
   useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
+import BackgroundSvg from '@/assets/background/background_grate.svg';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
@@ -92,7 +95,13 @@ const LeaderboardScreen = () => {
   const data = activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#222' }}>
+    <View className="flex-1">
+      <BackgroundSvg
+          style={StyleSheet.absoluteFillObject}
+          width={SCREEN_WIDTH}
+          height={SCREEN_HEIGHT}
+          preserveAspectRatio="none"
+        />
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
