@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { api }  from './api'
-import type { Event } from './types'
+import { api }  from '../api'
+import type { Event } from '../types'
 
 export const EVENTS_QK = ['events'] as const;
 

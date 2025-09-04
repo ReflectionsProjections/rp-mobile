@@ -6,9 +6,10 @@ import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
-import { Event as ApiEvent, path, RoleObject } from '@/api/types';
-import { api } from '@/api/api';
-import { useEvents } from '@/api/events';
+import { useHomeData } from '@/hooks/useHomeData';
+import { useToggleFavorite } from '@/api/tanstack/favorites';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
+import { setScrollEnabled, openModal, closeModal } from '@/lib/slices/uiSlice';
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -23,26 +24,24 @@ import Toast from 'react-native-toast-message';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  // fetched cards
-  const [cards, setCards] = useState<CardType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
+  const dispatch = useAppDispatch();
+  const scrollEnabled = useAppSelector((state: any) => state.ui.scrollEnabled);
+  
+  const {
+    cards,
+    flaggedCards,
+    user,
+    favoriteIds,
+    isLoading,
+    error,
+    hasUserRole,
+  } = useHomeData();
 
+  const toggleFavoriteMutation = useToggleFavorite();
 
-  // flags + modal state
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // scrolling lock
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-
-  // ⬇️ CHANGED: cached events (served from AsyncStorage if present; otherwise fetched)
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-
-  // staggered section animations
   const sectionAnims = React.useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -50,7 +49,7 @@ export default function HomeScreen() {
   ]).current;
 
   useEffect(() => {
-    if (!loading) {
+    if (!isLoading) {
       Animated.stagger(
         120,
         sectionAnims.map((a) =>
@@ -58,7 +57,7 @@ export default function HomeScreen() {
         ),
       ).start();
     }
-  }, [loading, cards.length]);
+  }, [isLoading, cards.length]);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -73,78 +72,39 @@ export default function HomeScreen() {
       return;
     }
 
-    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
-      userId: user.userId,
-    });
-    if (response.status === 200) {
-      setFlaggedIds((prev) => {
-        const next = new Set(prev);
-        prev.has(id) ? next.delete(id) : next.add(id);
-        return next;
+    try {
+      await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+    } catch (error) {
+      console.error('Failed to toggle flag:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update favorite status.',
+        position: 'top',
+        visibilityTime: 3000,
       });
-    } else {
-      console.error('Failed to toggle flag:', response.data);
     }
   };
 
   const openEvent = (evt: CardType) => {
     setSelectedEvent(evt);
     setModalVisible(true);
+    dispatch(openModal('eventModal'));
   };
 
   const closeEvent = () => {
     setModalVisible(false);
     setSelectedEvent(null);
+    dispatch(closeModal('eventModal'));
   };
 
-  // unchanged: fetch user once
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await api.get('/auth/info');
-      setUser(response.data);
-    };
-    fetchUser();
-  }, []);
+  const handleSwipeTouchStart = () => {
+    dispatch(setScrollEnabled(false));
+  };
 
-  // ⬇️ CHANGED: map cached events -> cards (no direct API call here)
-  useEffect(() => {
-    if (!events) return;
-    const formattedEvents = (events as ApiEvent[]).map((event: ApiEvent) => ({
-      id: event.eventId,
-      title: event.name,
-      time: new Date(event.startTime).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      location: event.location,
-      pts: event.points,
-      description: event.description,
-    }));
-    setCards(formattedEvents);
-  }, [events]);
-
-  // ⬇️ CHANGED: 500ms minimum splash timing based on eventsLoading
-  useEffect(() => {
-    if (eventsLoading) return;
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, [eventsLoading]);
-
-  // ⬇️ CHANGED: surface query error
-  useEffect(() => {
-    if (eventsError) setError('Failed to load events');
-  }, [eventsError]);
-
-  // unchanged: fetch favorites only if user is registered
-  useEffect(() => {
-    const fetchFavs = async () => {
-      if (hasUserRole && user?.userId){
-        const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
-        setFlaggedIds(new Set(favResponse.data.favorites));
-      };
-    };
-    fetchFavs();
-  }, [user?.userId]);
+  const handleSwipeTouchEnd = () => {
+    dispatch(setScrollEnabled(true));
+  };
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
@@ -211,7 +171,8 @@ export default function HomeScreen() {
     </HeaderNavBar>
   );
 
-  if (loading) {
+  // Loading screen
+  if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
@@ -231,6 +192,7 @@ export default function HomeScreen() {
     );
   }
 
+  // Error screen
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
@@ -241,7 +203,7 @@ export default function HomeScreen() {
           preserveAspectRatio="none"
         />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error}</Text>
+          <Text style={styles.errorText}>Error: {error?.toString()}</Text>
         </View>
       </View>
     );
@@ -288,12 +250,12 @@ export default function HomeScreen() {
           <CarouselSection
             title="NEXT LAP"
             data={cards.slice(0, 1)}
-            flaggedIds={flaggedIds}
+            flaggedIds={favoriteIds}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
@@ -317,12 +279,12 @@ export default function HomeScreen() {
           <CarouselSection
             title="RECOMMENDED"
             data={cards}
-            flaggedIds={flaggedIds}
+            flaggedIds={favoriteIds}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
@@ -345,12 +307,12 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="FLAGGED"
-            data={cards.filter((c) => flaggedIds.has(c.id))}
-            flaggedIds={flaggedIds}
+            data={flaggedCards}
+            flaggedIds={favoriteIds}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
       </AnimatedScrollView>
@@ -358,7 +320,7 @@ export default function HomeScreen() {
       <EventModal
         visible={modalVisible}
         event={selectedEvent}
-        isFlagged={selectedEvent ? flaggedIds.has(selectedEvent.id) : false}
+        isFlagged={selectedEvent ? favoriteIds.has(selectedEvent.id) : false}
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />

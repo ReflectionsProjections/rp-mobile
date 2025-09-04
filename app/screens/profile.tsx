@@ -14,8 +14,8 @@ import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
 import ColorPicker from '@/components/profile/ColorPicker';
+import { useUserProfile } from '@/api/tanstack/user';
 import { api } from '@/api/api';
-import { RoleObject } from '@/api/types';
 import { logout } from '@/lib/auth';
 import { router } from 'expo-router';
 import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
@@ -63,11 +63,14 @@ const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex
 );
 
 const ProfileScreen = () => {
-  const [user, setUser] = useState<RoleObject | null>(null);
+  const { data: user, isLoading: userLoading, error: userError } = useUserProfile();
   const [points, setPoints] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pointsLoading, setPointsLoading] = useState(true);
+  const [pointsError, setPointsError] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  
+  const loading = userLoading || pointsLoading;
+  const error = userError || pointsError;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -163,30 +166,24 @@ const ProfileScreen = () => {
     }, 2000);
 
     let timeoutId: ReturnType<typeof setTimeout>;
-    const fetchAttendee = async () => {
+    
+    const fetchPoints = async () => {
       const start = Date.now();
       try {
-        const response = await api.get('/auth/info');
-        setUser(response.data);
-      } catch (err) {
-        setError('Failed to load user info');
+        setPointsLoading(true);
+        const response = await api.get('/attendee/points');
+        setPoints(response.data.points || 0);
+        setPointsError(null);
+      } catch (err: any) {
+        console.error('Failed to fetch points:', err);
+        setPointsError(err.message || 'Failed to load points');
       } finally {
         const elapsed = Date.now() - start;
         const remaining = 500 - elapsed;
-        timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
+        timeoutId = setTimeout(() => setPointsLoading(false), remaining > 0 ? remaining : 0);
       }
     };
 
-    const fetchPoints = async () => {
-      try {
-        const response = await api.get('/attendee/points');
-        setPoints(response.data.points || 0);
-      } catch (err) {
-        console.error('Failed to fetch points:', err);
-      }
-    };
-
-    fetchAttendee();
     fetchPoints();
     return () => clearTimeout(timeoutId);
   }, []);

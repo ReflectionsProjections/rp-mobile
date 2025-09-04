@@ -1,5 +1,5 @@
 // THIS IS THE STAFF SCANNER SCREN
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,9 @@ import {
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
-import { api } from '../../../api/api';
-import { Event } from '../../../api/types';
-import { path } from '../../../api/types';
+import { api } from '@/api/api';
+import { Event, path } from '@/api/types';
+import { useEvents } from '@/api/tanstack/events';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -79,7 +79,7 @@ const parseQrCode = (
 
 export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [events, setEvents] = useState<Event[]>([]);
+  const { data: events = [], isLoading: eventsLoading } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<Record<string, any>>({});
   const [selectedDay, setSelectedDay] = useState<number>(2); // Default to Tuesday
   const [loading, setLoading] = useState(false);
@@ -100,37 +100,30 @@ export default function ScannerScreen() {
   const isProcessingRef = useRef(false);
   const lastScannedCodeRef = useRef<string>('');
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get('/events');
-        setEvents(res.data);
-        // Default selection: closest event on the selected day (Tuesday by default)
-        if (res.data.length) {
-          const now = new Date();
-          const dayFiltered = (res.data as Event[])
-            .filter((e) => {
-              if (!e.startTime) return false;
-              const d = new Date(e.startTime);
-              return d.getDay() === selectedDay;
-            })
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  // Filter events by selected day
+  const filteredEvents = useMemo(() => {
+    return events
+      .filter((e) => {
+        if (!e.startTime) return false;
+        const d = new Date(e.startTime);
+        return d.getDay() === selectedDay;
+      })
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [events, selectedDay]);
 
-          if (dayFiltered.length) {
-            const upcoming = dayFiltered.find((e) => new Date(e.startTime) >= now);
-            const chosen = upcoming || dayFiltered[dayFiltered.length - 1];
-            setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
-          } else {
-            // Fallback to first event overall if no events on selected day
-            setSelectedEvent({ eventId: res.data[0].eventId, name: res.data[0].name });
-          }
-        }
-      } catch (e) {
-        console.error(e);
-        Alert.alert('Error', 'Failed to load events');
-      }
-    })();
-  }, []);
+  useEffect(() => {
+    // Set default selection when events are loaded
+    if (filteredEvents.length && !selectedEvent.eventId) {
+      // Default selection: closest event on the selected day
+      const now = new Date();
+      const upcoming = filteredEvents.find((e) => new Date(e.startTime) >= now);
+      const chosen = upcoming || filteredEvents[filteredEvents.length - 1];
+      setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
+    } else if (events.length && filteredEvents.length === 0 && !selectedEvent.eventId) {
+      // Fallback to first event overall if no events on selected day
+      setSelectedEvent({ eventId: events[0].eventId, name: events[0].name });
+    }
+  }, [filteredEvents, events, selectedEvent.eventId]);
 
   useEffect(() => {
     return () => {
@@ -314,23 +307,37 @@ export default function ScannerScreen() {
           Staff Scanner
         </Text>
         <Text className="text-white/70 text-center text-xs mb-4">Select event before scanning</Text>
-        <LinearGradient
-          colors={['#ffffff10', '#ffffff05']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          className="rounded-xl p-[1px]"
-        >
-          <TouchableOpacity
-            className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-between"
-            onPress={() => setPickerVisible(true)}
-            activeOpacity={0.9}
+        {eventsLoading ? (
+          <LinearGradient
+            colors={['#ffffff10', '#ffffff05']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="rounded-xl p-[1px]"
           >
-            <Text className="text-white font-magistralMedium">
-              {selectedEvent.name || 'Select an event'}
-            </Text>
-            <Text className="text-white/60 text-xs">Change</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+            <View className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-center">
+              <ActivityIndicator size="small" color="#00adb5" />
+              <Text className="text-white/60 ml-2">Loading events...</Text>
+            </View>
+          </LinearGradient>
+        ) : (
+          <LinearGradient
+            colors={['#ffffff10', '#ffffff05']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="rounded-xl p-[1px]"
+          >
+            <TouchableOpacity
+              className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-between"
+              onPress={() => setPickerVisible(true)}
+              activeOpacity={0.9}
+            >
+              <Text className="text-white font-magistralMedium">
+                {selectedEvent.name || 'Select an event'}
+              </Text>
+              <Text className="text-white/60 text-xs">Change</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        )}
       </View>
 
       <View className="flex-1 relative">
@@ -522,15 +529,7 @@ export default function ScannerScreen() {
                   style={{ color: 'white' }}
                   dropdownIconColor="white"
                 >
-                  {events
-                    .filter((e) => {
-                      if (!e.startTime) return false;
-                      const d = new Date(e.startTime);
-                      return d.getDay() === selectedDay;
-                    })
-                    .sort(
-                      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
-                    )
+                  {filteredEvents
                     .map((e) => (
                       <Picker.Item key={e.eventId} label={e.name} value={e.eventId} color="white" />
                     ))}
