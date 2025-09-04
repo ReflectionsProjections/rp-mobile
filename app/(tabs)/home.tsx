@@ -8,7 +8,7 @@ import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
-import { useEvents, useRefreshEvents } from '@/api/events';
+import { useEvents } from '@/api/events';
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -16,9 +16,7 @@ import {
 } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// import HomeBar from '@/assets/home/homeBar.svg';
 import BackgroundSvg from '@/assets/home/home_background.svg';
-import CarSvg from '@/assets/home/home_car.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
@@ -30,6 +28,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<RoleObject | null>(null);
+  const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
+
 
   // flags + modal state
   const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
@@ -61,7 +61,7 @@ export default function HomeScreen() {
   }, [loading, cards.length]);
 
   const toggleFlag = async (id: string) => {
-    if (!user?.userId) {
+    if (!hasUserRole || !user?.userId) {
       closeEvent();
       Toast.show({
         type: 'error',
@@ -72,6 +72,7 @@ export default function HomeScreen() {
       });
       return;
     }
+
     const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
       userId: user.userId,
     });
@@ -137,9 +138,10 @@ export default function HomeScreen() {
   // unchanged: fetch favorites only if user is registered
   useEffect(() => {
     const fetchFavs = async () => {
-      if (!user?.userId) return;
-      const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
-      setFlaggedIds(new Set(favResponse.data.favorites));
+      if (hasUserRole && user?.userId){
+        const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
+        setFlaggedIds(new Set(favResponse.data.favorites));
+      };
     };
     fetchFavs();
   }, [user?.userId]);
