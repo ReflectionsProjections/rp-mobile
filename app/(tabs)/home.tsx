@@ -7,9 +7,8 @@ import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
-import UserInfo from '@/components/profile/UserInfo';
 import { api } from '@/api/api';
-import { useEvents, useRefreshEvents } from '@/api/events';
+import { useEvents } from '@/api/events';
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -17,9 +16,7 @@ import {
 } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// import HomeBar from '@/assets/home/homeBar.svg';
 import BackgroundSvg from '@/assets/home/home_background.svg';
-import CarSvg from '@/assets/home/home_car.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
