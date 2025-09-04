@@ -18,6 +18,7 @@ export default {
       config: {
         usesNonExemptEncryption: false,
       },
+      googleServicesFile: './googleServices/GoogleService-Info-RP.plist',
       infoPlist: {
         CFBundleURLTypes: [
           {
@@ -27,6 +28,7 @@ export default {
             ],
           },
         ],
+        UIBackgroundModes: ['remote-notification'],
       },
     },
     android: {
@@ -35,6 +37,19 @@ export default {
         backgroundColor: '#ffffff',
       },
       package: 'com.reflectionsprojections',
+      googleServicesFile: './googleServices/google-services.json',
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            {
+              scheme: 'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
+            },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
     },
     web: {
       bundler: 'metro',
@@ -53,12 +68,15 @@ export default {
         },
       ],
       'expo-font',
+      '@react-native-firebase/app',
+      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,
     },
     extra: {
-      googleClientId: process.env.OAUTH_GOOGLE_CLIENT_ID,
+      iosGoogleClientId: process.env.IOS_OAUTH_GOOGLE_CLIENT_ID,
+      androidGoogleClientId: process.env.ANDROID_OAUTH_GOOGLE_CLIENT_ID,
       apiUrl: process.env.API_URL || 'https://api.reflectionsprojections.org',
     },
   },

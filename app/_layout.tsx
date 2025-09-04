@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 import AppProvider from '@/app-provider';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,6 +29,7 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  useFirebaseNotifications();
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -59,6 +61,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
         <Toast />
