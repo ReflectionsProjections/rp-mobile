@@ -1,6 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
@@ -9,6 +9,12 @@ import { CardType } from '@/components/home/types';
 import { Event as ApiEvent, path, RoleObject } from '@/api/types';
 import { api } from '@/api/api';
 import { useEvents, useRefreshEvents } from '@/api/events';
+import {
+  AnimatedScrollView,
+  HeaderNavBar,
+  HeaderComponentWrapper,
+} from '@/components/headers/parallax';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // import HomeBar from '@/assets/home/homeBar.svg';
 import BackgroundSvg from '@/assets/home/home_background.svg';
@@ -17,7 +23,6 @@ import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
 
 export default function HomeScreen() {
   // fetched cards
@@ -37,6 +42,24 @@ export default function HomeScreen() {
   // ⬇️ CHANGED: cached events (served from AsyncStorage if present; otherwise fetched)
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
 
+  // staggered section animations
+  const sectionAnims = React.useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
+  useEffect(() => {
+    if (!loading) {
+      Animated.stagger(
+        120,
+        sectionAnims.map((a) =>
+          Animated.timing(a, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ),
+      ).start();
+    }
+  }, [loading, cards.length]);
+
   const toggleFlag = async (id: string) => {
     if (!user?.userId) {
       closeEvent();
@@ -49,7 +72,9 @@ export default function HomeScreen() {
       });
       return;
     }
-    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), { userId: user.userId });
+    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
+      userId: user.userId,
+    });
     if (response.status === 200) {
       setFlaggedIds((prev) => {
         const next = new Set(prev);
@@ -119,9 +144,74 @@ export default function HomeScreen() {
     fetchFavs();
   }, [user?.userId]);
 
+  const renderHeaderNavBarComponent = () => (
+    <HeaderNavBar isHeader={true} showTint={false}>
+      <Header />
+    </HeaderNavBar>
+  );
+
+  const renderHeaderComponent = () => (
+    <HeaderComponentWrapper>
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.4)', 'transparent']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.titleContainer}>
+            <ThemedText variant="bigName" style={styles.mainTitle}>
+              R|P 2025
+            </ThemedText>
+            <View style={styles.titleUnderline} />
+          </View>
+        </View>
+      </LinearGradient>
+    </HeaderComponentWrapper>
+  );
+
+  const renderTopNavBarComponent = () => (
+    <HeaderNavBar isHeader={true}>
+      <View
+        style={{
+          position: 'relative',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+      >
+        <Header />
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ThemedText
+            variant="bigName"
+            style={{
+              fontSize: 20,
+              textAlign: 'center',
+              color: '#fff',
+              textShadowColor: 'rgba(0,0,0,0.5)',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 6,
+            }}
+          >
+            VROOOM
+          </ThemedText>
+        </View>
+      </View>
+    </HeaderNavBar>
+  );
+
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-black">
+      <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
           style={StyleSheet.absoluteFillObject}
           width={screenWidth}
@@ -135,26 +225,28 @@ export default function HomeScreen() {
           style={{ width: 1000, height: 1000 }}
           speed={4}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-black">
+      <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
           style={StyleSheet.absoluteFillObject}
           width={screenWidth}
           height={screenHeight}
           preserveAspectRatio="none"
         />
-        <ThemedText className="text-white text-base">Error: {error}</ThemedText>
-      </SafeAreaView>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+        </View>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <View className="flex-1 bg-black">
       {/* Background SVG - positioned absolutely behind all content */}
       <BackgroundSvg
         style={StyleSheet.absoluteFillObject}
@@ -163,21 +255,34 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 100 }}
+      <AnimatedScrollView
+        renderHeaderNavBarComponent={renderHeaderNavBarComponent}
+        renderHeaderComponent={renderHeaderComponent}
+        renderTopNavBarComponent={renderTopNavBarComponent}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        headerMaxHeight={200}
         showsVerticalScrollIndicator={false}
         directionalLockEnabled={true}
         nestedScrollEnabled={true}
         scrollEnabled={scrollEnabled}
       >
-        <Header />
-
-        <ThemedText variant="bigName" className="text-left my-2 mx-4 text-white">
-          R|P 2025
-        </ThemedText>
-
         {/* NEXT LAP */}
-        <View style={{ marginTop: 20 }}>
+        <Animated.View
+          style={[
+            styles.sectionContainer,
+            {
+              opacity: sectionAnims[0],
+              transform: [
+                {
+                  translateY: sectionAnims[0].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
           <CarouselSection
             title="NEXT LAP"
             data={cards.slice(0, 1)}
@@ -188,10 +293,25 @@ export default function HomeScreen() {
             onSwipeTouchStart={() => setScrollEnabled(false)}
             onSwipeTouchEnd={() => setScrollEnabled(true)}
           />
-        </View>
+        </Animated.View>
 
         {/* RECOMMENDED */}
-        <View style={{ marginTop: -35 }}>
+        <Animated.View
+          style={[
+            styles.sectionContainer,
+            {
+              opacity: sectionAnims[1],
+              transform: [
+                {
+                  translateY: sectionAnims[1].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
           <CarouselSection
             title="RECOMMENDED"
             data={cards}
@@ -202,10 +322,25 @@ export default function HomeScreen() {
             onSwipeTouchStart={() => setScrollEnabled(false)}
             onSwipeTouchEnd={() => setScrollEnabled(true)}
           />
-        </View>
+        </Animated.View>
 
         {/* FLAGGED */}
-        <View style={{ marginTop: -20 }}>
+        <Animated.View
+          style={[
+            styles.sectionContainer,
+            {
+              opacity: sectionAnims[2],
+              transform: [
+                {
+                  translateY: sectionAnims[2].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
           <CarouselSection
             title="FLAGGED"
             data={cards.filter((c) => flaggedIds.has(c.id))}
@@ -215,11 +350,8 @@ export default function HomeScreen() {
             onSwipeTouchStart={() => setScrollEnabled(false)}
             onSwipeTouchEnd={() => setScrollEnabled(true)}
           />
-        </View>
-        <View style={{ alignItems: 'center', marginTop: -10 }}>
-          <CarSvg width={300} height={200} />
-        </View>
-      </ScrollView>
+        </Animated.View>
+      </AnimatedScrollView>
 
       <EventModal
         visible={modalVisible}
@@ -228,6 +360,73 @@ export default function HomeScreen() {
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    marginTop: 80,
+    alignItems: 'center',
+  },
+  mainTitle: {
+    fontSize: 48,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    marginBottom: 8,
+  },
+  titleUnderline: {
+    width: 120,
+    height: 3,
+    backgroundColor: '#CA2523',
+    borderRadius: 2,
+  },
+  sectionContainer: {
+    marginTop: 0,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  errorText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Inter',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+  },
+  topNavBarContent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topNavBarText: {
+    color: '#fff',
+  },
+});
