@@ -33,14 +33,6 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
         </View>
       </View>
       <View className="h-0.5 bg-white mt-2 mb-3" />
-      <Text className="font-inter text-xl italic mt-[-5px] mb-5 text-white">
-        Roles: <Text className="font-bold not-italic">{roles.join(', ')}</Text>
-      </Text>
-      {foodWave && (
-        <Text className="font-inter text-xl italic mt-[-5px] mb-5">
-          Food Wave: <Text className="font-bold not-italic">{foodWave}</Text>
-        </Text>
-      )}
     </>
   );
 };

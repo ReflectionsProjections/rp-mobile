@@ -17,15 +17,15 @@ const SPEEDO_WIDTH = width * 0.7;
 const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; testTier?: Tier }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const targetTier = testTier || currentTier || 'TIER1';
-  
+
   // Define tier progression
   const tierProgression: Tier[] = ['TIER1', 'TIER2', 'TIER3', 'TIER4'];
   const targetIndex = tierProgression.indexOf(targetTier);
-  
+
   useEffect(() => {
     // Reset animation to 0 first
     fadeAnim.setValue(0);
-    
+
     // Animate the fade to the target tier
     Animated.timing(fadeAnim, {
       toValue: targetIndex,
@@ -43,7 +43,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
         className="absolute inset-0 z-0"
         preserveAspectRatio="xMidYMin slice"
       />
-      
+
       {/* TIER2 background with fade */}
       {targetIndex >= 1 && (
         <Animated.View
@@ -68,7 +68,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
           />
         </Animated.View>
       )}
-      
+
       {/* TIER3 background with fade */}
       {targetIndex >= 2 && (
         <Animated.View
@@ -93,7 +93,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
           />
         </Animated.View>
       )}
-      
+
       {/* TIER4 background with fade */}
       {targetIndex >= 3 && (
         <Animated.View
@@ -124,15 +124,13 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
 
 export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
-  
+
   // For testing - specify which tier to animate to
   // const testTier: Tier = "TIER4";
 
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground 
-        currentTier={attendee?.currentTier}
-      />
+      <AnimatedBackground currentTier={attendee?.currentTier} />
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={attendee ? attendee.currentTier : 'N/A'} width={SPEEDO_WIDTH} />

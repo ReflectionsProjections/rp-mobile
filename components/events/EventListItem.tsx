@@ -73,21 +73,6 @@ export const EventListItem: React.FC<Props> = ({ item, index, width, anim, onPre
               <Text className="text-white/80 text-xs font-magistral" numberOfLines={1}>
                 {item.location}
               </Text>
-              <View className="mt-1 h-[10px] bg-white/20 rounded-full overflow-hidden relative">
-                <View className="h-full bg-[#CA2523]/80" style={{ width: `${proximityWidth}%` }} />
-                <View style={{ position: 'absolute', top: -8, left: 0, width: '100%', height: 0 }}>
-                  <MaterialCommunityIcons
-                    name="car-sports"
-                    color="#e3e3e3"
-                    size={24}
-                    style={{
-                      position: 'absolute',
-                      left: `${proximityWidth}%`,
-                      transform: [{ translateX: -8 }],
-                    }}
-                  />
-                </View>
-              </View>
             </View>
             <View className="justify-center items-end w-34 pr-2">
               <Text className="text-white text-lg font-bold font-magistralMedium">{startStr}</Text>
