@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Dimensions, Animated } from 'react-native';
 import Background from '../../assets/pointshop/point_background.svg';
-import Tier2Background from '../../assets/pointshop/tier2.svg';
-import Tier3Background from '../../assets/pointshop/tier3.svg';
-import Tier4Background from '../../assets/pointshop/tier4.svg';
+import Tier2Background from '../../assets/pointshop/tier2_car2.svg';
+import Tier3Background from '../../assets/pointshop/tier3_car2.svg';
+import Tier4Background from '../../assets/pointshop/tier4_car.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
 import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
@@ -126,7 +126,7 @@ export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   // For testing - specify which tier to animate to
-  // const testTier: Tier = "TIER4";
+  const testTier: Tier = "TIER4";
 
   return (
     <View className="flex-1 bg-rpRed relative">
