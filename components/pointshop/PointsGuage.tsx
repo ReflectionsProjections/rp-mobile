@@ -20,7 +20,12 @@ export function PointsGauge({ tier, width = DEFAULT_WIDTH }: PointsGaugeProps) {
 
   return (
     <View className="relative" style={{ width: width * 1.2, height: height }}>
-      <Speedometer width={width * 1.2} height={height} className="absolute inset-0 z-0" preserveAspectRatio="none" />
+      <Speedometer
+        width={width * 1.2}
+        height={height}
+        className="absolute inset-0 z-0"
+        preserveAspectRatio="none"
+      />
 
       <Text className="absolute inset-x-0 bottom-10 text-white text-[17px] font-proRacing text-center">
         CURRENT TIER: {tier}

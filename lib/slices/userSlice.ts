@@ -25,19 +25,19 @@ export const fetchUserProfile = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');
     }
-  }
+  },
 );
 
 export const updateUserProfile = createAsyncThunk(
   'user/updateProfile',
   async (updates: Partial<RoleObject>, { rejectWithValue }) => {
     try {
-        // Optimistic update - this will be the PATCH /icon and PATCH /tags endpoints
+      // Optimistic update - this will be the PATCH /icon and PATCH /tags endpoints
       return updates;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update user profile');
     }
-  }
+  },
 );
 
 const userSlice = createSlice({

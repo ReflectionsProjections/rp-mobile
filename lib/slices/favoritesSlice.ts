@@ -30,7 +30,7 @@ export const fetchUserFavorites = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch favorites');
     }
-  }
+  },
 );
 
 export const fetchEvents = createAsyncThunk(
@@ -42,16 +42,19 @@ export const fetchEvents = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch events');
     }
-  }
+  },
 );
 
 export const toggleFavorite = createAsyncThunk(
   'favorites/toggleFavorite',
-  async ({ eventId, userId }: { eventId: string; userId: string }, { getState, rejectWithValue }) => {
+  async (
+    { eventId, userId }: { eventId: string; userId: string },
+    { getState, rejectWithValue },
+  ) => {
     try {
       const state = getState() as any;
       const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
-      
+
       if (isCurrentlyFavorite) {
         await api.delete(path('/attendee/favorites/:eventId', { eventId }), {
           data: { userId },
@@ -61,12 +64,12 @@ export const toggleFavorite = createAsyncThunk(
           userId,
         });
       }
-      
+
       return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to toggle favorite');
     }
-  }
+  },
 );
 
 const favoritesSlice = createSlice({
@@ -88,7 +91,7 @@ const favoritesSlice = createSlice({
       }
     },
     removeFavorite: (state, action: PayloadAction<string>) => {
-      state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== action.payload);
+      state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== action.payload);
     },
     clearFavorites: (state) => {
       state.favoriteEventIds = [];
@@ -133,7 +136,7 @@ const favoritesSlice = createSlice({
         }
         const { eventId } = action.meta.arg;
         if (state.favoriteEventIds.includes(eventId)) {
-          state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== eventId);
+          state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== eventId);
         } else {
           state.favoriteEventIds.push(eventId);
         }
@@ -145,7 +148,7 @@ const favoritesSlice = createSlice({
         const { eventId } = action.meta.arg;
         if (action.payload) {
           if (state.favoriteEventIds.includes(eventId)) {
-            state.favoriteEventIds = state.favoriteEventIds.filter(id => id !== eventId);
+            state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== eventId);
           } else {
             state.favoriteEventIds.push(eventId);
           }
@@ -155,15 +158,15 @@ const favoritesSlice = createSlice({
   },
 });
 
-export const { 
-  setFavorites, 
+export const {
+  setFavorites,
   setEvents,
-  addFavorite, 
-  removeFavorite, 
-  clearFavorites, 
+  addFavorite,
+  removeFavorite,
+  clearFavorites,
   clearEvents,
-  setError, 
-  clearError 
+  setError,
+  clearError,
 } = favoritesSlice.actions;
 
 export default favoritesSlice.reducer;

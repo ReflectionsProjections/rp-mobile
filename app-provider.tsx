@@ -10,8 +10,8 @@ import { store, persistor } from './lib/store';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 60 * 1000,   // data considered fresh for 1 hour
-      gcTime: 360 * 60 * 1000,     // garbage collect after 6 hours of inactivity
+      staleTime: 60 * 60 * 1000, // data considered fresh for 1 hour
+      gcTime: 360 * 60 * 1000, // garbage collect after 6 hours of inactivity
       retry: 2,
       refetchOnWindowFocus: true,
       refetchOnReconnect: false,
@@ -31,9 +31,7 @@ export default function AppProvider({ children }: { children: React.ReactNode })
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       </PersistGate>
     </Provider>
   );

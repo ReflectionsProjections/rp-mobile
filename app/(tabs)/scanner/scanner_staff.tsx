@@ -529,10 +529,9 @@ export default function ScannerScreen() {
                   style={{ color: 'white' }}
                   dropdownIconColor="white"
                 >
-                  {filteredEvents
-                    .map((e) => (
-                      <Picker.Item key={e.eventId} label={e.name} value={e.eventId} color="white" />
-                    ))}
+                  {filteredEvents.map((e) => (
+                    <Picker.Item key={e.eventId} label={e.name} value={e.eventId} color="white" />
+                  ))}
                 </Picker>
               </View>
             </TouchableWithoutFeedback>
