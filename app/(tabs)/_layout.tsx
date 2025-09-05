@@ -1,10 +1,11 @@
 import '@/global.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, View, TouchableOpacity, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SvgProps } from 'react-native-svg';
 import { Role } from '../../api/types';
 import { useUserProfile } from '@/api/tanstack/user';
+import * as SecureStore from 'expo-secure-store';
 
 import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
@@ -40,9 +41,25 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
 
 // Separate component to handle scanner routing with user data
 function ScannerRouter() {
-  const { data: user, isLoading } = useUserProfile();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
-  if (isLoading) {
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const jwt = await SecureStore.getItemAsync('jwt');
+        setIsAuthenticated(!!jwt);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+  
+  const { data: user, isLoading } = useUserProfile(isAuthenticated);
+  
+  if (isAuthenticated === null || isLoading) {
     return <ScannerGuestScreen />;
   }
   

@@ -8,20 +8,24 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
+  Button,
 } from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
 // import ColorPicker from '@/components/profile/ColorPicker';
-import { useUserProfile } from '@/api/tanstack/user';
-import { useAttendeePoints } from '@/api/tanstack/attendee';
-import { logout } from '@/lib/auth';
+import { logout as clearAuthTokens } from '@/lib/auth';
+import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
 import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { Ionicons } from '@expo/vector-icons';
 
 import Background from '@/assets/images/profile_background.svg';
 import LottieView from 'lottie-react-native';
+import { useAppSelector } from '@/lib/store';
+import { RootState } from '@/lib/store';
+import { useDataInitialization } from '@/hooks/useDataInitialization';
+import * as WebBrowser from 'expo-web-browser';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -62,12 +66,13 @@ const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex
 );
 
 const ProfileScreen = () => {
-  const { data: user, isLoading: userLoading, error: userError } = useUserProfile();
-  const { data: points, isLoading: pointsLoading, error: pointsError } = useAttendeePoints();
+  const { isInitialized } = useDataInitialization();
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const logout = useLogout();
   
-  const loading = userLoading || pointsLoading;
-  const error = userError || pointsError;
+  const points = attendee?.points || 0;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -75,6 +80,7 @@ const ProfileScreen = () => {
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const notificationAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
   const handleLogout = () => {
     Alert.alert(
       'Log Out',
@@ -85,12 +91,11 @@ const ProfileScreen = () => {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
-            const success = await logout();
-            if (success) {
-              router.replace('/(auth)/sign-in');
-            } else {
-              router.replace('/(auth)/sign-in');
-            }
+            logout();
+            
+            await clearAuthTokens();
+            
+            router.replace('/(auth)/sign-in');
           },
         },
       ],
@@ -98,9 +103,13 @@ const ProfileScreen = () => {
     );
   };
 
+  const handleRegisterPress = () => {
+    router.push('/(auth)/sign-in');
+    WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
+  };
+
   const handleNotificationToggle = (value: boolean) => {
     setNotificationsEnabled(value);
-    // Here you would typically call an API to update notification preferences
     console.log('Notifications:', value ? 'enabled' : 'disabled');
   };
 
@@ -110,7 +119,7 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     const animationSequence = Animated.sequence([
-      Animated.timing(backButtonAnim, {
+      Animated.timing(logoScaleAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
@@ -127,6 +136,11 @@ const ProfileScreen = () => {
           useNativeDriver: true,
         }),
       ]),
+      Animated.timing(backButtonAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
       Animated.timing(notificationAnim, {
         toValue: 1,
         duration: 600,
@@ -139,13 +153,13 @@ const ProfileScreen = () => {
     const pulseAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
+          toValue: 1.05,
+          duration: 1500,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 1500,
           useNativeDriver: true,
         }),
       ]),
@@ -157,7 +171,7 @@ const ProfileScreen = () => {
 
   }, []);
 
-  if (loading) {
+  if (!isInitialized) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView
@@ -171,13 +185,146 @@ const ProfileScreen = () => {
     );
   }
 
-  if (error) {
+  if (!user || user.roles.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-500 justify-center items-center">
-        <Text className="text-xl text-white text-center px-6">
-          Make sure to register for R|P first!
-        </Text>
-      </SafeAreaView>
+      <View className="flex-1">
+        <Background
+          width={width}
+          height={height}
+          style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          preserveAspectRatio="none"
+        />
+        
+        <SafeAreaView className="flex-1 justify-center items-center px-6">
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim },
+                { scale: logoScaleAnim }
+              ],
+            }}
+            className="items-center"
+          >
+            <View
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                backgroundColor: 'rgba(202, 37, 35, 0.2)',
+                borderWidth: 3,
+                borderColor: '#CA2523',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 30,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Ionicons name="trophy-outline" size={60} color="#CA2523" />
+            </View>
+
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: '700',
+                fontFamily: 'ProRacing',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: 12,
+                textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 4,
+              }}
+            >
+              JOIN THE RACE!
+            </Text>
+            
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: 'Inter',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textAlign: 'center',
+                marginBottom: 40,
+                lineHeight: 24,
+                textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}
+            >
+              Make sure to register for R|P to track your points and unlock exclusive rewards!
+            </Text>
+            
+          
+            <Animated.View
+              style={{
+                transform: [{ scale: pulseAnim }],
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleRegisterPress}
+                activeOpacity={0.8}
+                style={{
+                  backgroundColor: '#CA2523',
+                  paddingVertical: 18,
+                  paddingHorizontal: 40,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 12,
+                  elevation: 12,
+                  minWidth: 220,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 18,
+                    fontWeight: '700',
+                    fontFamily: 'ProRacing',
+                    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  REGISTER NOW
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Guest continue option */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              style={{
+                marginTop: 20,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  textAlign: 'center',
+                  textDecorationLine: 'underline',
+                }}
+              >
+                Continue as Guest
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </SafeAreaView>
+      </View>
     );
   }
 

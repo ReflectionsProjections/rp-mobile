@@ -26,7 +26,7 @@ export const fetchUserFavorites = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await api.get(path('/attendee/favorites', { userId }));
-      return (response.data as any).favorites as string[];
+      return response.data.favoriteEvents as string[];
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch favorites');
     }
