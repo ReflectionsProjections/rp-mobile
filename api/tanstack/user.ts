@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setUserProfile, clearUserProfile } from '@/lib/slices/userSlice';
+import { clearAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import { clearFavorites, clearEvents } from '@/lib/slices/favoritesSlice';
 import { api } from '../api';
 import type { RoleObject } from '../types';
 
@@ -12,7 +14,7 @@ async function fetchUserProfile(): Promise<RoleObject> {
   return response.data as RoleObject;
 }
 
-export function useUserProfile() {
+export function useUserProfile(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
   const reduxProfile = useAppSelector(state => state.user.profile);
   const reduxLastFetched = useAppSelector(state => state.user.lastFetched);
@@ -20,7 +22,7 @@ export function useUserProfile() {
   const query = useQuery<RoleObject>({
     queryKey: USER_PROFILE_QK,
     queryFn: fetchUserProfile,
-    enabled: !reduxProfile || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000, // 5 minutes
+    enabled: isAuthenticated === true && (!reduxProfile || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -70,6 +72,9 @@ export function useLogout() {
   return () => {
     // Clear Redux state
     dispatch(clearUserProfile());
+    dispatch(clearAttendeeProfile());
+    dispatch(clearFavorites());
+    dispatch(clearEvents());
     
     // Clear all queries
     queryClient.clear();

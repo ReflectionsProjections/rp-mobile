@@ -13,7 +13,7 @@ import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
-import { useAppSelector } from '@/lib/store';
+import { useAppSelector, RootState } from '@/lib/store';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -37,9 +37,7 @@ const typeColors = {
 
 const EventsScreen = () => {
   // Get data from Redux
-  const events = useAppSelector((state: any) => state.favorites.events) || [];
-  
-  const [loading, setLoading] = useState(true);
+  const events = useAppSelector((state: RootState) => state.favorites.events) || [];
   const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -106,13 +104,6 @@ const EventsScreen = () => {
     }
   }, []);
 
-  // Update loading state based on Redux data
-  useEffect(() => {
-    if (events.length > 0) {
-      setLoading(false);
-    }
-  }, [events]);
-
   const filteredEvents = events.filter((item: Event) => {
     if (!item.startTime) return false;
     const eventDate = new Date(item.startTime);
@@ -134,7 +125,7 @@ const EventsScreen = () => {
     });
   };
 
-  if (loading) {
+  if (!events) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView

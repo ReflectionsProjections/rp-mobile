@@ -10,7 +10,7 @@ async function fetchUserFavorites(userId: string): Promise<string[]> {
   console.log('API: Fetching favorites for user:', userId);
   const response = await api.get(path('/attendee/favorites', { userId }));
   console.log('API: Favorites response:', response.data);
-  const favorites = (response.data as any).favorites as string[];
+  const favorites = response.data.favoriteEvents as string[];
   console.log('API: Extracted favorites:', favorites);
   return favorites;
 }
@@ -28,9 +28,7 @@ export function useUserFavorites(userId?: string) {
       }
       return fetchUserFavorites(userId);
     },
-    enabled: !!userId && (!reduxFavorites.length || !reduxLastFetched || (Date.now() - reduxLastFetched) > 10 * 60 * 1000), // 10 minutes
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
+    enabled: false, // Disabled - we use Redux for data management
     select: (data) => {
       dispatch(setFavorites(data));
       return data;

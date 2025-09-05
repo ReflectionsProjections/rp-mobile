@@ -1,11 +1,8 @@
+export type Tier = "TIER1" | "TIER2" | "TIER3";
+export type IconColorType = "BLUE" | "RED" | "GREEN" | "YELLOW" | "PINK" | "BLACK" | "PURPLE" | "ORANGE";
+
 export type Attendee = {
   userId: string;
-  name: string;
-  email: string;
-  events: string[];
-  dietaryRestrictions: string[];
-  allergies: string[];
-  hasCheckedIn: boolean;
   points: number;
   hasPriority: {
     Mon: boolean;
@@ -28,8 +25,10 @@ export type Attendee = {
     Tote: boolean;
     Cap: boolean;
   };
-  favorites: string[];
-  puzzlesCompleted: string[];
+  tags: string[];
+  favoriteEvents: string[];
+  currentTier: Tier;
+  icon: IconColorType;
 };
 
 export type Corporate = {

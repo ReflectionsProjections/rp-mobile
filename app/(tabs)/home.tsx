@@ -9,7 +9,7 @@ import { CardType } from '@/components/home/types';
 
 import { useToggleFavorite } from '@/api/tanstack/favorites';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
-import { useAppSelector } from '@/lib/store';
+import { useAppSelector, RootState } from '@/lib/store';
 
 import {
   AnimatedScrollView,
@@ -29,9 +29,9 @@ export default function HomeScreen() {
   const { isLoading: initLoading } = useDataInitialization();
   
   // Get data directly from Redux
-  const events = useAppSelector((state: any) => state.favorites.events) || [];
-  const favorites = useAppSelector((state: any) => state.favorites.favoriteEventIds) || [];
-  const user = useAppSelector((state: any) => state.user.profile);
+  const events = useAppSelector((state: RootState) => state.favorites.events) || [];
+  const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
+  const user = useAppSelector((state: RootState) => state.user.profile);
 
   const toggleFavoriteMutation = useToggleFavorite();
 
@@ -43,7 +43,7 @@ export default function HomeScreen() {
   const cards = useMemo(() => {
     if (!events) return [];
     
-    return events.map((event: any) => ({
+    return events.map((event) => ({
       id: event.eventId,
       title: event.name,
       time: new Date(event.startTime).toLocaleTimeString([], {
@@ -66,7 +66,6 @@ export default function HomeScreen() {
     return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'USER');
   }, [user?.roles]);
 
-  const isLoading = !events || events.length === 0;
   const error = null;
 
   const sectionAnims = React.useRef([
@@ -76,7 +75,7 @@ export default function HomeScreen() {
   ]).current;
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!initLoading) {
       Animated.stagger(
         120,
         sectionAnims.map((a) =>
@@ -84,7 +83,7 @@ export default function HomeScreen() {
         ),
       ).start();
     }
-  }, [isLoading, cards.length]);
+  }, [initLoading, cards.length]);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -92,7 +91,7 @@ export default function HomeScreen() {
       Toast.show({
         type: 'error',
         text1: 'Registration Required',
-        text2: 'You must be registered to flag an event.',
+        text2: 'Make sure to register for R|P to flag events!',
         position: 'top',
         visibilityTime: 3000,
       });
@@ -196,7 +195,7 @@ export default function HomeScreen() {
   );
 
   // Loading screen
-  if (initLoading || isLoading) {
+  if (initLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg

@@ -18,7 +18,7 @@ async function fetchAttendeePoints(): Promise<number> {
   return response.data.points;
 }
 
-export function useAttendeeProfile() {
+export function useAttendeeProfile(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
   const reduxAttendee = useAppSelector(state => state.attendee.attendee);
   const reduxLastFetched = useAppSelector(state => state.attendee.lastFetched);
@@ -26,7 +26,7 @@ export function useAttendeeProfile() {
   const query = useQuery<Attendee>({
     queryKey: ATTENDEE_PROFILE_QK,
     queryFn: fetchAttendeeProfile,
-    enabled: !reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000, // 5 minutes
+    enabled: isAuthenticated === true && (!reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -46,7 +46,7 @@ export function useAttendeeProfile() {
   };
 }
 
-export function useAttendeePoints() {
+export function useAttendeePoints(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
   const reduxAttendee = useAppSelector(state => state.attendee.attendee);
   const reduxLastFetched = useAppSelector(state => state.attendee.lastFetched);
@@ -54,7 +54,7 @@ export function useAttendeePoints() {
   const query = useQuery<number>({
     queryKey: ATTENDEE_POINTS_QK,
     queryFn: fetchAttendeePoints,
-    enabled: !reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 2 * 60 * 1000, // 2 minutes for points
+    enabled: isAuthenticated === true && (!reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 2 * 60 * 1000),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
