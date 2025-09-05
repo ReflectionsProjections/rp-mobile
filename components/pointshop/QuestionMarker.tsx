@@ -1,23 +1,24 @@
 import React from 'react';
 import { View, Text, ViewStyle } from 'react-native';
 import QuestionSvg from '../../assets/images/question.svg';
+import { Tier } from '@/api/types';
 
 interface QuestionMarkerProps {
-  count: number;
+  tier: Tier;
   className?: string;
   style?: ViewStyle;
 }
 
 export const QuestionMarker: React.FC<QuestionMarkerProps> = ({
-  count,
+  tier,
   className = '',
   style = {},
 }) => (
   <View className={`absolute items-end flex-row ${className}`.trim()} style={style}>
     <QuestionSvg width={70} height={70} />
     {/* */}
-    <Text className="text-[24px] font-RacingSansOne italic font-bold text-[#FFFFFF] -ml-7">
-      ×{count}
+    <Text className="text-[22px] font-RacingSansOne italic font-bold text-[#FFFFFF] -ml-7">
+      ×{tier}
     </Text>
   </View>
 );

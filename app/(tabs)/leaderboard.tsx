@@ -1,5 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { View, PanResponder, Animated, Pressable, Text, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  PanResponder,
+  Animated,
+  Pressable,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {
@@ -97,11 +105,11 @@ const LeaderboardScreen = () => {
   return (
     <View className="flex-1">
       <BackgroundSvg
-          style={StyleSheet.absoluteFillObject}
-          width={SCREEN_WIDTH}
-          height={SCREEN_HEIGHT}
-          preserveAspectRatio="none"
-        />
+        style={StyleSheet.absoluteFillObject}
+        width={SCREEN_WIDTH}
+        height={SCREEN_HEIGHT}
+        preserveAspectRatio="none"
+      />
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}

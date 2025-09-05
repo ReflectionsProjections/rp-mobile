@@ -1,5 +1,13 @@
-export type Tier = "TIER1" | "TIER2" | "TIER3";
-export type IconColorType = "BLUE" | "RED" | "GREEN" | "YELLOW" | "PINK" | "BLACK" | "PURPLE" | "ORANGE";
+export type Tier = 'TIER1' | 'TIER2' | 'TIER3' | 'TIER4';
+export type IconColorType =
+  | 'BLUE'
+  | 'RED'
+  | 'GREEN'
+  | 'YELLOW'
+  | 'PINK'
+  | 'BLACK'
+  | 'PURPLE'
+  | 'ORANGE';
 
 export type Attendee = {
   userId: string;
@@ -365,8 +373,8 @@ export interface APIRoutes {
     POST: {
       request: { deviceId: string }; // FCM token
       response: never;
-    }
-  }
+    };
+  };
 }
 
 type ExtractPathParams<Path extends string> = Path extends `${string}:${infer Param}/${infer Rest}`

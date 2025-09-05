@@ -17,8 +17,8 @@ async function fetchUserFavorites(userId: string): Promise<string[]> {
 
 export function useUserFavorites(userId?: string) {
   const dispatch = useAppDispatch();
-  const reduxFavorites = useAppSelector(state => state.favorites.favoriteEventIds) || [];
-  const reduxLastFetched = useAppSelector(state => state.favorites.lastFetched);
+  const reduxFavorites = useAppSelector((state) => state.favorites.favoriteEventIds) || [];
+  const reduxLastFetched = useAppSelector((state) => state.favorites.lastFetched);
 
   const query = useQuery<string[]>({
     queryKey: USER_FAVORITES_QK,
@@ -47,16 +47,16 @@ export function useUserFavorites(userId?: string) {
 export function useToggleFavorite() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
-  const currentFavorites = useAppSelector(state => state.favorites.favoriteEventIds) || [];
+  const currentFavorites = useAppSelector((state) => state.favorites.favoriteEventIds) || [];
 
   return useMutation({
     mutationFn: async ({ eventId, userId }: { eventId: string; userId: string }) => {
       console.log('API: Starting toggle favorite for event:', eventId, 'user:', userId);
       dispatch(toggleFavoriteRedux({ eventId, userId }));
-      
+
       const isCurrentlyFavorite = currentFavorites.includes(eventId);
       console.log('API: Is currently favorite:', isCurrentlyFavorite);
-      
+
       if (isCurrentlyFavorite) {
         console.log('API: Deleting favorite from server');
         await api.delete(path('/attendee/favorites/:eventId', { eventId }), {
@@ -70,7 +70,7 @@ export function useToggleFavorite() {
         });
         console.log('API: Favorite added to server successfully');
       }
-      
+
       return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
     },
     onError: (error, variables) => {

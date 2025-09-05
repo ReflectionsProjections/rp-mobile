@@ -17,7 +17,6 @@ import UserInfo from '@/components/profile/UserInfo';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
-import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { Ionicons } from '@expo/vector-icons';
 
 import Background from '@/assets/images/profile_background.svg';
@@ -26,6 +25,7 @@ import { useAppSelector } from '@/lib/store';
 import { RootState } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
+import { NotificationToggle } from '@/components/misc/NotificationToggle';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -71,7 +71,7 @@ const ProfileScreen = () => {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const logout = useLogout();
-  
+
   const points = attendee?.points || 0;
 
   // Animation values
@@ -92,9 +92,9 @@ const ProfileScreen = () => {
           style: 'destructive',
           onPress: async () => {
             logout();
-            
+
             await clearAuthTokens();
-            
+
             router.replace('/(auth)/sign-in');
           },
         },
@@ -168,7 +168,6 @@ const ProfileScreen = () => {
     setTimeout(() => {
       pulseAnimation.start();
     }, 2000);
-
   }, []);
 
   if (!isInitialized) {
@@ -194,15 +193,12 @@ const ProfileScreen = () => {
           style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           preserveAspectRatio="none"
         />
-        
+
         <SafeAreaView className="flex-1 justify-center items-center px-6">
           <Animated.View
             style={{
               opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim },
-                { scale: logoScaleAnim }
-              ],
+              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
             }}
             className="items-center"
           >
@@ -242,7 +238,7 @@ const ProfileScreen = () => {
             >
               JOIN THE RACE!
             </Text>
-            
+
             <Text
               style={{
                 fontSize: 16,
@@ -258,8 +254,7 @@ const ProfileScreen = () => {
             >
               Make sure to register for R|P to track your points and unlock exclusive rewards!
             </Text>
-            
-          
+
             <Animated.View
               style={{
                 transform: [{ scale: pulseAnim }],
@@ -377,10 +372,7 @@ const ProfileScreen = () => {
       </SafeAreaView>
 
       <SafeAreaView className="flex-1">
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
+        <View style={{ paddingBottom: 100 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
             <ProfileHeader points={points} />
@@ -402,6 +394,7 @@ const ProfileScreen = () => {
                 opacity: fadeAnim,
                 transform: [{ translateY: slideAnim }],
               }}
+              pointerEvents="box-none"
             >
               <Animated.View
                 style={{
@@ -415,6 +408,7 @@ const ProfileScreen = () => {
                     },
                   ],
                 }}
+                pointerEvents="box-none"
               >
                 <View
                   style={{
@@ -434,6 +428,7 @@ const ProfileScreen = () => {
                     shadowRadius: 8,
                     elevation: 8,
                   }}
+                  pointerEvents="box-none"
                 >
                   <View style={{ flex: 1 }}>
                     <Text
@@ -460,75 +455,64 @@ const ProfileScreen = () => {
                         textShadowRadius: 1,
                       }}
                     >
-                      Receive updates about events and merch
+                      Receive updates about events
                     </Text>
                   </View>
-                  <AnimatedSwitch
-                    value={notificationsEnabled}
-                    onValueChange={handleNotificationToggle}
-                    width={60}
-                    height={36}
-                    onColor="#4CD964"
-                    offColor="rgba(255, 255, 255, 0.4)"
-                    thumbColor="#fff"
-                    thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
-                    thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
-                    iconAnimationType="fade"
-                  />
-                </View>
-              </Animated.View>
+                  <NotificationToggle />
 
+                  {/* Logout button */}
+                </View>
+                <Animated.View
+                  style={{
+                    paddingTop: 30,
+                    opacity: notificationAnim,
+                    transform: [
+                      {
+                        translateX: notificationAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-10, 0],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={handleLogout}
+                    activeOpacity={0.8}
+                    style={{
+                      backgroundColor: 'rgba(220, 53, 69, 0.9)',
+                      paddingVertical: 18,
+                      paddingHorizontal: 24,
+                      borderRadius: 12,
+                      alignItems: 'center',
+                      borderWidth: 2,
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 8,
+                      elevation: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 18,
+                        fontWeight: '700',
+                        fontFamily: 'ProRacing',
+                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                    >
+                      LOG OUT
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </Animated.View>
             </Animated.View>
           </View>
-        </ScrollView>
-        
-        {/* Logout button */}
-        <Animated.View style={{ 
-          paddingHorizontal: 20, 
-          paddingBottom: 20, 
-          opacity: notificationAnim, 
-          transform: [
-            {
-              translateX: notificationAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-10, 0],
-              }),
-            },
-          ], 
-        }}>
-          <TouchableOpacity
-            onPress={handleLogout}
-            activeOpacity={0.8}
-            style={{
-              backgroundColor: 'rgba(220, 53, 69, 0.9)',
-              paddingVertical: 18,
-              paddingHorizontal: 24,
-              borderRadius: 12,
-              alignItems: 'center',
-              borderWidth: 2,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: 18,
-                fontWeight: '700',
-                fontFamily: 'ProRacing',
-                textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-              }}
-            >
-              LOG OUT
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+        </View>
       </SafeAreaView>
     </View>
   );

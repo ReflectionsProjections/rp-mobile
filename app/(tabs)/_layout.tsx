@@ -42,7 +42,7 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
 // Separate component to handle scanner routing with user data
 function ScannerRouter() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  
+
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,25 +56,25 @@ function ScannerRouter() {
     };
     checkAuth();
   }, []);
-  
+
   const { data: user, isLoading } = useUserProfile(isAuthenticated);
-  
+
   if (isAuthenticated === null || isLoading) {
     return <ScannerGuestScreen />;
   }
-  
+
   if (!user || !user.roles || user.roles.length === 0) {
     return <ScannerGuestScreen />;
   }
-  
+
   if (user.roles.includes('STAFF')) {
     return <ScannerStaffScreen />;
   }
-  
+
   if (user.roles.includes('USER')) {
     return <ScannerUserScreen />;
   }
-  
+
   return <ScannerGuestScreen />;
 }
 
