@@ -28,6 +28,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<RoleObject | null>(null);
+  const [userTags, setUserTags] = useState<string[]>([]);
   const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
 
 
@@ -59,6 +60,11 @@ export default function HomeScreen() {
       ).start();
     }
   }, [loading, cards.length]);
+
+  useEffect(() => {
+    const tags = ((user as any)?.tags ?? []).map((t: string) => t.toLowerCase());
+    setUserTags(tags);
+  }, [user]);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -99,12 +105,25 @@ export default function HomeScreen() {
 
   // unchanged: fetch user once
   useEffect(() => {
-    const fetchUser = async () => {
-      const response = await api.get('/auth/info');
-      setUser(response.data);
-    };
-    fetchUser();
-  }, []);
+  const fetchUser = async () => {
+    // basic auth info
+    const authResponse = await api.get('/auth/info');
+    const authUser = authResponse.data;
+
+    // attendee info (includes tags)
+    const attendeeResponse = await api.get('/attendee');
+    const attendee = attendeeResponse.data;
+
+    console.log('Fetched tags:', attendee.tags);
+
+    // merge auth + attendee
+    setUser({
+      ...authUser,
+      ...attendee,  // will include tags, points, etc.
+    });
+  };
+  fetchUser();
+}, []);
 
   // ⬇️ CHANGED: map cached events -> cards (no direct API call here)
   useEffect(() => {
@@ -119,9 +138,36 @@ export default function HomeScreen() {
       location: event.location,
       pts: event.points,
       description: event.description,
+      tags: event.tags ?? [],
     }));
     setCards(formattedEvents);
   }, [events]);
+
+  const recommended = React.useMemo(() => {
+    if (!cards.length) return [];
+    if (!userTags.length) return cards; // fallback: show all if user has no tags
+
+    const tagSet = new Set(userTags.map((t) => t.toLowerCase()));
+    const scored = cards.map((c) => {
+      const overlap =
+        (c.tags ?? []).reduce(
+          (acc, t) => acc + (tagSet.has(t.toLowerCase()) ? 1 : 0),
+          0
+        );
+      return { c, score: overlap };
+    });
+
+    const filtered = scored.filter(({ score }) => score > 0);
+    const sorted = filtered.sort((a, b) => b.score - a.score);
+    const result = sorted.map(({ c }) => c);
+
+    console.log("Recommended cards based on tags:", {
+      userTags,
+      result,
+    });
+
+    return result;
+  }, [cards, userTags]);
 
   // ⬇️ CHANGED: 500ms minimum splash timing based on eventsLoading
   useEffect(() => {
@@ -316,7 +362,7 @@ export default function HomeScreen() {
         >
           <CarouselSection
             title="RECOMMENDED"
-            data={cards}
+            data={recommended}
             flaggedIds={flaggedIds}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
