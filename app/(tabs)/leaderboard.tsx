@@ -16,7 +16,8 @@ import {
   HeaderNavBar,
   HeaderComponentWrapper,
 } from '@/components/headers/parallax';
-import RpLeaderboardCar from '@/assets/images/leaderboard/rpcar.svg';
+import Fireworks from '@/assets/images/leaderboard/fireworks.svg';
+import Pedestal from '@/assets/images/leaderboard/pedestals.svg';
 import { Ionicons } from '@expo/vector-icons';
 import Reanimated, {
   useSharedValue,
@@ -64,7 +65,7 @@ const LeaderboardScreen = () => {
       const scrollY = HEADER_APPROX + userIndex * ITEM_HEIGHT;
       try {
         outerScrollRef.current.scrollTo({ y: scrollY, animated: true });
-      } catch {}
+      } catch { }
     }
   };
   const panResponder = useRef(
@@ -97,11 +98,11 @@ const LeaderboardScreen = () => {
   return (
     <View className="flex-1">
       <BackgroundSvg
-          style={StyleSheet.absoluteFillObject}
-          width={SCREEN_WIDTH}
-          height={SCREEN_HEIGHT}
-          preserveAspectRatio="none"
-        />
+        style={StyleSheet.absoluteFillObject}
+        width={SCREEN_WIDTH}
+        height={SCREEN_HEIGHT}
+        preserveAspectRatio="none"
+      />
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
@@ -116,24 +117,32 @@ const LeaderboardScreen = () => {
             <View
               style={{
                 alignItems: 'center',
-                marginTop: 110,
+                marginTop: 16,
                 zIndex: 10,
                 marginBottom: 24,
               }}
             >
               <FadeInWrapper delay={200}>
                 <FloatingAnimation amplitude={3} duration={2000}>
-                  <RpLeaderboardCar />
-                </FloatingAnimation>
-              </FadeInWrapper>
+                  <View>
+                    <Fireworks style={{ position: 'absolute', zIndex: 1, top: 60 }} />
 
-              <FadeInWrapper delay={400}>
+                    <View style={{ zIndex: 1 }}>
+                      <FadeInWrapper delay={400}>
+
+                      </FadeInWrapper>
+
+                    </View>
+
+                  </View>
+
+                </FloatingAnimation>
                 <ThemedText
                   variant="bigName"
                   style={{
                     fontSize: 32,
                     textAlign: 'center',
-                    marginTop: 16,
+                    marginTop: 100,
                     color: '#fff',
                     textShadowColor: 'rgba(0,0,0,0.5)',
                     textShadowOffset: { width: 0, height: 2 },
@@ -142,6 +151,7 @@ const LeaderboardScreen = () => {
                 >
                   LEADERBOARD
                 </ThemedText>
+                <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
               </FadeInWrapper>
 
               <FadeInWrapper delay={600}>
@@ -155,7 +165,7 @@ const LeaderboardScreen = () => {
                   <View>
                     <Text
                       style={{
-                        color: '#fff',
+                        color: '#F5B44C',
                         fontWeight: 'bold',
                         fontSize: 24,
                         textShadowColor: 'rgba(0,0,0,0.5)',
@@ -165,7 +175,7 @@ const LeaderboardScreen = () => {
                       }}
                     >
                       You are{' '}
-                      <Text style={{ color: '#CA2523' }}>
+                      <Text style={{ color: '#F5B44C' }}>
                         #{activeTab === 0 ? dailyUserRank : globalUserRank}
                       </Text>
                     </Text>
@@ -219,6 +229,7 @@ const LeaderboardScreen = () => {
                 bottom: 0,
               }}
             >
+
               <Header />
               <View
                 style={{
@@ -247,6 +258,8 @@ const LeaderboardScreen = () => {
               </View>
             </View>
           </HeaderNavBar>
+
+
         )}
       >
         <View {...panResponder.panHandlers}>
