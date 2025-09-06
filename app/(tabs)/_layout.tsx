@@ -6,6 +6,7 @@ import { SvgProps } from 'react-native-svg';
 import { Role } from '../../api/types';
 import { useUserProfile } from '@/api/tanstack/user';
 import * as SecureStore from 'expo-secure-store';
+import { useThemeColor } from '@/lib/theme';
 
 import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
@@ -80,6 +81,7 @@ function ScannerRouter() {
 
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
+  const themeColor = useThemeColor();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -118,6 +120,7 @@ export default function TabLayout() {
                     tab={tab}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
+                    themeColor={themeColor}
                   />
                 </React.Fragment>
               );
@@ -128,6 +131,7 @@ export default function TabLayout() {
                 tab={tab}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                themeColor={themeColor}
                 width={tab.key === 'home' ? 50 : 40}
                 height={tab.key === 'home' ? 50 : 40}
               />
@@ -153,9 +157,9 @@ export default function TabLayout() {
               width: BUTTON_SIZE,
               height: BUTTON_SIZE,
               borderRadius: BUTTON_SIZE / 2,
-              backgroundColor: activeTab === 'scanner' ? '#DF4F44' : '#E5E5E5',
+              backgroundColor: activeTab === 'scanner' ? themeColor : '#E5E5E5',
               borderWidth: 5,
-              borderColor: '#DF4F44',
+              borderColor: themeColor,
               alignItems: 'center',
               justifyContent: 'center',
               shadowColor: '#000',
@@ -167,7 +171,7 @@ export default function TabLayout() {
             <QrCodeIcon
               width={ICON_SIZE}
               height={ICON_SIZE}
-              color={activeTab === 'scanner' ? '#FFF' : '#DF4F44'}
+              color={activeTab === 'scanner' ? '#FFF' : themeColor}
             />
           </View>
         </Pressable>
@@ -180,10 +184,11 @@ type TabButtonProps = {
   tab: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> };
   activeTab: string;
   setActiveTab: (key: string) => void;
+  themeColor: string;
   width?: number;
   height?: number;
 };
-function TabButton({ tab, activeTab, setActiveTab, width = 40, height = 40 }: TabButtonProps) {
+function TabButton({ tab, activeTab, setActiveTab, themeColor, width = 40, height = 40 }: TabButtonProps) {
   const isActive = activeTab === tab.key;
   const Icon = isActive ? tab.filledIcon : tab.icon;
   return (
@@ -192,7 +197,7 @@ function TabButton({ tab, activeTab, setActiveTab, width = 40, height = 40 }: Ta
       onPress={() => setActiveTab(tab.key)}
     >
       <View className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}>
-        <Icon width={width} height={height} color={isActive ? '#DF4F44' : '#00ADB5'} />
+        <Icon width={width} height={height} color={isActive ? themeColor : '#00ADB5'} />
       </View>
     </TouchableOpacity>
   );

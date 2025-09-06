@@ -1,13 +1,17 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { FadeInWrapper } from './LeaderboardAnimations';
+import { useThemeColor } from '@/lib/theme';
 
 interface LeaderboardTabsProps {
   activeTab: number;
   onTabChange: (tab: number) => void;
 }
 
-export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps) => (
+export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps) => {
+  const themeColor = useThemeColor();
+  
+  return (
   <FadeInWrapper delay={800}>
     <View
       style={{
@@ -29,7 +33,7 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
           style={{
             paddingHorizontal: 20,
             paddingVertical: 8,
-            backgroundColor: activeTab === 0 ? '#F5B44C' : 'transparent',
+            backgroundColor: activeTab === 0 ? themeColor : 'transparent',
             color: activeTab === 0 ? '#222' : '#FFF',
             borderRadius: 6,
             fontSize: 20,
@@ -44,7 +48,7 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
           style={{
             paddingHorizontal: 20,
             paddingVertical: 8,
-            backgroundColor: activeTab === 1 ? '#F5B44C' : 'transparent',
+            backgroundColor: activeTab === 1 ? themeColor : 'transparent',
             color: activeTab === 1 ? '#222' : '#FFF',
             borderRadius: 6,
             fontSize: 20,
@@ -57,4 +61,5 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
       </View>
     </View>
   </FadeInWrapper>
-);
+  );
+};

@@ -3,6 +3,7 @@ import { View, Dimensions, StyleSheet } from 'react-native';
 import SwipeDeck from '@/components/home/SwipeDeck';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
+import { useThemeColor } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -34,6 +35,7 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   onSwipeTouchEnd,
 }) => {
   const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
+  const themeColor = useThemeColor();
 
   const containerHeight = CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
 
@@ -43,11 +45,12 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
         <ThemedText variant="title" style={styles.title}>
           {title}
         </ThemedText>
-        <View style={styles.titleUnderline} />
+        <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
       </View>
 
       <View style={[styles.swipeContainer, { width: CARD_WIDTH, height: containerHeight }]}>
         <SwipeDeck
+          key={`swipedeck-${themeColor}`} // Force re-render when theme changes
           data={displayData}
           onCardPress={onCardPress}
           containerStyle={{ flex: 1 }}
@@ -80,7 +83,6 @@ const styles = StyleSheet.create({
   titleUnderline: {
     width: 80,
     height: 2,
-    backgroundColor: '#CA2523',
     borderRadius: 1,
   },
   swipeContainer: {
