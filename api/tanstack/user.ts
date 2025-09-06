@@ -16,13 +16,15 @@ async function fetchUserProfile(): Promise<RoleObject> {
 
 export function useUserProfile(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
-  const reduxProfile = useAppSelector(state => state.user.profile);
-  const reduxLastFetched = useAppSelector(state => state.user.lastFetched);
+  const reduxProfile = useAppSelector((state) => state.user.profile);
+  const reduxLastFetched = useAppSelector((state) => state.user.lastFetched);
 
   const query = useQuery<RoleObject>({
     queryKey: USER_PROFILE_QK,
     queryFn: fetchUserProfile,
-    enabled: isAuthenticated === true && (!reduxProfile || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000),
+    enabled:
+      isAuthenticated === true &&
+      (!reduxProfile || !reduxLastFetched || Date.now() - reduxLastFetched > 5 * 60 * 1000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -42,7 +44,8 @@ export function useUserProfile(isAuthenticated?: boolean | null) {
   };
 }
 
-export function useUpdateUserProfile() { // for PATCH /icon and PATCH /tags endpoints
+export function useUpdateUserProfile() {
+  // for PATCH /icon and PATCH /tags endpoints
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
 
@@ -52,10 +55,10 @@ export function useUpdateUserProfile() { // for PATCH /icon and PATCH /tags endp
       if (updates.userId) {
         dispatch(setUserProfile(updates as RoleObject));
       }
-      
+
       // Invalidate and refetch user profile
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QK });
-      
+
       return updates;
     },
     onError: (error, variables) => {
@@ -75,7 +78,7 @@ export function useLogout() {
     dispatch(clearAttendeeProfile());
     dispatch(clearFavorites());
     dispatch(clearEvents());
-    
+
     // Clear all queries
     queryClient.clear();
   };

@@ -25,7 +25,7 @@ export const fetchAttendeeProfile = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch attendee profile');
     }
-  }
+  },
 );
 
 export const fetchAttendeePoints = createAsyncThunk(
@@ -37,7 +37,7 @@ export const fetchAttendeePoints = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch points');
     }
-  }
+  },
 );
 
 const attendeeSlice = createSlice({
@@ -109,14 +109,14 @@ const attendeeSlice = createSlice({
   },
 });
 
-export const { 
-  setAttendeeProfile, 
-  updatePoints, 
-  addPoints, 
-  subtractPoints, 
-  clearAttendeeProfile, 
-  setError, 
-  clearError 
+export const {
+  setAttendeeProfile,
+  updatePoints,
+  addPoints,
+  subtractPoints,
+  clearAttendeeProfile,
+  setError,
+  clearError,
 } = attendeeSlice.actions;
 
 export default attendeeSlice.reducer;

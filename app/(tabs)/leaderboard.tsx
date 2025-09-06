@@ -1,5 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { View, PanResponder, Animated, Pressable, Text, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  PanResponder,
+  Animated,
+  Pressable,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {

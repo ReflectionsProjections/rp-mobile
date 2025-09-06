@@ -20,13 +20,15 @@ async function fetchAttendeePoints(): Promise<number> {
 
 export function useAttendeeProfile(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
-  const reduxAttendee = useAppSelector(state => state.attendee.attendee);
-  const reduxLastFetched = useAppSelector(state => state.attendee.lastFetched);
+  const reduxAttendee = useAppSelector((state) => state.attendee.attendee);
+  const reduxLastFetched = useAppSelector((state) => state.attendee.lastFetched);
 
   const query = useQuery<Attendee>({
     queryKey: ATTENDEE_PROFILE_QK,
     queryFn: fetchAttendeeProfile,
-    enabled: isAuthenticated === true && (!reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 5 * 60 * 1000),
+    enabled:
+      isAuthenticated === true &&
+      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 5 * 60 * 1000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -48,13 +50,15 @@ export function useAttendeeProfile(isAuthenticated?: boolean | null) {
 
 export function useAttendeePoints(isAuthenticated?: boolean | null) {
   const dispatch = useAppDispatch();
-  const reduxAttendee = useAppSelector(state => state.attendee.attendee);
-  const reduxLastFetched = useAppSelector(state => state.attendee.lastFetched);
+  const reduxAttendee = useAppSelector((state) => state.attendee.attendee);
+  const reduxLastFetched = useAppSelector((state) => state.attendee.lastFetched);
 
   const query = useQuery<number>({
     queryKey: ATTENDEE_POINTS_QK,
     queryFn: fetchAttendeePoints,
-    enabled: isAuthenticated === true && (!reduxAttendee || !reduxLastFetched || (Date.now() - reduxLastFetched) > 2 * 60 * 1000),
+    enabled:
+      isAuthenticated === true &&
+      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 2 * 60 * 1000),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
