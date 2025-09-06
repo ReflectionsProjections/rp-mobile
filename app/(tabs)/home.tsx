@@ -10,6 +10,7 @@ import { CardType } from '@/components/home/types';
 import { useToggleFavorite } from '@/api/tanstack/favorites';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import { useAppSelector, RootState } from '@/lib/store';
+import { useThemeColor } from '@/lib/theme';
 
 import {
   AnimatedScrollView,
@@ -25,13 +26,11 @@ import Toast from 'react-native-toast-message';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  // Initialize data when component mounts
   const { isLoading: initLoading } = useDataInitialization();
-
-  // Get data directly from Redux
   const events = useAppSelector((state: RootState) => state.favorites.events) || [];
   const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
   const user = useAppSelector((state: RootState) => state.user.profile);
+  const themeColor = useThemeColor();
 
   const toggleFavoriteMutation = useToggleFavorite();
 
@@ -39,7 +38,6 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  // Transform events to cards format
   const cards = useMemo(() => {
     if (!events) return [];
 
@@ -146,7 +144,7 @@ export default function HomeScreen() {
             <ThemedText variant="bigName" style={styles.mainTitle}>
               R|P 2025
             </ThemedText>
-            <View style={styles.titleUnderline} />
+            <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
           </View>
         </View>
       </LinearGradient>
@@ -273,6 +271,7 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`next-lap-${themeColor}`}
             title="NEXT LAP"
             data={cards.slice(0, 1) || []}
             flaggedIds={favorites}
@@ -302,6 +301,7 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`recommended-${themeColor}`}
             title="RECOMMENDED"
             data={cards || []}
             flaggedIds={favorites}
@@ -331,6 +331,7 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`flagged-${themeColor}`}
             title="FLAGGED"
             data={flaggedCards || []}
             flaggedIds={favorites}
@@ -343,6 +344,7 @@ export default function HomeScreen() {
       </AnimatedScrollView>
 
       <EventModal
+        key={`event-modal-${themeColor}`}
         visible={modalVisible}
         event={selectedEvent}
         isFlagged={selectedEvent ? favorites.includes(selectedEvent.id) : false}
@@ -369,7 +371,6 @@ const styles = StyleSheet.create({
   titleUnderline: {
     width: 120,
     height: 3,
-    backgroundColor: '#CA2523',
     borderRadius: 2,
   },
   sectionContainer: {

@@ -22,10 +22,13 @@ import { Ionicons } from '@expo/vector-icons';
 import Background from '@/assets/images/profile_background.svg';
 import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
-import { RootState } from '@/lib/store';
+import { RootState, useAppDispatch } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
+import { api } from '@/api/api';
+import { updateAttendeeIcon, setAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import { IconColorType } from '@/api/types';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -69,9 +72,10 @@ const ProfileScreen = () => {
   const { isInitialized } = useDataInitialization();
   const user = useAppSelector((state: RootState) => state.user.profile);
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const themeColor = useAppSelector((state: RootState) => state.attendee.themeColor);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#3B82F6');
   const logout = useLogout();
+  const dispatch = useAppDispatch();
 
   const points = attendee?.points || 0;
 
@@ -169,6 +173,34 @@ const ProfileScreen = () => {
     setTimeout(() => {
       pulseAnimation.start();
     }, 2000);
+
+    const fetchAttendeeData = async () => {
+      try {
+  
+        const response = await (api as any).get('/attendee');
+        
+        if (response.data) {
+          console.log('Full attendee data from API:', response.data);
+          
+          // Update Redux store with attendee data
+          dispatch(setAttendeeProfile(response.data));
+          
+          if (response.data.icon) {
+            console.log('Attendee icon from API:', response.data.icon);
+          } else {
+            console.log('No icon field in attendee data, keeping default color');
+          }
+        }
+      
+      } catch (error: any) {
+        console.error('Error fetching attendee data:', error);
+        if (error?.response) {
+          console.log('Error response data:', error.response.data);
+        }
+      }
+    };
+
+    fetchAttendeeData();
   }, []);
 
   if (!isInitialized) {
@@ -353,7 +385,7 @@ const ProfileScreen = () => {
           <TouchableOpacity
             onPress={handleBackPress}
             style={{
-              backgroundColor: '#CA2523',
+              backgroundColor: themeColor,
               borderRadius: 20,
               padding: 8,
               width: 40,
@@ -533,22 +565,71 @@ const ProfileScreen = () => {
                     }}
                   >
                     {[
-                      '#4ADE80', // Green
-                      '#4338CA', // Dark Blue
-                      '#F59E0B', // Orange
                       '#3B82F6', // Blue
-                      '#FCD34D', // Yellow
                       '#EF4444', // Red
+                      '#4ADE80', // Green
+                      '#EC4899', // Pink
+                      '#8B5CF6', // Purple
+                      '#F59E0B', // Orange
                     ].map((color, index) => (
                       <TouchableOpacity
                         key={index}
-                        onPress={() => console.log('IT WORKS')}
+                        onPress={async () => {
+                          console.log('Color selected:', color);
+                          
+                          const colorMap: { [key: string]: IconColorType } = {
+                            '#3B82F6': 'BLUE',
+                            '#EF4444': 'RED',
+                            '#4ADE80': 'GREEN',
+                            '#EC4899': 'PINK',
+                            '#8B5CF6': 'PURPLE',
+                            '#F59E0B': 'ORANGE',
+                          };
+                          
+                          const apiColor = colorMap[color];
+                          console.log('Mapped API color:', apiColor);
+                          
+                          if (apiColor) {
+                            try {
+                              console.log('About to dispatch updateAttendeeIcon with:', apiColor);
+                              console.log('Current attendee in Redux:', attendee);
+                              
+                              // Let's try a direct API call first to debug
+                              console.log('Testing direct API call...');
+                              const directResponse = await (api as any).patch('/attendee/icon', { icon: apiColor });
+                              console.log('Direct API call successful:', directResponse.data);
+                              
+                              // Now dispatch Redux action to update theme color
+                              const result = await dispatch(updateAttendeeIcon(apiColor));
+                              
+                              if (updateAttendeeIcon.fulfilled.match(result)) {
+                                console.log('Successfully updated theme color!');
+                              } else {
+                                console.error('Failed to update theme color:', result.payload);
+                                console.error('Full result object:', result);
+                              }
+                            } catch (error: any) {
+                              console.error('Error updating theme color:', error);
+                              if (error?.response) {
+                                console.error('Error response status:', error.response.status);
+                                console.error('Error response data:', error.response.data);
+                                console.error('Error response headers:', error.response.headers);
+                              }
+                              if (error?.request) {
+                                console.error('Error request:', error.request);
+                              }
+                            }
+                          } else {
+                            console.error('No API color mapping found for:', color);
+                          }
+                        }}
+                        activeOpacity={0.7}
                         style={{
                           width: 44,
                           height: 44,
                           borderRadius: 22,
                           backgroundColor: color,
-                          borderWidth: selectedColor === color ? 3 : 0,
+                          borderWidth: themeColor === color ? 3 : 0,
                           borderColor: '#fff',
                           shadowColor: '#000',
                           shadowOffset: { width: 0, height: 2 },
@@ -565,6 +646,7 @@ const ProfileScreen = () => {
                 <Animated.View
                   style={{
                     paddingBottom: 20,
+                    marginTop: 30,
                     opacity: notificationAnim,
                     transform: [
                       {

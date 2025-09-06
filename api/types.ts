@@ -137,6 +137,12 @@ export interface APIRoutes {
       response: Attendee;
     };
   };
+  '/attendee/icon': {
+    PATCH: {
+      request: { icon: IconColorType };
+      response: { message: string };
+    };
+  };
   '/attendee/points': {
     GET: {
       response: { points: number };

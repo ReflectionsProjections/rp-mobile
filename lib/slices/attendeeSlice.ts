@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Attendee } from '@/api/types';
+import { Attendee, IconColorType } from '@/api/types';
 import { api } from '@/api/api';
 
 interface AttendeeState {
@@ -7,6 +7,7 @@ interface AttendeeState {
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
+  themeColor: string; 
 }
 
 const initialState: AttendeeState = {
@@ -14,6 +15,7 @@ const initialState: AttendeeState = {
   loading: false,
   error: null,
   lastFetched: null,
+  themeColor: '#3B82F6', // Default blue color
 };
 
 export const fetchAttendeeProfile = createAsyncThunk(
@@ -40,6 +42,18 @@ export const fetchAttendeePoints = createAsyncThunk(
   },
 );
 
+export const updateAttendeeIcon = createAsyncThunk(
+  'attendee/updateIcon',
+  async (color: IconColorType, { rejectWithValue }) => {
+    try {
+      await (api as any).patch('/attendee/icon', { icon: color });
+      return color; // Return the color that was successfully set
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update icon color');
+    }
+  },
+);
+
 const attendeeSlice = createSlice({
   name: 'attendee',
   initialState,
@@ -48,6 +62,24 @@ const attendeeSlice = createSlice({
       state.attendee = action.payload;
       state.lastFetched = Date.now();
       state.error = null;
+      
+      // Update theme color based on attendee icon
+      if (action.payload.icon) {
+        const apiToHexMap: { [key in IconColorType]: string } = {
+          'BLUE': '#3B82F6',
+          'RED': '#EF4444',
+          'GREEN': '#4ADE80',
+          'PINK': '#EC4899',
+          'PURPLE': '#8B5CF6',
+          'ORANGE': '#F59E0B',
+          'YELLOW': '#EAB308',
+          'BLACK': '#1F2937',
+        };
+        state.themeColor = apiToHexMap[action.payload.icon] || '#3B82F6';
+      }
+    },
+    setThemeColor: (state, action: PayloadAction<string>) => {
+      state.themeColor = action.payload;
     },
     updatePoints: (state, action: PayloadAction<number>) => {
       if (state.attendee) {
@@ -105,6 +137,37 @@ const attendeeSlice = createSlice({
       })
       .addCase(fetchAttendeePoints.rejected, (state, action) => {
         state.error = action.payload as string;
+      })
+      .addCase(updateAttendeeIcon.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateAttendeeIcon.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        // Update the attendee icon
+        if (state.attendee) {
+          state.attendee.icon = action.payload;
+        }
+        
+        // Update theme color
+        const apiToHexMap: { [key in IconColorType]: string } = {
+          'BLUE': '#3B82F6',
+          'RED': '#EF4444',
+          'GREEN': '#4ADE80',
+          'PINK': '#EC4899',
+          'PURPLE': '#8B5CF6',
+          'ORANGE': '#F59E0B',
+          'YELLOW': '#EAB308',
+          'BLACK': '#1F2937',
+        };
+        state.themeColor = apiToHexMap[action.payload] || '#3B82F6';
+        state.lastFetched = Date.now();
+        state.error = null;
+      })
+      .addCase(updateAttendeeIcon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -117,6 +180,7 @@ export const {
   clearAttendeeProfile,
   setError,
   clearError,
+  setThemeColor,
 } = attendeeSlice.actions;
 
 export default attendeeSlice.reducer;

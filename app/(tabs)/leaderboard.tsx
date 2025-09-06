@@ -34,11 +34,13 @@ import Reanimated, {
   Easing,
 } from 'react-native-reanimated';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
+import { useThemeColor } from '@/lib/theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
+  const themeColor = useThemeColor();
   const dailyUserRank = 14;
   const globalUserRank = 8;
   const userName = 'Leila Johnson'; // Replace with user id once data, or username...
@@ -173,7 +175,7 @@ const LeaderboardScreen = () => {
                       }}
                     >
                       You are{' '}
-                      <Text style={{ color: '#CA2523' }}>
+                      <Text style={{ color: themeColor }}>
                         #{activeTab === 0 ? dailyUserRank : globalUserRank}
                       </Text>
                     </Text>
@@ -190,7 +192,7 @@ const LeaderboardScreen = () => {
                       alignItems: 'center',
                     }}
                   >
-                    <Text style={{ color: '#CA2523', fontSize: 24 }}>
+                    <Text style={{ color: themeColor, fontSize: 24 }}>
                       {activeTab === 0 ? dailyPoints : globalPoints}
                     </Text>{' '}
                     LAP POINTS
