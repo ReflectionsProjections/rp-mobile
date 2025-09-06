@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { api }  from '../api'
-import type { Event } from '../types'
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '../api';
+import type { Event } from '../types';
 
 export const EVENTS_QK = ['events'] as const;
 
@@ -15,9 +15,7 @@ export function useEvents() {
     queryFn: fetchEvents,
 
     select: (rows) =>
-      [...rows].sort(
-        (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-      ),
+      [...rows].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
   });
 }
 

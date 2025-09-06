@@ -51,8 +51,8 @@ export const useFirebaseNotifications = () => {
   const registerForNotifications = async (token: string) => {
     try {
       console.log('Registering token with server:', token);
-      // Example:
-      // await api.post('/notifications/register', { token });
+      // This is now handled automatically by the Firebase service
+      // when permission is granted in system settings
     } catch (err) {
       console.error('Error registering token with server:', err);
     }
@@ -63,7 +63,6 @@ export const useFirebaseNotifications = () => {
       const firebaseService = FirebaseService.getInstance();
       await firebaseService.unregisterForNotifications();
       console.log('Unregistered from notifications');
-      // await api.post('/notifications/unregister');
     } catch (err) {
       console.error('Error unregistering from notifications:', err);
     }

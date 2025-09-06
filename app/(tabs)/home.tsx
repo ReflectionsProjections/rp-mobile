@@ -27,7 +27,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 export default function HomeScreen() {
   // Initialize data when component mounts
   const { isLoading: initLoading } = useDataInitialization();
-  
+
   // Get data directly from Redux
   const events = useAppSelector((state: RootState) => state.favorites.events) || [];
   const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
@@ -42,7 +42,7 @@ export default function HomeScreen() {
   // Transform events to cards format
   const cards = useMemo(() => {
     if (!events) return [];
-    
+
     return events.map((event) => ({
       id: event.eventId,
       title: event.name,

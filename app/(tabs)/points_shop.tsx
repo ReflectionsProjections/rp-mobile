@@ -1,10 +1,10 @@
 // screens/PointsScreen.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, Dimensions, Animated } from 'react-native';
 import Background from '../../assets/pointshop/point_background.svg';
-import Tier1Background from '../../assets/pointshop/tier1.svg';
-import Tier2Background from '../../assets/pointshop/tier2.svg';
-import Tier3Background from '../../assets/pointshop/tier3.svg';
+import Tier2Background from '../../assets/pointshop/tier2_car2.svg';
+import Tier3Background from '../../assets/pointshop/tier3_car2.svg';
+import Tier4Background from '../../assets/pointshop/tier4_car.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
 import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
@@ -13,48 +13,147 @@ import { Tier } from '@/api/types';
 const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
 
-const getBackground = (tier?: Tier) => {
-  switch (tier) {
-    case 'TIER1':
-      return <Tier1Background width={width} height={height} className="absolute inset-0 z-0" preserveAspectRatio="xMidYMin slice" />;
-    case 'TIER2':
-      return <Tier2Background width={width} height={height} className="absolute inset-0 z-0" preserveAspectRatio="xMidYMin slice" />;
-    case 'TIER3':
-      return <Tier3Background width={width} height={height} className="absolute inset-0 z-0" preserveAspectRatio="xMidYMin slice" />;
-    default:
-      return <Background width={width} height={height} className="absolute inset-0 z-0" preserveAspectRatio="xMidYMin slice" />;
-  }
-}
+// Animated background component that fades between tiers
+const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; testTier?: Tier }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const targetTier = testTier || currentTier || 'TIER1';
+
+  // Define tier progression
+  const tierProgression: Tier[] = ['TIER1', 'TIER2', 'TIER3', 'TIER4'];
+  const targetIndex = tierProgression.indexOf(targetTier);
+
+  useEffect(() => {
+    // Reset animation to 0 first
+    fadeAnim.setValue(0);
+
+    // Animate the fade to the target tier
+    Animated.timing(fadeAnim, {
+      toValue: targetIndex,
+      duration: 2000, // 2 second animation
+      useNativeDriver: true, // Opacity animations can use native driver
+    }).start();
+  }, [targetTier, fadeAnim, targetIndex]);
+
+  return (
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      {/* Base background (TIER1) */}
+      <Background
+        width={width}
+        height={height}
+        className="absolute inset-0 z-0"
+        preserveAspectRatio="xMidYMin slice"
+      />
+
+      {/* TIER2 background with fade */}
+      {targetIndex >= 1 && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: fadeAnim.interpolate({
+              inputRange: [0, 1, 2, 3],
+              outputRange: [0, 1, 1, 1],
+              extrapolate: 'clamp',
+            }),
+          }}
+        >
+          <Tier2Background
+            width={width}
+            height={height}
+            className="absolute inset-0 z-0"
+            preserveAspectRatio="xMidYMin slice"
+          />
+        </Animated.View>
+      )}
+
+      {/* TIER3 background with fade */}
+      {targetIndex >= 2 && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: fadeAnim.interpolate({
+              inputRange: [1, 2, 3],
+              outputRange: [0, 1, 1],
+              extrapolate: 'clamp',
+            }),
+          }}
+        >
+          <Tier3Background
+            width={width}
+            height={height}
+            className="absolute inset-0 z-0"
+            preserveAspectRatio="xMidYMin slice"
+          />
+        </Animated.View>
+      )}
+
+      {/* TIER4 background with fade */}
+      {targetIndex >= 3 && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: fadeAnim.interpolate({
+              inputRange: [2, 3],
+              outputRange: [0, 1],
+              extrapolate: 'clamp',
+            }),
+          }}
+        >
+          <Tier4Background
+            width={width}
+            height={height}
+            className="absolute inset-0 z-0"
+            preserveAspectRatio="xMidYMin slice"
+          />
+        </Animated.View>
+      )}
+    </View>
+  );
+};
 
 export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
+  // For testing - specify which tier to animate to
+  const testTier: Tier = "TIER4";
+
   return (
     <View className="flex-1 bg-rpRed relative">
-      { getBackground(attendee?.currentTier) }
+      <AnimatedBackground currentTier={attendee?.currentTier} />
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
-        <PointsGauge tier={attendee ? attendee.currentTier : 'N/A'} width={SPEEDO_WIDTH} /> 
+        <PointsGauge tier={attendee ? attendee.currentTier : 'N/A'} width={SPEEDO_WIDTH} />
       </View>
 
       <QuestionMarker
-        count={100}
+        tier="TIER4"
         className="z-10"
         style={{ top: height * 0.32, left: width * 0.3 }}
       />
       <QuestionMarker
-        count={50}
+        tier="TIER3"
         className="z-10"
         style={{ top: height * 0.63, left: width * 0.04 }}
       />
       <QuestionMarker
-        count={15}
+        tier="TIER2"
         className="z-10"
         style={{ top: height * 0.76, left: width * 0.52 }}
       />
 
       <Text
-        className="absolute z-10 text-[16px] font-bold text-black font-RacingSansOne"
+        className="absolute z-10 text-[16px] font-bold text-white font-RacingSansOne"
         style={{
           top: height * 0.63,
           left: width * 0.64,

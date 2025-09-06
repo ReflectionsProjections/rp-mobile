@@ -31,7 +31,7 @@ const { width, height } = Dimensions.get('window');
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -123,21 +123,18 @@ export default function SignInScreen() {
         className="flex-1 items-center justify-center"
       >
         <View className="flex-1 items-center justify-center px-5 w-full">
-          <Animated.View 
+          <Animated.View
             className="relative bottom-10 items-center"
             style={{
               opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim },
-                { scale: logoScaleAnim }
-              ],
+              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
             }}
           >
             <ReflectionsProjections width={300} height={32} />
           </Animated.View>
 
           <View className="w-full max-w-[340px] items-center">
-            <Animated.View 
+            <Animated.View
               className="items-center z-10"
               style={{
                 opacity: fadeAnim,
@@ -147,7 +144,7 @@ export default function SignInScreen() {
               <LoginIcon width={250} height={140} />
             </Animated.View>
 
-            <Animated.View 
+            <Animated.View
               className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]"
               style={{
                 opacity: fadeAnim,
@@ -159,7 +156,7 @@ export default function SignInScreen() {
                 elevation: 12,
               }}
             >
-              <Text 
+              <Text
                 className="font-proRacing text-3xl text-center mt-5 mb-6 z-10"
                 style={{
                   textShadowColor: 'rgba(0, 0, 0, 0.3)',
@@ -197,8 +194,8 @@ export default function SignInScreen() {
 
               <View className="flex-row items-center my-6 w-full">
                 <View className="flex-1 h-[2px] bg-gray-300" />
-                <ThemedText 
-                  variant="h3" 
+                <ThemedText
+                  variant="h3"
                   className="mx-4 text-black-600"
                   style={{
                     fontSize: 14,
@@ -212,8 +209,8 @@ export default function SignInScreen() {
               </View>
 
               <View className="flex-row items-baseline justify-center">
-                <ThemedText 
-                  variant="body" 
+                <ThemedText
+                  variant="body"
                   className="text-black-600"
                   style={{
                     fontSize: 18,
@@ -231,8 +228,8 @@ export default function SignInScreen() {
                     paddingVertical: 2,
                   }}
                 >
-                  <ThemedText 
-                    variant="body-bold" 
+                  <ThemedText
+                    variant="body-bold"
                     className="underline text-black"
                     style={{
                       fontSize: 18,

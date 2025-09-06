@@ -72,15 +72,12 @@ const ScannerGuestScreen = () => {
         style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         preserveAspectRatio="none"
       />
-      
+
       <SafeAreaView className="flex-1 justify-center items-center px-6">
         <Animated.View
           style={{
             opacity: fadeAnim,
-            transform: [
-              { translateY: slideAnim },
-              { scale: logoScaleAnim }
-            ],
+            transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
           }}
           className="items-center"
         >
@@ -122,7 +119,7 @@ const ScannerGuestScreen = () => {
           >
             SCAN TO EARN!
           </Text>
-          
+
           <Text
             style={{
               fontSize: 16,
@@ -138,7 +135,7 @@ const ScannerGuestScreen = () => {
           >
             Register for R|P to get your QR code and start earning points at events!
           </Text>
-          
+
           {/* Register button */}
           <Animated.View
             style={{
