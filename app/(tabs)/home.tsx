@@ -1,14 +1,17 @@
 // apps/tabs/home.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
-import { Event as ApiEvent, path, RoleObject } from '@/api/types';
-import { api } from '@/api/api';
-import { useEvents } from '@/api/events';
+
+import { useToggleFavorite } from '@/api/tanstack/favorites';
+import { useDataInitialization } from '@/hooks/useDataInitialization';
+import { useAppSelector, RootState } from '@/lib/store';
+import { useThemeColor } from '@/lib/theme';
+
 import {
   AnimatedScrollView,
   HeaderNavBar,
@@ -16,33 +19,53 @@ import {
 } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import BackgroundSvg from '@/assets/home/home_background.svg';
+import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  // fetched cards
-  const [cards, setCards] = useState<CardType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
+  const { isLoading: initLoading } = useDataInitialization();
+  const events = useAppSelector((state: RootState) => state.favorites.events) || [];
+  const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const themeColor = useThemeColor();
 
+  const toggleFavoriteMutation = useToggleFavorite();
 
-  // flags + modal state
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
-
-  // scrolling lock
+  const [modalVisible, setModalVisible] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  // ⬇️ CHANGED: cached events (served from AsyncStorage if present; otherwise fetched)
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const cards = useMemo(() => {
+    if (!events) return [];
 
-  // staggered section animations
+    return events.map((event) => ({
+      id: event.eventId,
+      title: event.name,
+      time: new Date(event.startTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      location: event.location,
+      pts: event.points,
+      description: event.description,
+    }));
+  }, [events]);
+
+  // Get flagged cards
+  const flaggedCards = useMemo(() => {
+    return cards.filter((c: CardType) => favorites?.includes(c.id));
+  }, [cards, favorites]);
+
+  // Check if user has USER role
+  const hasUserRole = useMemo(() => {
+    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'USER');
+  }, [user?.roles]);
+
+  const error = null;
+
   const sectionAnims = React.useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -50,7 +73,7 @@ export default function HomeScreen() {
   ]).current;
 
   useEffect(() => {
-    if (!loading) {
+    if (!initLoading) {
       Animated.stagger(
         120,
         sectionAnims.map((a) =>
@@ -58,7 +81,7 @@ export default function HomeScreen() {
         ),
       ).start();
     }
-  }, [loading, cards.length]);
+  }, [initLoading, cards.length]);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -66,24 +89,23 @@ export default function HomeScreen() {
       Toast.show({
         type: 'error',
         text1: 'Registration Required',
-        text2: 'You must be registered to flag an event.',
+        text2: 'Make sure to register for R|P to flag events!',
         position: 'top',
         visibilityTime: 3000,
       });
       return;
     }
 
-    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
-      userId: user.userId,
-    });
-    if (response.status === 200) {
-      setFlaggedIds((prev) => {
-        const next = new Set(prev);
-        prev.has(id) ? next.delete(id) : next.add(id);
-        return next;
+    try {
+      await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update favorite status.',
+        position: 'top',
+        visibilityTime: 3000,
       });
-    } else {
-      console.error('Failed to toggle flag:', response.data);
     }
   };
 
@@ -97,54 +119,13 @@ export default function HomeScreen() {
     setSelectedEvent(null);
   };
 
-  // unchanged: fetch user once
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await api.get('/auth/info');
-      setUser(response.data);
-    };
-    fetchUser();
-  }, []);
+  const handleSwipeTouchStart = () => {
+    setScrollEnabled(false);
+  };
 
-  // ⬇️ CHANGED: map cached events -> cards (no direct API call here)
-  useEffect(() => {
-    if (!events) return;
-    const formattedEvents = (events as ApiEvent[]).map((event: ApiEvent) => ({
-      id: event.eventId,
-      title: event.name,
-      time: new Date(event.startTime).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      location: event.location,
-      pts: event.points,
-      description: event.description,
-    }));
-    setCards(formattedEvents);
-  }, [events]);
-
-  // ⬇️ CHANGED: 500ms minimum splash timing based on eventsLoading
-  useEffect(() => {
-    if (eventsLoading) return;
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, [eventsLoading]);
-
-  // ⬇️ CHANGED: surface query error
-  useEffect(() => {
-    if (eventsError) setError('Failed to load events');
-  }, [eventsError]);
-
-  // unchanged: fetch favorites only if user is registered
-  useEffect(() => {
-    const fetchFavs = async () => {
-      if (hasUserRole && user?.userId){
-        const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
-        setFlaggedIds(new Set(favResponse.data.favorites));
-      };
-    };
-    fetchFavs();
-  }, [user?.userId]);
+  const handleSwipeTouchEnd = () => {
+    setScrollEnabled(true);
+  };
 
   const renderHeaderNavBarComponent = () => (
     <HeaderNavBar isHeader={true} showTint={false}>
@@ -163,7 +144,7 @@ export default function HomeScreen() {
             <ThemedText variant="bigName" style={styles.mainTitle}>
               R|P 2025
             </ThemedText>
-            <View style={styles.titleUnderline} />
+            <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
           </View>
         </View>
       </LinearGradient>
@@ -211,7 +192,8 @@ export default function HomeScreen() {
     </HeaderNavBar>
   );
 
-  if (loading) {
+  // Loading screen
+  if (initLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
@@ -231,6 +213,7 @@ export default function HomeScreen() {
     );
   }
 
+  // Error screen
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
@@ -240,9 +223,11 @@ export default function HomeScreen() {
           height={screenHeight}
           preserveAspectRatio="none"
         />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-        </View>
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -286,14 +271,15 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`next-lap-${themeColor}`}
             title="NEXT LAP"
-            data={cards.slice(0, 1)}
-            flaggedIds={flaggedIds}
+            data={cards.slice(0, 1) || []}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
@@ -315,14 +301,15 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`recommended-${themeColor}`}
             title="RECOMMENDED"
-            data={cards}
-            flaggedIds={flaggedIds}
+            data={cards || []}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
@@ -344,21 +331,23 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`flagged-${themeColor}`}
             title="FLAGGED"
-            data={cards.filter((c) => flaggedIds.has(c.id))}
-            flaggedIds={flaggedIds}
+            data={flaggedCards || []}
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
       </AnimatedScrollView>
 
       <EventModal
+        key={`event-modal-${themeColor}`}
         visible={modalVisible}
         event={selectedEvent}
-        isFlagged={selectedEvent ? flaggedIds.has(selectedEvent.id) : false}
+        isFlagged={selectedEvent ? favorites.includes(selectedEvent.id) : false}
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />
@@ -382,7 +371,6 @@ const styles = StyleSheet.create({
   titleUnderline: {
     width: 120,
     height: 3,
-    backgroundColor: '#CA2523',
     borderRadius: 2,
   },
   sectionContainer: {

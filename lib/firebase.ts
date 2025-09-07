@@ -11,10 +11,11 @@ import {
   onTokenRefresh,
   deleteToken,
 } from '@react-native-firebase/messaging';
-import { Alert, Platform, Linking } from 'react-native';
+import { Alert, Platform, Linking, AppState } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '@/api/api';
 
 // Storage keys for notification preferences
 const NOTIFICATION_PERMISSION_KEY = 'notification_permission_granted';
@@ -35,9 +36,12 @@ class FirebaseService {
   private static instance: FirebaseService;
   private fcmToken: string | null = null;
   private messaging: any;
+  private appStateSubscription: any = null;
+  private lastPermissionStatus: boolean | null = null;
 
   private constructor() {
     this.initializeFirebase();
+    this.setupAppStateListener();
   }
 
   public static getInstance(): FirebaseService {
@@ -53,8 +57,84 @@ class FirebaseService {
       const app = getApp();
       this.messaging = getMessaging(app);
       console.log('Firebase initialized successfully');
+
+      // Initialize permission status tracking
+      await this.initializePermissionTracking();
     } catch (error) {
       console.error('Firebase initialization error:', error);
+    }
+  }
+
+  private async initializePermissionTracking() {
+    try {
+      const { granted } = await this.checkNotificationPermission();
+      this.lastPermissionStatus = granted;
+
+      // If permission is already granted, try to get and register token
+      if (granted) {
+        await this.autoRegisterTokenIfNeeded();
+      }
+    } catch (error) {
+      console.error('Error initializing permission tracking:', error);
+    }
+  }
+
+  private setupAppStateListener() {
+    this.appStateSubscription = AppState.addEventListener('change', async (nextAppState) => {
+      if (nextAppState === 'active') {
+        // App became active, check if permission status changed
+        await this.checkPermissionStatusChange();
+      }
+    });
+  }
+
+  private async checkPermissionStatusChange() {
+    try {
+      const { granted } = await this.checkNotificationPermission();
+
+      // If permission status changed from false to true, auto-register token
+      if (this.lastPermissionStatus === false && granted === true) {
+        console.log('Notification permission granted in system settings, auto-registering token');
+        await this.autoRegisterTokenIfNeeded();
+      }
+
+      // Update stored permission status
+      if (this.lastPermissionStatus !== granted) {
+        await this.storeNotificationPreferences({
+          permissionGranted: granted,
+          fcmToken: granted ? this.fcmToken : null,
+        });
+      }
+
+      this.lastPermissionStatus = granted;
+    } catch (error) {
+      console.error('Error checking permission status change:', error);
+    }
+  }
+
+  private async autoRegisterTokenIfNeeded() {
+    try {
+      // Check if we already have a token registered
+      const storedPrefs = await this.getStoredNotificationPreferences();
+
+      if (!storedPrefs.fcmToken || storedPrefs.fcmToken !== this.fcmToken) {
+        // Get fresh token and register it
+        const token = await getToken(this.messaging);
+        if (token) {
+          this.fcmToken = token;
+          await api.post('/notifications/register', { deviceId: token });
+
+          // Store the new token
+          await this.storeNotificationPreferences({
+            permissionGranted: true,
+            fcmToken: token,
+          });
+
+          console.log('Auto-registered FCM token:', token);
+        }
+      }
+    } catch (error) {
+      console.error('Error auto-registering token:', error);
     }
   }
 
@@ -78,7 +158,7 @@ class FirebaseService {
         try {
           const fcmToken = await getToken(this.messaging);
           console.log('FCM Token:', fcmToken);
-
+          await api.post('/notifications/register', { deviceId: fcmToken });
           this.fcmToken = fcmToken;
           return { success: true, token: fcmToken };
         } catch (tokenError) {
@@ -100,12 +180,21 @@ class FirebaseService {
         return this.fcmToken;
       }
 
-      const result = await this.requestUserPermission();
-      if (!result.success) {
+      // Only get token if permission is already granted (don't request permission)
+      const { granted } = await this.checkNotificationPermission();
+      if (!granted) {
         return null;
       }
 
-      return result.token || null;
+      // Get token without requesting permission
+      const token = await getToken(this.messaging);
+      if (token) {
+        this.fcmToken = token;
+        // Auto-register the token if we haven't already
+        await this.autoRegisterTokenIfNeeded();
+      }
+
+      return token;
     } catch (error) {
       console.error('Error getting FCM token:', error);
       return null;
@@ -250,9 +339,18 @@ class FirebaseService {
       });
 
       this.fcmToken = null;
+      this.lastPermissionStatus = false;
       console.log('Successfully unregistered for notifications');
     } catch (error) {
       console.error('Failed to unregister notifications:', error);
+    }
+  }
+
+  // Cleanup method to remove listeners
+  public cleanup() {
+    if (this.appStateSubscription) {
+      this.appStateSubscription.remove();
+      this.appStateSubscription = null;
     }
   }
 

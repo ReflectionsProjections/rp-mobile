@@ -1,12 +1,12 @@
 import React from 'react';
-import { Pressable, View, type PressableProps } from 'react-native';
+import { Pressable, View, type TouchableOpacityProps, TouchableOpacity } from 'react-native';
 import { styled } from 'nativewind';
 import { ThemedText } from '../themed/ThemedText';
 
-const StyledPressable = styled(Pressable);
+const StyledPressable = styled(TouchableOpacity);
 const StyledView = styled(View);
 
-interface SlantedButtonProps extends PressableProps {
+interface SlantedButtonProps extends TouchableOpacityProps {
   children: React.ReactNode;
 }
 
