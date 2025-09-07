@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
+import { useThemeColor } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -35,6 +36,7 @@ export default function SwipeDeck({
   disableSwipeAway = false,
 }: SwipeDeckProps) {
   const [cardIndex, setCardIndex] = useState(0);
+  const themeColor = useThemeColor();
 
   const panResponder = useRef(
     PanResponder.create({
@@ -84,6 +86,8 @@ export default function SwipeDeck({
               fontSize: 20,
               fontFamily: 'magistral-medium',
             }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {item.title}
           </ThemedText>
@@ -112,13 +116,19 @@ export default function SwipeDeck({
           {truncate(item.location, 20)}
         </ThemedText>
         <View style={styles.footer}>
-          <View style={styles.points}>
+          <View style={[styles.points, { backgroundColor: themeColor }]}>
             <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
           </View>
         </View>
         <View style={styles.dots} pointerEvents="none">
           {data.map((_, dotIdx) => (
-            <View key={dotIdx} style={[styles.dot, dotIdx === idx && styles.dotActive]} />
+            <View 
+              key={dotIdx} 
+              style={[
+                styles.dot, 
+                dotIdx === idx && { ...styles.dotActive, backgroundColor: themeColor }
+              ]} 
+            />
           ))}
         </View>
       </View>
@@ -128,6 +138,7 @@ export default function SwipeDeck({
   return (
     <View style={[containerStyle, { paddingHorizontal: 20 }]} {...panResponder.panHandlers}>
       <Swiper
+        key={`swiper-${themeColor}`} // Force re-render when theme changes
         cards={data}
         renderCard={renderCard}
         keyExtractor={(card) => card.id}
@@ -194,7 +205,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   points: {
-    backgroundColor: '#CA2523',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -226,6 +236,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   dotActive: {
-    backgroundColor: '#CA2523',
+    // backgroundColor will be set dynamically using themeColor
   },
 });
