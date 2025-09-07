@@ -18,14 +18,20 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
         flexDirection: 'row',
         justifyContent: 'center',
         marginBottom: 20,
+
       }}
     >
       <View
         style={{
           flexDirection: 'row',
-          backgroundColor: '#333',
-          borderRadius: 8,
-          padding: 4,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 20,
+
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         }}
       >
         <Text
@@ -39,6 +45,11 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
             fontSize: 20,
             fontWeight: 'bold',
             fontFamily: 'magistral',
+            shadowColor: activeTab === 0 ? '#F23B3B' : 'transparent',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: 12,
+            elevation: activeTab === 0 ? 8 : 0,
           }}
         >
           DAILY
@@ -54,6 +65,11 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
             fontSize: 20,
             fontWeight: 'bold',
             fontFamily: 'magistral',
+            shadowColor: activeTab === 1 ? '#F23B3B' : 'transparent',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: 12,
+            elevation: activeTab === 1 ? 8 : 0,
           }}
         >
           GLOBAL

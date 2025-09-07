@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import {
   View,
-  ScrollView,
-  Image,
   Dimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
 } from 'react-native';
 import RedHelmet from '@/assets/profile/red_helmet.svg';
 import BlueHelmet from '@/assets/profile/blue_helmet.svg';
@@ -47,7 +43,7 @@ const ImageCarousel = () => {
   
   return (
     <View
-      className="items-center my-4 rounded-lg overflow-hidden h-[35%] w-[85%] mx-auto"
+      className="items-center my-4 rounded-lg overflow-hidden h-[30%] w-[85%] mx-auto"
       style={{ position: 'relative' }}
     >
       <LinearGradient

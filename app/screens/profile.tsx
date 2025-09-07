@@ -449,7 +449,6 @@ const ProfileScreen = () => {
                     paddingVertical: 20,
                     paddingHorizontal: 24,
                     borderRadius: 12,
-                    marginTop: 10,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -492,8 +491,6 @@ const ProfileScreen = () => {
                     </Text>
                   </View>
                   <NotificationToggle />
-
-                  {/* Logout button */}
                 </View>
               </Animated.View>
 
@@ -645,6 +642,7 @@ const ProfileScreen = () => {
                 {/* Logout button */}
                 <Animated.View
                   style={{
+                    marginTop: 10,
                     paddingBottom: 20,
                     marginTop: 30,
                     opacity: notificationAnim,
