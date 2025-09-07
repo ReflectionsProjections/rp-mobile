@@ -131,20 +131,9 @@ const LeaderboardScreen = () => {
               }}
             >
               <FadeInWrapper delay={200}>
-                <FloatingAnimation amplitude={3} duration={2000}>
-                  <View>
-                    <Fireworks style={{ position: 'absolute', zIndex: 1, top: 60 }} />
-
-                    <View style={{ zIndex: 1 }}>
-                      <FadeInWrapper delay={400}>
-
-                      </FadeInWrapper>
-
-                    </View>
-
-                  </View>
-
-                </FloatingAnimation>
+                <View>
+                  <Fireworks style={{ position: 'absolute', zIndex: 1, top: 40 }} />
+                </View>
                 <ThemedText
                   variant="bigName"
                   style={{
@@ -155,11 +144,15 @@ const LeaderboardScreen = () => {
                     textShadowColor: 'rgba(0,0,0,0.5)',
                     textShadowOffset: { width: 0, height: 2 },
                     textShadowRadius: 6,
+                    zIndex: 2,
                   }}
                 >
                   LEADERBOARD
                 </ThemedText>
-                <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
+                <FloatingAnimation style={{alignSelf: 'center', zIndex: 2 }}> 
+
+                  <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
+                </FloatingAnimation>
               </FadeInWrapper>
 
               <FadeInWrapper delay={600}>
