@@ -644,7 +644,6 @@ const ProfileScreen = () => {
                   style={{
                     marginTop: 10,
                     paddingBottom: 20,
-                    marginTop: 30,
                     opacity: notificationAnim,
                     transform: [
                       {
