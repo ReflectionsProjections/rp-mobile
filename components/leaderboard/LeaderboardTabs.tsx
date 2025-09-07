@@ -41,7 +41,11 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
             fontSize: 20,
             fontWeight: 'bold',
             fontFamily: 'magistral',
-
+            shadowColor: activeTab === 0 ? '#F23B3B' : 'transparent',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: 12,
+            elevation: activeTab === 0 ? 8 : 0,
           }}
         >
           DAILY
@@ -57,7 +61,11 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
             fontSize: 20,
             fontWeight: 'bold',
             fontFamily: 'magistral',
-
+            shadowColor: activeTab === 1 ? '#F23B3B' : 'transparent',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: 12,
+            elevation: activeTab === 1 ? 8 : 0,
           }}
         >
           GLOBAL
