@@ -15,7 +15,7 @@ const initialState: AttendeeState = {
   loading: false,
   error: null,
   lastFetched: null,
-  themeColor: '#3B82F6', // Default blue color
+  themeColor: '#E53F33', // Default red color
 };
 
 export const fetchAttendeeProfile = createAsyncThunk(

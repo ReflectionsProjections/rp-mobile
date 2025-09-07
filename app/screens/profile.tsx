@@ -13,7 +13,7 @@ import {
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
-// import ColorPicker from '@/components/profile/ColorPicker';
+import ColorPicker from '@/components/profile/ColorPicker';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
@@ -27,8 +27,7 @@ import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
 import { api } from '@/api/api';
-import { updateAttendeeIcon, setAttendeeProfile } from '@/lib/slices/attendeeSlice';
-import { IconColorType } from '@/api/types';
+import { setAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -418,7 +417,6 @@ const ProfileScreen = () => {
               }}
               roles={user?.roles || []}
             />
-            {/* <ColorPicker /> */}
 
             <Separator />
 
@@ -429,8 +427,10 @@ const ProfileScreen = () => {
               }}
               pointerEvents="box-none"
             >
+              <ColorPicker />
               <Animated.View
                 style={{
+                  marginTop: 10,
                   opacity: notificationAnim,
                   transform: [
                     {
@@ -494,9 +494,11 @@ const ProfileScreen = () => {
                 </View>
               </Animated.View>
 
-              {/* Customization Section */}
+              {/* Logout button */}
               <Animated.View
                 style={{
+                  marginTop: 10,
+                  paddingBottom: 20,
                   opacity: notificationAnim,
                   transform: [
                     {
@@ -508,15 +510,17 @@ const ProfileScreen = () => {
                   ],
                 }}
               >
-                <View
+                <TouchableOpacity
+                  onPress={handleLogout}
+                  activeOpacity={0.8}
                   style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    paddingVertical: 20,
+                    backgroundColor: 'rgba(220, 53, 69, 0.9)',
+                    paddingVertical: 18,
                     paddingHorizontal: 24,
                     borderRadius: 12,
-                    marginTop: 10,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    alignItems: 'center',
+                    borderWidth: 2,
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
@@ -530,164 +534,14 @@ const ProfileScreen = () => {
                       fontSize: 18,
                       fontWeight: '700',
                       fontFamily: 'ProRacing',
-                      marginBottom: 6,
                       textShadowColor: 'rgba(0, 0, 0, 0.5)',
                       textShadowOffset: { width: 0, height: 1 },
                       textShadowRadius: 2,
                     }}
                   >
-                    CUSTOMIZE
+                    LOG OUT
                   </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      marginBottom: 16,
-                      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 1,
-                    }}
-                  >
-                    Choose your theme color
-                  </Text>
-
-                  {/* Color Picker */}
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      paddingHorizontal: 8,
-                    }}
-                  >
-                    {[
-                      '#3B82F6', // Blue
-                      '#EF4444', // Red
-                      '#4ADE80', // Green
-                      '#EC4899', // Pink
-                      '#8B5CF6', // Purple
-                      '#F59E0B', // Orange
-                    ].map((color, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={async () => {
-                          console.log('Color selected:', color);
-                          
-                          const colorMap: { [key: string]: IconColorType } = {
-                            '#3B82F6': 'BLUE',
-                            '#EF4444': 'RED',
-                            '#4ADE80': 'GREEN',
-                            '#EC4899': 'PINK',
-                            '#8B5CF6': 'PURPLE',
-                            '#F59E0B': 'ORANGE',
-                          };
-                          
-                          const apiColor = colorMap[color];
-                          console.log('Mapped API color:', apiColor);
-                          
-                          if (apiColor) {
-                            try {
-                              console.log('About to dispatch updateAttendeeIcon with:', apiColor);
-                              console.log('Current attendee in Redux:', attendee);
-                              
-                              // Let's try a direct API call first to debug
-                              console.log('Testing direct API call...');
-                              const directResponse = await (api as any).patch('/attendee/icon', { icon: apiColor });
-                              console.log('Direct API call successful:', directResponse.data);
-                              
-                              // Now dispatch Redux action to update theme color
-                              const result = await dispatch(updateAttendeeIcon(apiColor));
-                              
-                              if (updateAttendeeIcon.fulfilled.match(result)) {
-                                console.log('Successfully updated theme color!');
-                              } else {
-                                console.error('Failed to update theme color:', result.payload);
-                                console.error('Full result object:', result);
-                              }
-                            } catch (error: any) {
-                              console.error('Error updating theme color:', error);
-                              if (error?.response) {
-                                console.error('Error response status:', error.response.status);
-                                console.error('Error response data:', error.response.data);
-                                console.error('Error response headers:', error.response.headers);
-                              }
-                              if (error?.request) {
-                                console.error('Error request:', error.request);
-                              }
-                            }
-                          } else {
-                            console.error('No API color mapping found for:', color);
-                          }
-                        }}
-                        activeOpacity={0.7}
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 22,
-                          backgroundColor: color,
-                          borderWidth: themeColor === color ? 3 : 0,
-                          borderColor: '#fff',
-                          shadowColor: '#000',
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.3,
-                          shadowRadius: 4,
-                          elevation: 4,
-                        }}
-                      />
-                    ))}
-                  </View>
-                </View>
-
-                {/* Logout button */}
-                <Animated.View
-                  style={{
-                    marginTop: 10,
-                    paddingBottom: 20,
-                    opacity: notificationAnim,
-                    transform: [
-                      {
-                        translateX: notificationAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [-10, 0],
-                        }),
-                      },
-                    ],
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={handleLogout}
-                    activeOpacity={0.8}
-                    style={{
-                      backgroundColor: 'rgba(220, 53, 69, 0.9)',
-                      paddingVertical: 18,
-                      paddingHorizontal: 24,
-                      borderRadius: 12,
-                      alignItems: 'center',
-                      borderWidth: 2,
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 8,
-                      elevation: 8,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: 18,
-                        fontWeight: '700',
-                        fontFamily: 'ProRacing',
-                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 2,
-                      }}
-                    >
-                      LOG OUT
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                </TouchableOpacity>
               </Animated.View>
             </Animated.View>
           </View>

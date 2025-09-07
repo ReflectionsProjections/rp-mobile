@@ -1,4 +1,4 @@
-export type Tier = 'TIER1' | 'TIER2' | 'TIER3' | 'TIER4';
+export type Tier = 'TIER0' | 'TIER1' | 'TIER2' | 'TIER3';
 export type IconColorType =
   | 'BLUE'
   | 'RED'

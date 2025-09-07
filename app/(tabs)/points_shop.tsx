@@ -19,7 +19,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
   const targetTier = testTier || currentTier || 'TIER1';
 
   // Define tier progression
-  const tierProgression: Tier[] = ['TIER1', 'TIER2', 'TIER3', 'TIER4'];
+  const tierProgression: Tier[] = ['TIER0', 'TIER1', 'TIER2', 'TIER3'];
   const targetIndex = tierProgression.indexOf(targetTier);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
 
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-      {/* Base background (TIER1) */}
+      {/* Base background (TIER0) */}
       <Background
         width={width}
         height={height}
@@ -44,7 +44,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
         preserveAspectRatio="xMidYMin slice"
       />
 
-      {/* TIER2 background with fade */}
+      {/* TIER1 background with fade */}
       {targetIndex >= 1 && (
         <Animated.View
           style={{
@@ -69,7 +69,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
         </Animated.View>
       )}
 
-      {/* TIER3 background with fade */}
+      {/* TIER2 background with fade */}
       {targetIndex >= 2 && (
         <Animated.View
           style={{
@@ -94,7 +94,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
         </Animated.View>
       )}
 
-      {/* TIER4 background with fade */}
+      {/* TIER3 background with fade */}
       {targetIndex >= 3 && (
         <Animated.View
           style={{
@@ -104,7 +104,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
             right: 0,
             bottom: 0,
             opacity: fadeAnim.interpolate({
-              inputRange: [2, 3],
+              inputRange: [2, 3], 
               outputRange: [0, 1],
               extrapolate: 'clamp',
             }),
@@ -126,28 +126,28 @@ export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   // For testing - specify which tier to animate to
-  const testTier: Tier = "TIER4";
+  const testTier: Tier = "TIER2";
 
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground currentTier={attendee?.currentTier} />
+      <AnimatedBackground currentTier={attendee?.currentTier}/>
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={attendee ? attendee.currentTier : 'N/A'} width={SPEEDO_WIDTH} />
       </View>
 
       <QuestionMarker
-        tier="TIER4"
+        tier="TIER3"
         className="z-10"
         style={{ top: height * 0.32, left: width * 0.3 }}
       />
       <QuestionMarker
-        tier="TIER3"
+        tier="TIER2"
         className="z-10"
         style={{ top: height * 0.63, left: width * 0.04 }}
       />
       <QuestionMarker
-        tier="TIER2"
+        tier="TIER1"
         className="z-10"
         style={{ top: height * 0.76, left: width * 0.52 }}
       />
