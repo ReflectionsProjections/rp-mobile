@@ -1,5 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
+import {
+  View,
+  PanResponder,
+  Animated,
+  Pressable,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {
@@ -16,7 +24,8 @@ import {
   HeaderNavBar,
   HeaderComponentWrapper,
 } from '@/components/headers/parallax';
-import RpLeaderboardCar from '@/assets/images/leaderboard/rpcar.svg';
+import Fireworks from '@/assets/images/leaderboard/fireworks.svg';
+import Pedestal from '@/assets/images/leaderboard/pedestals.svg';
 import { Ionicons } from '@expo/vector-icons';
 import Reanimated, {
   useSharedValue,
@@ -25,9 +34,14 @@ import Reanimated, {
   useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
+import BackgroundSvg from '@/assets/background/background_grate.svg';
+import { useThemeColor } from '@/lib/theme';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
+  const themeColor = useThemeColor();
   const dailyUserRank = 14;
   const globalUserRank = 8;
   const userName = 'Leila Johnson'; // Replace with user id once data, or username...
@@ -61,7 +75,7 @@ const LeaderboardScreen = () => {
       const scrollY = HEADER_APPROX + userIndex * ITEM_HEIGHT;
       try {
         outerScrollRef.current.scrollTo({ y: scrollY, animated: true });
-      } catch {}
+      } catch { }
     }
   };
   const panResponder = useRef(
@@ -92,7 +106,13 @@ const LeaderboardScreen = () => {
   const data = activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#222' }}>
+    <View className="flex-1">
+      <BackgroundSvg
+        style={StyleSheet.absoluteFillObject}
+        width={SCREEN_WIDTH}
+        height={SCREEN_HEIGHT}
+        preserveAspectRatio="none"
+      />
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
@@ -107,32 +127,34 @@ const LeaderboardScreen = () => {
             <View
               style={{
                 alignItems: 'center',
-                marginTop: 110,
+                marginTop: 16,
                 zIndex: 10,
                 marginBottom: 24,
               }}
             >
               <FadeInWrapper delay={200}>
-                <FloatingAnimation amplitude={3} duration={2000}>
-                  <RpLeaderboardCar />
-                </FloatingAnimation>
-              </FadeInWrapper>
-
-              <FadeInWrapper delay={400}>
+                <View>
+                  <Fireworks style={{ position: 'absolute', zIndex: 1, top: 40 }} />
+                </View>
                 <ThemedText
                   variant="bigName"
                   style={{
                     fontSize: 32,
                     textAlign: 'center',
-                    marginTop: 16,
+                    marginTop: 100,
                     color: '#fff',
                     textShadowColor: 'rgba(0,0,0,0.5)',
                     textShadowOffset: { width: 0, height: 2 },
                     textShadowRadius: 6,
+                    zIndex: 2,
                   }}
                 >
                   LEADERBOARD
                 </ThemedText>
+                <FloatingAnimation style={{alignSelf: 'center', zIndex: 2 }}> 
+
+                  <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
+                </FloatingAnimation>
               </FadeInWrapper>
 
               <FadeInWrapper delay={600}>
@@ -146,7 +168,7 @@ const LeaderboardScreen = () => {
                   <View>
                     <Text
                       style={{
-                        color: '#fff',
+                        color: '#F5B44C',
                         fontWeight: 'bold',
                         fontSize: 24,
                         textShadowColor: 'rgba(0,0,0,0.5)',
@@ -156,7 +178,7 @@ const LeaderboardScreen = () => {
                       }}
                     >
                       You are{' '}
-                      <Text style={{ color: '#CA2523' }}>
+                      <Text style={{ color: themeColor }}>
                         #{activeTab === 0 ? dailyUserRank : globalUserRank}
                       </Text>
                     </Text>
@@ -173,7 +195,7 @@ const LeaderboardScreen = () => {
                       alignItems: 'center',
                     }}
                   >
-                    <Text style={{ color: '#CA2523', fontSize: 24 }}>
+                    <Text style={{ color: themeColor, fontSize: 24 }}>
                       {activeTab === 0 ? dailyPoints : globalPoints}
                     </Text>{' '}
                     LAP POINTS
@@ -210,6 +232,7 @@ const LeaderboardScreen = () => {
                 bottom: 0,
               }}
             >
+
               <Header />
               <View
                 style={{
@@ -238,6 +261,8 @@ const LeaderboardScreen = () => {
               </View>
             </View>
           </HeaderNavBar>
+
+
         )}
       >
         <View {...panResponder.panHandlers}>

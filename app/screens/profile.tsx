@@ -1,28 +1,33 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
   View,
-  ActivityIndicator,
   Text,
   Dimensions,
   TouchableOpacity,
   Alert,
   Animated,
+  Button,
 } from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
 import ColorPicker from '@/components/profile/ColorPicker';
-import { api } from '@/api/api';
-import { RoleObject } from '@/api/types';
-import { logout } from '@/lib/auth';
+import { logout as clearAuthTokens } from '@/lib/auth';
+import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
-import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { Ionicons } from '@expo/vector-icons';
 
 import Background from '@/assets/images/profile_background.svg';
 import LottieView from 'lottie-react-native';
+import { useAppSelector } from '@/lib/store';
+import { RootState, useAppDispatch } from '@/lib/store';
+import { useDataInitialization } from '@/hooks/useDataInitialization';
+import * as WebBrowser from 'expo-web-browser';
+import { NotificationToggle } from '@/components/misc/NotificationToggle';
+import { api } from '@/api/api';
+import { setAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -63,20 +68,23 @@ const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex
 );
 
 const ProfileScreen = () => {
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const [points, setPoints] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isInitialized } = useDataInitialization();
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const themeColor = useAppSelector((state: RootState) => state.attendee.themeColor);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const logout = useLogout();
+  const dispatch = useAppDispatch();
+
+  const points = attendee?.points || 0;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const notificationAnim = useRef(new Animated.Value(0)).current;
-  const logoutAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-
+  const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
   const handleLogout = () => {
     Alert.alert(
       'Log Out',
@@ -87,12 +95,11 @@ const ProfileScreen = () => {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
-            const success = await logout();
-            if (success) {
-              router.replace('/(auth)/sign-in');
-            } else {
-              router.replace('/(auth)/sign-in');
-            }
+            logout();
+
+            await clearAuthTokens();
+
+            router.replace('/(auth)/sign-in');
           },
         },
       ],
@@ -100,9 +107,13 @@ const ProfileScreen = () => {
     );
   };
 
+  const handleRegisterPress = () => {
+    router.push('/(auth)/sign-in');
+    WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
+  };
+
   const handleNotificationToggle = (value: boolean) => {
     setNotificationsEnabled(value);
-    // Here you would typically call an API to update notification preferences
     console.log('Notifications:', value ? 'enabled' : 'disabled');
   };
 
@@ -112,7 +123,7 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     const animationSequence = Animated.sequence([
-      Animated.timing(backButtonAnim, {
+      Animated.timing(logoScaleAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
@@ -129,12 +140,12 @@ const ProfileScreen = () => {
           useNativeDriver: true,
         }),
       ]),
-      Animated.timing(notificationAnim, {
+      Animated.timing(backButtonAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }),
-      Animated.timing(logoutAnim, {
+      Animated.timing(notificationAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
@@ -146,13 +157,13 @@ const ProfileScreen = () => {
     const pulseAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
+          toValue: 1.05,
+          duration: 1500,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 1500,
           useNativeDriver: true,
         }),
       ]),
@@ -162,36 +173,36 @@ const ProfileScreen = () => {
       pulseAnimation.start();
     }, 2000);
 
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const fetchAttendee = async () => {
-      const start = Date.now();
+    const fetchAttendeeData = async () => {
       try {
-        const response = await api.get('/auth/info');
-        setUser(response.data);
-      } catch (err) {
-        setError('Failed to load user info');
-      } finally {
-        const elapsed = Date.now() - start;
-        const remaining = 500 - elapsed;
-        timeoutId = setTimeout(() => setLoading(false), remaining > 0 ? remaining : 0);
+  
+        const response = await (api as any).get('/attendee');
+        
+        if (response.data) {
+          console.log('Full attendee data from API:', response.data);
+          
+          // Update Redux store with attendee data
+          dispatch(setAttendeeProfile(response.data));
+          
+          if (response.data.icon) {
+            console.log('Attendee icon from API:', response.data.icon);
+          } else {
+            console.log('No icon field in attendee data, keeping default color');
+          }
+        }
+      
+      } catch (error: any) {
+        console.error('Error fetching attendee data:', error);
+        if (error?.response) {
+          console.log('Error response data:', error.response.data);
+        }
       }
     };
 
-    const fetchPoints = async () => {
-      try {
-        const response = await api.get('/attendee/points');
-        setPoints(response.data.points || 0);
-      } catch (err) {
-        console.error('Failed to fetch points:', err);
-      }
-    };
-
-    fetchAttendee();
-    fetchPoints();
-    return () => clearTimeout(timeoutId);
+    fetchAttendeeData();
   }, []);
 
-  if (loading) {
+  if (!isInitialized) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView
@@ -205,13 +216,142 @@ const ProfileScreen = () => {
     );
   }
 
-  if (error) {
+  if (!user || user.roles.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-500 justify-center items-center">
-        <Text className="text-xl text-white text-center px-6">
-          Make sure to register for R|P first!
-        </Text>
-      </SafeAreaView>
+      <View className="flex-1">
+        <Background
+          width={width}
+          height={height}
+          style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          preserveAspectRatio="none"
+        />
+
+        <SafeAreaView className="flex-1 justify-center items-center px-6">
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
+            }}
+            className="items-center"
+          >
+            <View
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                backgroundColor: 'rgba(202, 37, 35, 0.2)',
+                borderWidth: 3,
+                borderColor: '#CA2523',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 30,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Ionicons name="trophy-outline" size={60} color="#CA2523" />
+            </View>
+
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: '700',
+                fontFamily: 'ProRacing',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: 12,
+                textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 4,
+              }}
+            >
+              JOIN THE RACE!
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: 'Inter',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textAlign: 'center',
+                marginBottom: 40,
+                lineHeight: 24,
+                textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}
+            >
+              Make sure to register for R|P to track your points and unlock exclusive rewards!
+            </Text>
+
+            <Animated.View
+              style={{
+                transform: [{ scale: pulseAnim }],
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleRegisterPress}
+                activeOpacity={0.8}
+                style={{
+                  backgroundColor: '#CA2523',
+                  paddingVertical: 18,
+                  paddingHorizontal: 40,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 12,
+                  elevation: 12,
+                  minWidth: 220,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 18,
+                    fontWeight: '700',
+                    fontFamily: 'ProRacing',
+                    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  REGISTER NOW
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Guest continue option */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              style={{
+                marginTop: 20,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  textAlign: 'center',
+                  textDecorationLine: 'underline',
+                }}
+              >
+                Continue as Guest
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </SafeAreaView>
+      </View>
     );
   }
 
@@ -244,7 +384,7 @@ const ProfileScreen = () => {
           <TouchableOpacity
             onPress={handleBackPress}
             style={{
-              backgroundColor: '#CA2523',
+              backgroundColor: themeColor,
               borderRadius: 20,
               padding: 8,
               width: 40,
@@ -264,10 +404,7 @@ const ProfileScreen = () => {
       </SafeAreaView>
 
       <SafeAreaView className="flex-1">
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
+        <View style={{ paddingBottom: 100 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
             <ProfileHeader points={points} />
@@ -280,7 +417,6 @@ const ProfileScreen = () => {
               }}
               roles={user?.roles || []}
             />
-            {/* <ColorPicker /> */}
 
             <Separator />
 
@@ -289,9 +425,12 @@ const ProfileScreen = () => {
                 opacity: fadeAnim,
                 transform: [{ translateY: slideAnim }],
               }}
+              pointerEvents="box-none"
             >
+              <ColorPicker />
               <Animated.View
                 style={{
+                  marginTop: 10,
                   opacity: notificationAnim,
                   transform: [
                     {
@@ -302,6 +441,7 @@ const ProfileScreen = () => {
                     },
                   ],
                 }}
+                pointerEvents="box-none"
               >
                 <View
                   style={{
@@ -309,7 +449,6 @@ const ProfileScreen = () => {
                     paddingVertical: 20,
                     paddingHorizontal: 24,
                     borderRadius: 12,
-                    marginTop: 20,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -321,6 +460,7 @@ const ProfileScreen = () => {
                     shadowRadius: 8,
                     elevation: 8,
                   }}
+                  pointerEvents="box-none"
                 >
                   <View style={{ flex: 1 }}>
                     <Text
@@ -347,32 +487,24 @@ const ProfileScreen = () => {
                         textShadowRadius: 1,
                       }}
                     >
-                      Receive updates about events and merch
+                      Receive updates about events
                     </Text>
                   </View>
-                  <AnimatedSwitch
-                    value={notificationsEnabled}
-                    onValueChange={handleNotificationToggle}
-                    width={60}
-                    height={36}
-                    onColor="#4CD964"
-                    offColor="rgba(255, 255, 255, 0.4)"
-                    thumbColor="#fff"
-                    thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
-                    thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
-                    iconAnimationType="fade"
-                  />
+                  <NotificationToggle />
                 </View>
               </Animated.View>
 
+              {/* Logout button */}
               <Animated.View
                 style={{
-                  opacity: logoutAnim,
+                  marginTop: 10,
+                  paddingBottom: 20,
+                  opacity: notificationAnim,
                   transform: [
                     {
-                      translateY: logoutAnim.interpolate({
+                      translateX: notificationAnim.interpolate({
                         inputRange: [0, 1],
-                        outputRange: [20, 0],
+                        outputRange: [-10, 0],
                       }),
                     },
                   ],
@@ -380,12 +512,12 @@ const ProfileScreen = () => {
               >
                 <TouchableOpacity
                   onPress={handleLogout}
+                  activeOpacity={0.8}
                   style={{
                     backgroundColor: 'rgba(220, 53, 69, 0.9)',
                     paddingVertical: 18,
                     paddingHorizontal: 24,
                     borderRadius: 12,
-                    marginTop: 16,
                     alignItems: 'center',
                     borderWidth: 2,
                     borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -413,7 +545,7 @@ const ProfileScreen = () => {
               </Animated.View>
             </Animated.View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );

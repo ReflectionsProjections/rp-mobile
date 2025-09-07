@@ -30,9 +30,9 @@
       </intent-filter>
       <intent-filter autoVerify="true">
         <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
   </application>
