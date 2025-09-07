@@ -17,9 +17,9 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
   
   return (
     <>
-      <View className="flex-row justify-between items-center">
+      <View className="flex-row justify-between items-center mb-2">
         <View className="flex-row items-center">
-          <View className="bg-[#D9D9D9] w-full py-2 flex-row justify-between items-center">
+          <View className="bg-[#D9D9D9] w-full py-1 flex-row justify-between items-center">
             <View className="flex-row items-center">
               <View className="w-3 h-[75px] mr-2.5" style={{ backgroundColor: themeColor }} />
               <View className="pl-1 flex-column">
@@ -35,7 +35,6 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
           </View>
         </View>
       </View>
-      <View className="h-0.5 bg-white mt-2 mb-3" />
     </>
   );
 };
