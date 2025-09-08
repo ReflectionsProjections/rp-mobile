@@ -173,14 +173,11 @@ const ProfileScreen = () => {
 
     const fetchAttendeeData = async () => {
       try {
-  
         const response = await api.get('/attendee');
-        
+
         if (response.data) {
-          
           dispatch(setAttendeeProfile(response.data));
         }
-      
       } catch (error: any) {
         Alert.alert('Error response data:', error.message);
       }

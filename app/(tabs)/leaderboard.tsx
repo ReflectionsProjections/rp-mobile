@@ -75,7 +75,7 @@ const LeaderboardScreen = () => {
       const scrollY = HEADER_APPROX + userIndex * ITEM_HEIGHT;
       try {
         outerScrollRef.current.scrollTo({ y: scrollY, animated: true });
-      } catch { }
+      } catch {}
     }
   };
   const panResponder = useRef(
@@ -151,8 +151,7 @@ const LeaderboardScreen = () => {
                 >
                   LEADERBOARD
                 </ThemedText>
-                <FloatingAnimation style={{alignSelf: 'center', zIndex: 2 }}> 
-
+                <FloatingAnimation style={{ alignSelf: 'center', zIndex: 2 }}>
                   <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
                 </FloatingAnimation>
               </FadeInWrapper>
@@ -232,7 +231,6 @@ const LeaderboardScreen = () => {
                 bottom: 0,
               }}
             >
-
               <Header />
               <View
                 style={{
@@ -261,8 +259,6 @@ const LeaderboardScreen = () => {
               </View>
             </View>
           </HeaderNavBar>
-
-
         )}
       >
         <View {...panResponder.panHandlers}>

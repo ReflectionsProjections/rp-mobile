@@ -7,7 +7,7 @@ interface AttendeeState {
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
-  themeColor: string; 
+  themeColor: string;
 }
 
 const initialState: AttendeeState = {
@@ -62,18 +62,18 @@ const attendeeSlice = createSlice({
       state.attendee = action.payload;
       state.lastFetched = Date.now();
       state.error = null;
-      
+
       // Update theme color based on attendee icon
       if (action.payload.icon) {
         const apiToHexMap: { [key in IconColorType]: string } = {
-          'BLUE': '#3B82F6',
-          'RED': '#EF4444',
-          'GREEN': '#4ADE80',
-          'PINK': '#EC4899',
-          'PURPLE': '#8B5CF6',
-          'ORANGE': '#F59E0B',
-          'YELLOW': '#EAB308',
-          'BLACK': '#1F2937',
+          BLUE: '#3B82F6',
+          RED: '#EF4444',
+          GREEN: '#4ADE80',
+          PINK: '#EC4899',
+          PURPLE: '#8B5CF6',
+          ORANGE: '#F59E0B',
+          YELLOW: '#EAB308',
+          BLACK: '#1F2937',
         };
         state.themeColor = apiToHexMap[action.payload.icon] || '#3B82F6';
       }
@@ -144,22 +144,22 @@ const attendeeSlice = createSlice({
       })
       .addCase(updateAttendeeIcon.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Update the attendee icon
         if (state.attendee) {
           state.attendee.icon = action.payload;
         }
-        
+
         // Update theme color
         const apiToHexMap: { [key in IconColorType]: string } = {
-          'BLUE': '#3B82F6',
-          'RED': '#EF4444',
-          'GREEN': '#4ADE80',
-          'PINK': '#EC4899',
-          'PURPLE': '#8B5CF6',
-          'ORANGE': '#F59E0B',
-          'YELLOW': '#EAB308',
-          'BLACK': '#1F2937',
+          BLUE: '#3B82F6',
+          RED: '#EF4444',
+          GREEN: '#4ADE80',
+          PINK: '#EC4899',
+          PURPLE: '#8B5CF6',
+          ORANGE: '#F59E0B',
+          YELLOW: '#EAB308',
+          BLACK: '#1F2937',
         };
         state.themeColor = apiToHexMap[action.payload] || '#3B82F6';
         state.lastFetched = Date.now();
