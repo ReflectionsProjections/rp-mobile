@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   View,
   Text,
   Dimensions,
   TouchableOpacity,
   Alert,
   Animated,
-  Button,
 } from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
@@ -176,26 +174,15 @@ const ProfileScreen = () => {
     const fetchAttendeeData = async () => {
       try {
   
-        const response = await (api as any).get('/attendee');
+        const response = await api.get('/attendee');
         
         if (response.data) {
-          console.log('Full attendee data from API:', response.data);
           
-          // Update Redux store with attendee data
           dispatch(setAttendeeProfile(response.data));
-          
-          if (response.data.icon) {
-            console.log('Attendee icon from API:', response.data.icon);
-          } else {
-            console.log('No icon field in attendee data, keeping default color');
-          }
         }
       
       } catch (error: any) {
-        console.error('Error fetching attendee data:', error);
-        if (error?.response) {
-          console.log('Error response data:', error.response.data);
-        }
+        Alert.alert('Error response data:', error.message);
       }
     };
 
