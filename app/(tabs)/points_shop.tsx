@@ -10,6 +10,13 @@ import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
 import { Tier } from '@/api/types';
 
+const tierMapping: { [key: string]: Tier } = {
+  'TIER1': 'TIER0',
+  'TIER2': 'TIER1',
+  'TIER3': 'TIER2', 
+  'TIER4': 'TIER3',
+};
+
 const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
 
@@ -130,10 +137,10 @@ export default function PointsScreen() {
 
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground currentTier={attendee?.currentTier}/>
+      <AnimatedBackground currentTier={tierMapping[attendee?.currentTier!]}/>
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
-        <PointsGauge tier={attendee ? attendee.currentTier : 'N/A'} width={SPEEDO_WIDTH} />
+        <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />
       </View>
 
       <QuestionMarker
