@@ -122,12 +122,12 @@ export default function SwipeDeck({
         </View>
         <View style={styles.dots} pointerEvents="none">
           {data.map((_, dotIdx) => (
-            <View 
-              key={dotIdx} 
+            <View
+              key={dotIdx}
               style={[
-                styles.dot, 
-                dotIdx === idx && { ...styles.dotActive, backgroundColor: themeColor }
-              ]} 
+                styles.dot,
+                dotIdx === idx && { ...styles.dotActive, backgroundColor: themeColor },
+              ]}
             />
           ))}
         </View>

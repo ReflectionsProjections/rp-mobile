@@ -11,10 +11,10 @@ import { useAppSelector, RootState } from '@/lib/store';
 import { Tier } from '@/api/types';
 
 const tierMapping: { [key: string]: Tier } = {
-  'TIER1': 'TIER0',
-  'TIER2': 'TIER1',
-  'TIER3': 'TIER2', 
-  'TIER4': 'TIER3',
+  TIER1: 'TIER0',
+  TIER2: 'TIER1',
+  TIER3: 'TIER2',
+  TIER4: 'TIER3',
 };
 
 const { width, height } = Dimensions.get('window');
@@ -111,7 +111,7 @@ const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; tes
             right: 0,
             bottom: 0,
             opacity: fadeAnim.interpolate({
-              inputRange: [2, 3], 
+              inputRange: [2, 3],
               outputRange: [0, 1],
               extrapolate: 'clamp',
             }),
@@ -133,11 +133,11 @@ export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   // For testing - specify which tier to animate to
-  const testTier: Tier = "TIER2";
+  const testTier: Tier = 'TIER2';
 
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground currentTier={tierMapping[attendee?.currentTier!]}/>
+      <AnimatedBackground currentTier={tierMapping[attendee?.currentTier!]} />
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />

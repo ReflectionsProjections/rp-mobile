@@ -14,22 +14,22 @@ type ProfileHeaderProps = {
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ points }) => {
   const themeColor = useThemeColor();
-  
+
   const getPTSComponent = (color: string) => {
     const ptsMap: { [key: string]: React.FC<any> } = {
-      '#3B82F6': BluePTS,     // Blue
-      '#EF4444': RedPTS,      // Red  
-      '#4ADE80': GreenPTS,    // Green
-      '#EC4899': PinkPTS,     // Pink
-      '#8B5CF6': PurplePTS,   // Purple
-      '#F59E0B': OrangePTS,   // Orange
+      '#3B82F6': BluePTS, // Blue
+      '#EF4444': RedPTS, // Red
+      '#4ADE80': GreenPTS, // Green
+      '#EC4899': PinkPTS, // Pink
+      '#8B5CF6': PurplePTS, // Purple
+      '#F59E0B': OrangePTS, // Orange
     };
-    
+
     return ptsMap[color] || RedPTS;
   };
-  
+
   const PTSComponent = getPTSComponent(themeColor);
-  
+
   return (
     <View className="flex-row justify-end items-center pr-5">
       <View className="items-end">
