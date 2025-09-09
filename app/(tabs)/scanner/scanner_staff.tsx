@@ -13,18 +13,32 @@ import {
 } from 'react-native';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Picker } from '@react-native-picker/picker';
 import { api } from '@/api/api';
-import { Event, path } from '@/api/types';
 import { useEvents } from '@/api/tanstack/events';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
+import { 
+  fetchRedemptionInfo, 
+  redeemTier, 
+  getMerchandiseItems, 
+  hasRedeemedTshirt,
+  type RedemptionInfo,
+  type MerchandiseItem 
+} from '@/lib/redemptionUtils';
+import ModeSwitch from '@/components/scanner/ModeSwitch';
+import EventSelector from '@/components/scanner/EventSelector';
+import GeneralCheckinModal from '@/components/scanner/GeneralCheckinModal';
+import TshirtRedemptionModal from '@/components/scanner/TshirtRedemptionModal';
+import EventPickerModal from '@/components/scanner/EventPickerModal';
+import ErrorModal from '@/components/scanner/ErrorModal';
+import SuccessModal from '@/components/scanner/SuccessModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SCAN_BOX_SIZE = SCREEN_WIDTH * 0.7;
-const SCAN_BOX_TOP_OFFSET = SCREEN_HEIGHT * 0.1; // Position box in upper-middle area
+const SCAN_BOX_TOP_OFFSET = SCREEN_HEIGHT * 0.05; // Position box in upper-middle area
 
 const DEMO_ACCOUNT_ID = 'demoacct-bd2c-6535-89b7-reflect12334';
+const GENERAL_CHECKIN_EVENT_ID = 'af789f27-0792-49b0-9db8-65fc5ffff1d9';
 
 const parseQrCode = (
   qrData: string,
@@ -88,13 +102,17 @@ export default function ScannerScreen() {
   const [scanned, setScanned] = useState(false);
   const [scanReady, setScanReady] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [lastScannedCode, setLastScannedCode] = useState<string>('');
+  const [_, setLastScannedCode] = useState<string>('');
   const [scanDisabled, setScanDisabled] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [merchModalVisible, setMerchModalVisible] = useState(false);
   const [merchProcessing, setMerchProcessing] = useState(false);
   const merchUserIdRef = useRef<string>('');
+  const [generalCheckinModalVisible, setGeneralCheckinModalVisible] = useState(false);
+  const [redemptionInfo, setRedemptionInfo] = useState<RedemptionInfo | null>(null);
+  const [merchandiseItems, setMerchandiseItems] = useState<MerchandiseItem[]>([]);
+  const [isGeneralCheckinMode, setIsGeneralCheckinMode] = useState(true); // Default to General Check-in
 
   const cameraRef = useRef<CameraView>(null);
   const isProcessingRef = useRef(false);
@@ -105,6 +123,7 @@ export default function ScannerScreen() {
     return events
       .filter((e) => {
         if (!e.startTime) return false;
+        if (e.eventType === 'CHECKIN') return false;
         const d = new Date(e.startTime);
         return d.getDay() === selectedDay;
       })
@@ -112,18 +131,15 @@ export default function ScannerScreen() {
   }, [events, selectedDay]);
 
   useEffect(() => {
-    // Set default selection when events are loaded
-    if (filteredEvents.length && !selectedEvent.eventId) {
-      // Default selection: closest event on the selected day
+    if (!isGeneralCheckinMode && filteredEvents.length && !selectedEvent.eventId) {
       const now = new Date();
       const upcoming = filteredEvents.find((e) => new Date(e.startTime) >= now);
       const chosen = upcoming || filteredEvents[filteredEvents.length - 1];
       setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
-    } else if (events.length && filteredEvents.length === 0 && !selectedEvent.eventId) {
-      // Fallback to first event overall if no events on selected day
+    } else if (!isGeneralCheckinMode && events.length && filteredEvents.length === 0 && !selectedEvent.eventId) {
       setSelectedEvent({ eventId: events[0].eventId, name: events[0].name });
     }
-  }, [filteredEvents, events, selectedEvent.eventId]);
+  }, [filteredEvents, events, selectedEvent.eventId, isGeneralCheckinMode]);
 
   useEffect(() => {
     return () => {
@@ -135,6 +151,9 @@ export default function ScannerScreen() {
       setScanDisabled(false);
       setErrorOccurred(false);
       setErrorMessage('');
+      setGeneralCheckinModalVisible(false);
+      setRedemptionInfo(null);
+      setMerchandiseItems([]);
       isProcessingRef.current = false;
       lastScannedCodeRef.current = '';
     };
@@ -177,25 +196,44 @@ export default function ScannerScreen() {
       }
 
       const handlePostCheckInFlow = async (userId: string) => {
-        const openedModal = await promptTshirtRedemption(userId);
-        if (!openedModal) {
-          setTimeout(resetScan, 2000);
+        if (isGeneralCheckinMode) {
+          await handleGeneralCheckinFlow(userId);
+        } else {
+          const openedModal = await promptTshirtRedemption(userId);
+          if (!openedModal) {
+            setTimeout(resetScan, 2000);
+          }
         }
       };
 
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
-        setSuccessMessage(`Successfully checked in demo user into ${selectedEvent.name}!`);
+        const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+        setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
         setShowSuccess(true);
         await handlePostCheckInFlow(parsedQr.userId);
         return;
       }
 
-      await api.post('/checkin/scan/staff', {
-        eventId: selectedEvent.eventId,
-        qrCode: data,
-      });
+      if (isGeneralCheckinMode) {
+        await api.post('/checkin/scan/staff', {
+          eventId: GENERAL_CHECKIN_EVENT_ID,
+          qrCode: data,
+        });
+      } else {
+        if (!selectedEvent.eventId) {
+          setErrorMessage('Please select an event first');
+          setErrorOccurred(true);
+          setScanDisabled(true);
+          return;
+        }
+        await api.post('/checkin/scan/staff', {
+          eventId: selectedEvent.eventId,
+          qrCode: data,
+        });
+      }
 
-      setSuccessMessage(`Successfully checked in user into ${selectedEvent.name}!`);
+      const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+      setSuccessMessage(`Successfully checked in user into ${eventName}!`);
       setShowSuccess(true);
       await handlePostCheckInFlow(parsedQr.userId);
     } catch (err: any) {
@@ -221,10 +259,36 @@ export default function ScannerScreen() {
     }
   };
 
+  const handleModeChange = (isGeneralCheckin: boolean) => {
+    setIsGeneralCheckinMode(isGeneralCheckin);
+    if (isGeneralCheckin) {
+      setSelectedEvent({ eventId: '', name: '' });
+    }
+  };
+
+  const handleGeneralCheckinFlow = async (userId: string): Promise<void> => {
+    try {
+      const redemptionData = await fetchRedemptionInfo(userId);
+      setRedemptionInfo(redemptionData);
+      setMerchandiseItems(getMerchandiseItems(redemptionData));
+      merchUserIdRef.current = userId;
+      setGeneralCheckinModalVisible(true);
+    } catch (e: any) {
+      console.error('Failed to fetch redemption info:', e);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to load redemption info',
+        text2: e?.message || 'Please try again',
+        position: 'top',
+      });
+      setTimeout(resetScan, 2000);
+    }
+  };
+
   const promptTshirtRedemption = async (userId: string): Promise<boolean> => {
     try {
-      const attendee = await api.get(path('/attendee/id/:userId', { userId }));
-      const hasRedeemed = attendee.data?.hasRedeemedMerch?.Tshirt;
+      const redemptionData = await fetchRedemptionInfo(userId);
+      const hasRedeemed = hasRedeemedTshirt(redemptionData);
       if (hasRedeemed) {
         Toast.show({
           type: 'info',
@@ -238,8 +302,30 @@ export default function ScannerScreen() {
       setMerchModalVisible(true);
       return true;
     } catch (e: any) {
-      // If we cannot fetch attendee, fail silently for merch prompt
       return false;
+    }
+  };
+
+  const redeemMerchandise = async (tier: string) => {
+    try {
+      setMerchProcessing(true);
+      const userId = merchUserIdRef.current;
+      await redeemTier(userId, tier as any);
+      Toast.show({ type: 'success', text1: `${tier} redeemed`, position: 'top' });
+      
+      const updatedRedemptionData = await fetchRedemptionInfo(userId);
+      setRedemptionInfo(updatedRedemptionData);
+      setMerchandiseItems(getMerchandiseItems(updatedRedemptionData));
+    } catch (e: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to redeem merchandise',
+        text2: e?.message,
+        position: 'top',
+        topOffset: 50,
+      });
+    } finally {
+      setMerchProcessing(false);
     }
   };
 
@@ -247,7 +333,7 @@ export default function ScannerScreen() {
     try {
       setMerchProcessing(true);
       const userId = merchUserIdRef.current;
-      await api.post(path('/attendee/redeemMerch/:item', { item: 'Tshirt' }), { userId });
+      await redeemTier(userId, 'TIER1');
       Toast.show({ type: 'success', text1: 'T-shirt redeemed', position: 'top' });
       setMerchModalVisible(false);
       resetScan();
@@ -272,7 +358,9 @@ export default function ScannerScreen() {
     setScanDisabled(false);
     setErrorOccurred(false);
     setErrorMessage('');
-    // Reset refs
+    setGeneralCheckinModalVisible(false);
+    setRedemptionInfo(null);
+    setMerchandiseItems([]);
     isProcessingRef.current = false;
     lastScannedCodeRef.current = '';
   };
@@ -299,46 +387,19 @@ export default function ScannerScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
-      <View className="px-4 py-2">
-        <Text
-          className="text-white text-center text-[22px] font-bold tracking-wider mt-8 mb-3"
-          style={{ fontFamily: 'ProRacing' }}
-        >
-          Staff Scanner
-        </Text>
-        <Text className="text-white/70 text-center text-xs mb-4">Select event before scanning</Text>
-        {eventsLoading ? (
-          <LinearGradient
-            colors={['#ffffff10', '#ffffff05']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="rounded-xl p-[1px]"
-          >
-            <View className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-center">
-              <ActivityIndicator size="small" color="#00adb5" />
-              <Text className="text-white/60 ml-2">Loading events...</Text>
-            </View>
-          </LinearGradient>
-        ) : (
-          <LinearGradient
-            colors={['#ffffff10', '#ffffff05']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="rounded-xl p-[1px]"
-          >
-            <TouchableOpacity
-              className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-between"
-              onPress={() => setPickerVisible(true)}
-              activeOpacity={0.9}
-            >
-              <Text className="text-white font-magistralMedium">
-                {selectedEvent.name || 'Select an event'}
-              </Text>
-              <Text className="text-white/60 text-xs">Change</Text>
-            </TouchableOpacity>
-          </LinearGradient>
-        )}
-      </View>
+      <ModeSwitch 
+        isGeneralCheckinMode={isGeneralCheckinMode}
+        onModeChange={handleModeChange}
+      />
+      
+      {!isGeneralCheckinMode && (
+        <EventSelector
+          events={filteredEvents}
+          selectedEvent={selectedEvent.eventId ? { eventId: selectedEvent.eventId, name: selectedEvent.name } as any : null}
+          isLoading={eventsLoading}
+          onEventSelect={() => setPickerVisible(true)}
+        />
+      )}
 
       <View className="flex-1 relative">
         {!errorOccurred ? (
@@ -359,19 +420,6 @@ export default function ScannerScreen() {
           </View>
         )}
 
-        {/* Status overlay */}
-        {!loading && !scanned && (
-          <View className="absolute top-10 left-0 right-0 items-center z-10 px-4">
-            {scanReady && (
-              <LinearGradient
-                colors={['#00000090', '#00000060']}
-                className="rounded-lg px-4 py-2 border border-white/10"
-              >
-                <Text className="text-white text-lg font-bold text-center">Ready to scan</Text>
-              </LinearGradient>
-            )}
-          </View>
-        )}
 
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-black/70 z-20">
@@ -380,7 +428,6 @@ export default function ScannerScreen() {
           </View>
         )}
 
-        {/* Scan box overlay */}
         <View
           className="absolute items-center justify-center"
           style={{
@@ -392,152 +439,151 @@ export default function ScannerScreen() {
         >
           <TouchableWithoutFeedback onPress={() => setScanReady(true)}>
             <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
-              {/* Corner indicators */}
-              <View className="absolute top-0 left-0 w-12 h-12">
-                <View className="absolute top-0 left-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute top-0 left-0 w-1 h-8 bg-[#00adb5]" />
+              {/* Corner indicators - green when ready to scan, teal when not ready */}
+              <View className="absolute top-0 left-0 w-16 h-16">
+                <View 
+                  className={`absolute top-0 left-0 w-10 h-1 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
+                <View 
+                  className={`absolute top-0 left-0 w-1 h-10 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
               </View>
-              <View className="absolute top-0 right-0 w-12 h-12">
-                <View className="absolute top-0 right-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute top-0 right-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute top-0 right-0 w-16 h-16">
+                <View 
+                  className={`absolute top-0 right-0 w-10 h-1 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
+                <View 
+                  className={`absolute top-0 right-0 w-1 h-10 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
               </View>
-              <View className="absolute bottom-0 left-0 w-12 h-12">
-                <View className="absolute bottom-0 left-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute bottom-0 left-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute bottom-0 left-0 w-16 h-16">
+                <View 
+                  className={`absolute bottom-0 left-0 w-10 h-1 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
+                <View 
+                  className={`absolute bottom-0 left-0 w-1 h-10 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
               </View>
-              <View className="absolute bottom-0 right-0 w-12 h-12">
-                <View className="absolute bottom-0 right-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute bottom-0 right-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute bottom-0 right-0 w-16 h-16">
+                <View 
+                  className={`absolute bottom-0 right-0 w-10 h-1 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
+                <View 
+                  className={`absolute bottom-0 right-0 w-1 h-10 shadow-lg ${
+                    scanReady 
+                      ? 'bg-green-500 shadow-green-500/50' 
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`} 
+                />
               </View>
+              
+              {/* Center dot indicator - also changes color */}
+              <View 
+                className={`absolute top-1/2 left-1/2 w-2 h-2 rounded-full -translate-x-1 -translate-y-1 shadow-lg ${
+                  scanReady 
+                    ? 'bg-green-500 shadow-green-500/50' 
+                    : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                }`} 
+              />
             </View>
           </TouchableWithoutFeedback>
         </View>
 
         {/* Instructions */}
         <View className="absolute bottom-20 left-0 right-0 px-6 mb-10">
-          <LinearGradient colors={['#000000A0', '#00000070']} className="rounded-lg p-[1px]">
-            <View className="bg-black/60 rounded-lg p-4 border border-white/10">
-              <Text className="text-white text-center text-base font-semibold mb-2">
-                Attendee Check-in Scanner
+          <LinearGradient colors={['#00adb520', '#00adb510']} className="rounded-lg p-[1px]">
+            <View className="bg-[#121212] rounded-lg p-4 border border-[#00adb5]/20">
+              <Text className="text-[#00adb5] text-center text-lg font-semibold mb-1">
+                {isGeneralCheckinMode ? 'General Check-in Scanner' : 'Event Check-in Scanner'}
               </Text>
               <Text className="text-white/80 text-center text-sm">
-                {scanReady ? 'Align QR code within the box' : 'Tap the scan box to begin'}
+                {scanReady ? 'Green corners = Ready to scan!' : 'Tap the scan box to begin'}
               </Text>
             </View>
           </LinearGradient>
         </View>
       </View>
 
-      <Modal visible={showSuccess} transparent animationType="fade">
-        <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={resetScan}>
-          <LinearGradient
-            colors={['#ffffff20', '#ffffff05']}
-            className="rounded-xl p-[1px] mx-6 max-w-sm w-[85%]"
-          >
-            <View className="bg-[#111] p-6 rounded-xl border border-white/10">
-              <Text className="text-[#00adb5] text-xl font-bold text-center mb-2">✓ Success!</Text>
-              <Text className="text-white text-center">{successMessage}</Text>
-              <TouchableOpacity className="bg-[#00adb5] mt-4 py-2 rounded-lg" onPress={resetScan}>
-                <Text className="text-white text-center font-semibold">OK</Text>
-              </TouchableOpacity>
-            </View>
-          </LinearGradient>
-        </Pressable>
-      </Modal>
+      <SuccessModal
+        visible={showSuccess}
+        message={successMessage}
+        onClose={resetScan}
+      />
 
-      {/* Merch redemption modal */}
-      <Modal visible={merchModalVisible} transparent animationType="fade">
-        <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>
-          <LinearGradient
-            colors={['#ffffff20', '#ffffff05']}
-            className="rounded-xl p-[1px] mx-6 max-w-sm w-[90%]"
-          >
-            <View className="bg-[#111] p-6 rounded-xl border border-white/10">
-              <Text className="text-white text-xl font-bold text-center mb-3">
-                T-shirt Redemption
-              </Text>
-              <Text className="text-white/80 text-center">
-                Would you like to redeem the attendee's t-shirt now?
-              </Text>
-              <View className="flex-row gap-3 mt-5">
-                <TouchableOpacity
-                  className={`flex-1 bg-[#00adb5] py-3 rounded-lg ${merchProcessing ? 'opacity-50' : ''}`}
-                  disabled={merchProcessing}
-                  onPress={redeemTshirt}
-                >
-                  <Text className="text-white text-center font-semibold">Redeem T-shirt</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 bg-white/10 py-3 rounded-lg border border-white/10"
-                  onPress={() => {
-                    setMerchModalVisible(false);
-                    resetScan();
-                  }}
-                >
-                  <Text className="text-white text-center font-semibold">Close</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </LinearGradient>
-        </Pressable>
-      </Modal>
+      <GeneralCheckinModal
+        visible={generalCheckinModalVisible}
+        redemptionInfo={redemptionInfo}
+        merchandiseItems={merchandiseItems}
+        merchProcessing={merchProcessing}
+        onRedeem={redeemMerchandise}
+        onClose={() => {
+          setGeneralCheckinModalVisible(false);
+          resetScan();
+        }}
+      />
 
-      <Modal visible={errorOccurred} transparent animationType="fade">
-        <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>
-          <LinearGradient
-            colors={['#ff3b30', '#b00020']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="rounded-xl p-[1px] mx-6 max-w-sm w-[85%]"
-          >
-            <View className="bg-[#1a0b0b] p-6 rounded-xl border border-white/10">
-              <Text className="text-red-200 text-xl font-bold text-center mb-4">Oops!</Text>
-              <Text className="text-white text-center mb-6">{errorMessage}</Text>
-              <TouchableOpacity className="bg-red-600/90 px-6 py-3 rounded-lg" onPress={resetScan}>
-                <Text className="text-white text-center font-semibold">OK</Text>
-              </TouchableOpacity>
-            </View>
-          </LinearGradient>
-        </Pressable>
-      </Modal>
+      <TshirtRedemptionModal
+        visible={merchModalVisible}
+        processing={merchProcessing}
+        onRedeem={redeemTshirt}
+        onClose={() => {
+          setMerchModalVisible(false);
+          resetScan();
+        }}
+      />
 
-      <Modal
+      <ErrorModal
+        visible={errorOccurred}
+        message={errorMessage}
+        onClose={resetScan}
+      />
+
+      <EventPickerModal
         visible={pickerVisible}
-        transparent
-        animationType="fade"
-        presentationStyle="overFullScreen"
-        onRequestClose={() => setPickerVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setPickerVisible(false)}>
-          <View className="flex-1 bg-black/50 justify-center">
-            <TouchableWithoutFeedback>
-              <View className="mx-8 bg-[#222] rounded-lg p-4">
-                <Picker
-                  selectedValue={selectedEvent.eventId}
-                  onValueChange={(val) => {
-                    const evt = events.find((e) => e.eventId === val);
-                    if (evt?.startTime) {
-                      const d = new Date(evt.startTime);
-                      setSelectedDay(d.getDay());
-                    }
-                    setSelectedEvent({
-                      eventId: val,
-                      name: events.find((e) => e.eventId === val)?.name || '',
-                    });
-                    setPickerVisible(false);
-                  }}
-                  style={{ color: 'white' }}
-                  dropdownIconColor="white"
-                >
-                  {filteredEvents.map((e) => (
-                    <Picker.Item key={e.eventId} label={e.name} value={e.eventId} color="white" />
-                  ))}
-                </Picker>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+        events={filteredEvents}
+        selectedEventId={selectedEvent.eventId}
+        onEventSelect={(val) => {
+          const evt = events.find((e) => e.eventId === val);
+          if (evt?.startTime) {
+            const d = new Date(evt.startTime);
+            setSelectedDay(d.getDay());
+          }
+          setSelectedEvent({
+            eventId: val,
+            name: events.find((e) => e.eventId === val)?.name || '',
+          });
+          setPickerVisible(false);
+        }}
+        onClose={() => setPickerVisible(false)}
+      />
     </SafeAreaView>
   );
 }

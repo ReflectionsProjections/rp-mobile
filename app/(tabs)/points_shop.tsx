@@ -8,26 +8,20 @@ import Tier4Background from '../../assets/pointshop/tier4_car.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
 import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
-import { Tier } from '@/api/types';
-
-const tierMapping: { [key: string]: Tier } = {
-  TIER1: 'TIER0',
-  TIER2: 'TIER1',
-  TIER3: 'TIER2',
-  TIER4: 'TIER3',
-};
+import { TierMappedType } from '@/api/types';
+import { tierMapping } from '@/constants/tierMapping';
 
 const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
 
 // Animated background component that fades between tiers
-const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: Tier; testTier?: Tier }) => {
+const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: TierMappedType; testTier?: TierMappedType }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const targetTier = testTier || currentTier || 'TIER1';
+  const targetTier = testTier || currentTier || 'TIER1'; // this is what the api gives us
 
   // Define tier progression
-  const tierProgression: Tier[] = ['TIER0', 'TIER1', 'TIER2', 'TIER3'];
-  const targetIndex = tierProgression.indexOf(targetTier);
+  const tierProgression: TierMappedType[] = ['TIER0', 'TIER1', 'TIER2', 'TIER3'];
+  const targetIndex = tierProgression.indexOf(tierMapping[targetTier]);
 
   useEffect(() => {
     // Reset animation to 0 first
@@ -133,7 +127,7 @@ export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   // For testing - specify which tier to animate to
-  const testTier: Tier = 'TIER2';
+  const testTier: TierMappedType = 'TIER2';
 
   return (
     <View className="flex-1 bg-rpRed relative">
