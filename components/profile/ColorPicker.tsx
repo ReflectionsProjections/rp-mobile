@@ -27,14 +27,13 @@ const ColorPicker = () => {
       '#8B5CF6': 'PURPLE',
       '#F59E0B': 'ORANGE',
     };
-    
+
     const apiColor = colorMap[color];
-    
+
     if (apiColor) {
       try {
-        
         await (api as any).patch('/attendee/icon', { icon: apiColor });
-        
+
         await dispatch(updateAttendeeIcon(apiColor));
       } catch (error: any) {
         Alert.alert('Error updating theme color:', error.message);

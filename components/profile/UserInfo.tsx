@@ -14,7 +14,7 @@ interface UserInfoProps {
 
 const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
   const themeColor = useThemeColor();
-  
+
   return (
     <>
       <View className="flex-row justify-between items-center mb-2">
@@ -23,7 +23,9 @@ const UserInfo = ({ name, roles, foodWave }: UserInfoProps) => {
             <View className="flex-row items-center">
               <View className="w-3 h-[75px] mr-2.5" style={{ backgroundColor: themeColor }} />
               <View className="pl-1 flex-column">
-                <Text className="font-proRacing text-2xl" style={{ color: themeColor }}>{name.first}</Text>
+                <Text className="font-proRacing text-2xl" style={{ color: themeColor }}>
+                  {name.first}
+                </Text>
                 <Text className="font-proRacing text-2xl font-bold" style={{ color: themeColor }}>
                   {name.last}
                 </Text>

@@ -75,7 +75,7 @@ const LeaderboardScreen = () => {
       const scrollY = HEADER_APPROX + userIndex * ITEM_HEIGHT;
       try {
         outerScrollRef.current.scrollTo({ y: scrollY, animated: true });
-      } catch { }
+      } catch {}
     }
   };
   const panResponder = useRef(
@@ -116,10 +116,10 @@ const LeaderboardScreen = () => {
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
-        headerMaxHeight={360}
+        headerMaxHeight={330}
         renderHeaderNavBarComponent={() => (
           <HeaderNavBar isHeader={true} showTint={false}>
-            <Header />
+            <Header title={'STANDINGS'} bigText={false} />
           </HeaderNavBar>
         )}
         renderHeaderComponent={() => (
@@ -127,33 +127,19 @@ const LeaderboardScreen = () => {
             <View
               style={{
                 alignItems: 'center',
-                marginTop: 16,
+                marginTop: 28,
                 zIndex: 10,
                 marginBottom: 24,
               }}
             >
               <FadeInWrapper delay={200}>
                 <View>
-                  <Fireworks style={{ position: 'absolute', zIndex: 1, top: 40 }} />
+                  <Fireworks
+                    style={{ position: 'absolute', zIndex: 1, top: 40, alignSelf: 'center' }}
+                  />
                 </View>
-                <ThemedText
-                  variant="bigName"
-                  style={{
-                    fontSize: 32,
-                    textAlign: 'center',
-                    marginTop: 100,
-                    color: '#fff',
-                    textShadowColor: 'rgba(0,0,0,0.5)',
-                    textShadowOffset: { width: 0, height: 2 },
-                    textShadowRadius: 6,
-                    zIndex: 2,
-                  }}
-                >
-                  LEADERBOARD
-                </ThemedText>
-                <FloatingAnimation style={{alignSelf: 'center', zIndex: 2 }}> 
-
-                  <Pedestal style={{ marginTop: 15, alignSelf: 'center', zIndex: 2 }} />
+                <FloatingAnimation style={{ alignSelf: 'center', zIndex: 2, marginTop: 110 }}>
+                  <Pedestal style={{ alignSelf: 'center', zIndex: 2 }} />
                 </FloatingAnimation>
               </FadeInWrapper>
 
@@ -232,8 +218,7 @@ const LeaderboardScreen = () => {
                 bottom: 0,
               }}
             >
-
-              <Header />
+              <Header bigText={false} />
               <View
                 style={{
                   position: 'absolute',
@@ -261,8 +246,6 @@ const LeaderboardScreen = () => {
               </View>
             </View>
           </HeaderNavBar>
-
-
         )}
       >
         <View {...panResponder.panHandlers}>
