@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
 import { useUserProfile } from '@/api/tanstack/user';
 import { useAttendeeProfile, useAttendeePoints } from '@/api/tanstack/attendee';
 import { fetchEvents, fetchUserFavorites } from '@/lib/slices/favoritesSlice';
+import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
 import * as SecureStore from 'expo-secure-store';
 
 /**
@@ -19,9 +20,9 @@ export function useDataInitialization() {
   const hasFavorites = useAppSelector(
     (state: RootState) => (state.favorites?.favoriteEventIds || []).length > 0,
   );
-  const favoritesLastFetched = useAppSelector((state: RootState) => state.favorites?.lastFetched);
   const hasUser = useAppSelector((state: RootState) => !!state.user?.profile);
   const hasAttendeeData = useAppSelector((state: RootState) => !!state.attendee?.attendee);
+  const hasShifts = useAppSelector((state: RootState) => (state.shifts?.shifts || []).length > 0);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -56,6 +57,13 @@ export function useDataInitialization() {
       dispatch(fetchUserFavorites(user.userId));
     }
   }, [isAuthenticated, user?.userId, hasFavorites, dispatch]);
+
+  // Fetch shifts for staff users
+  useEffect(() => {
+    if (isAuthenticated && user?.roles?.includes('STAFF') && !hasShifts) {
+      dispatch(fetchMyShifts());
+    }
+  }, [isAuthenticated, user?.roles, hasShifts, dispatch]);
 
   // For guests, we only need events to be loaded
   // For authenticated users, we need events + user data
