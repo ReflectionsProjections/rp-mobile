@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Pressable,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface ErrorModalProps {
@@ -14,11 +8,7 @@ interface ErrorModalProps {
   onClose: () => void;
 }
 
-export default function ErrorModal({
-  visible,
-  message,
-  onClose,
-}: ErrorModalProps) {
+export default function ErrorModal({ visible, message, onClose }: ErrorModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>

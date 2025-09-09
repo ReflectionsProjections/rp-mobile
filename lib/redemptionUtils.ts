@@ -44,7 +44,7 @@ export function mapBackendTierToFrontend(backendTier: TierType): TierMappedType 
  */
 export function mapFrontendTierToBackend(frontendTier: TierMappedType): TierType {
   const reverseMapping = Object.entries(tierMapping).find(([_, value]) => value === frontendTier);
-  return reverseMapping ? reverseMapping[0] as TierType : 'TIER1';
+  return reverseMapping ? (reverseMapping[0] as TierType) : 'TIER1';
 }
 
 /**
@@ -58,7 +58,7 @@ export function getMerchandiseItems(redemptionInfo: RedemptionInfo): Merchandise
     { tier: 'TIER4', name: 'Cap', isRedeemed: false, isEligible: false },
   ];
 
-  return items.map(item => ({
+  return items.map((item) => ({
     ...item,
     isRedeemed: redemptionInfo.redeemedTiers.includes(item.tier),
     isEligible: redemptionInfo.redeemableTiers.includes(item.tier),
@@ -78,7 +78,7 @@ export function hasRedeemedTshirt(redemptionInfo: RedemptionInfo): boolean {
 export function getTierDisplayName(tier: TierType): string {
   const tierNames: Record<TierType, string> = {
     TIER1: 'T-shirt',
-    TIER2: 'Button', 
+    TIER2: 'Button',
     TIER3: 'Tote',
     TIER4: 'Cap',
   };

@@ -17,13 +17,13 @@ import { api } from '@/api/api';
 import { useEvents } from '@/api/tanstack/events';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
-import { 
-  fetchRedemptionInfo, 
-  redeemTier, 
-  getMerchandiseItems, 
+import {
+  fetchRedemptionInfo,
+  redeemTier,
+  getMerchandiseItems,
   hasRedeemedTshirt,
   type RedemptionInfo,
-  type MerchandiseItem 
+  type MerchandiseItem,
 } from '@/lib/redemptionUtils';
 import ModeSwitch from '@/components/scanner/ModeSwitch';
 import EventSelector from '@/components/scanner/EventSelector';
@@ -136,7 +136,12 @@ export default function ScannerScreen() {
       const upcoming = filteredEvents.find((e) => new Date(e.startTime) >= now);
       const chosen = upcoming || filteredEvents[filteredEvents.length - 1];
       setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
-    } else if (!isGeneralCheckinMode && events.length && filteredEvents.length === 0 && !selectedEvent.eventId) {
+    } else if (
+      !isGeneralCheckinMode &&
+      events.length &&
+      filteredEvents.length === 0 &&
+      !selectedEvent.eventId
+    ) {
       setSelectedEvent({ eventId: events[0].eventId, name: events[0].name });
     }
   }, [filteredEvents, events, selectedEvent.eventId, isGeneralCheckinMode]);
@@ -312,7 +317,7 @@ export default function ScannerScreen() {
       const userId = merchUserIdRef.current;
       await redeemTier(userId, tier as any);
       Toast.show({ type: 'success', text1: `${tier} redeemed`, position: 'top' });
-      
+
       const updatedRedemptionData = await fetchRedemptionInfo(userId);
       setRedemptionInfo(updatedRedemptionData);
       setMerchandiseItems(getMerchandiseItems(updatedRedemptionData));
@@ -387,15 +392,16 @@ export default function ScannerScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
-      <ModeSwitch 
-        isGeneralCheckinMode={isGeneralCheckinMode}
-        onModeChange={handleModeChange}
-      />
-      
+      <ModeSwitch isGeneralCheckinMode={isGeneralCheckinMode} onModeChange={handleModeChange} />
+
       {!isGeneralCheckinMode && (
         <EventSelector
           events={filteredEvents}
-          selectedEvent={selectedEvent.eventId ? { eventId: selectedEvent.eventId, name: selectedEvent.name } as any : null}
+          selectedEvent={
+            selectedEvent.eventId
+              ? ({ eventId: selectedEvent.eventId, name: selectedEvent.name } as any)
+              : null
+          }
           isLoading={eventsLoading}
           onEventSelect={() => setPickerVisible(true)}
         />
@@ -420,7 +426,6 @@ export default function ScannerScreen() {
           </View>
         )}
 
-
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-black/70 z-20">
             <ActivityIndicator size="large" color="#00adb5" />
@@ -441,77 +446,77 @@ export default function ScannerScreen() {
             <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
               {/* Corner indicators - green when ready to scan, teal when not ready */}
               <View className="absolute top-0 left-0 w-16 h-16">
-                <View 
+                <View
                   className={`absolute top-0 left-0 w-10 h-1 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
-                <View 
+                <View
                   className={`absolute top-0 left-0 w-1 h-10 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
               </View>
               <View className="absolute top-0 right-0 w-16 h-16">
-                <View 
+                <View
                   className={`absolute top-0 right-0 w-10 h-1 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
-                <View 
+                <View
                   className={`absolute top-0 right-0 w-1 h-10 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
               </View>
               <View className="absolute bottom-0 left-0 w-16 h-16">
-                <View 
+                <View
                   className={`absolute bottom-0 left-0 w-10 h-1 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
-                <View 
+                <View
                   className={`absolute bottom-0 left-0 w-1 h-10 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
               </View>
               <View className="absolute bottom-0 right-0 w-16 h-16">
-                <View 
+                <View
                   className={`absolute bottom-0 right-0 w-10 h-1 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
-                <View 
+                <View
                   className={`absolute bottom-0 right-0 w-1 h-10 shadow-lg ${
-                    scanReady 
-                      ? 'bg-green-500 shadow-green-500/50' 
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
                       : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`} 
+                  }`}
                 />
               </View>
-              
+
               {/* Center dot indicator - also changes color */}
-              <View 
+              <View
                 className={`absolute top-1/2 left-1/2 w-2 h-2 rounded-full -translate-x-1 -translate-y-1 shadow-lg ${
-                  scanReady 
-                    ? 'bg-green-500 shadow-green-500/50' 
+                  scanReady
+                    ? 'bg-green-500 shadow-green-500/50'
                     : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                }`} 
+                }`}
               />
             </View>
           </TouchableWithoutFeedback>
@@ -532,11 +537,7 @@ export default function ScannerScreen() {
         </View>
       </View>
 
-      <SuccessModal
-        visible={showSuccess}
-        message={successMessage}
-        onClose={resetScan}
-      />
+      <SuccessModal visible={showSuccess} message={successMessage} onClose={resetScan} />
 
       <GeneralCheckinModal
         visible={generalCheckinModalVisible}
@@ -560,11 +561,7 @@ export default function ScannerScreen() {
         }}
       />
 
-      <ErrorModal
-        visible={errorOccurred}
-        message={errorMessage}
-        onClose={resetScan}
-      />
+      <ErrorModal visible={errorOccurred} message={errorMessage} onClose={resetScan} />
 
       <EventPickerModal
         visible={pickerVisible}

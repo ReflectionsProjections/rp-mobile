@@ -14,15 +14,9 @@ import { useMyShifts } from '@/api/tanstack/shifts';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { useThemeColor } from '@/lib/theme';
-import {
-  toggleAcknowledgeShift,
-  toggleLocalAcknowledge,
-} from '@/lib/slices/shiftsSlice';
+import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
 
-import {
-  HeaderNavBar,
-  HeaderComponentWrapper,
-} from '@/components/headers/parallax';
+import { HeaderNavBar, HeaderComponentWrapper } from '@/components/headers/parallax';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
@@ -291,7 +285,7 @@ export default function HomeScreen() {
       />
 
       <SafeAreaView style={{ top: -12 }}>
-        <Header title={"R|P 2025"} bigText={true} />
+        <Header title={'R|P 2025'} bigText={true} />
         {/* NEXT LAP */}
         <Animated.View
           style={[

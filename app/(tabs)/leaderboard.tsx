@@ -119,7 +119,7 @@ const LeaderboardScreen = () => {
         headerMaxHeight={330}
         renderHeaderNavBarComponent={() => (
           <HeaderNavBar isHeader={true} showTint={false}>
-            <Header title={"STANDINGS"} bigText={false} />
+            <Header title={'STANDINGS'} bigText={false} />
           </HeaderNavBar>
         )}
         renderHeaderComponent={() => (
@@ -134,7 +134,9 @@ const LeaderboardScreen = () => {
             >
               <FadeInWrapper delay={200}>
                 <View>
-                  <Fireworks style={{ position: 'absolute', zIndex: 1, top: 40, alignSelf: 'center' }} />
+                  <Fireworks
+                    style={{ position: 'absolute', zIndex: 1, top: 40, alignSelf: 'center' }}
+                  />
                 </View>
                 <FloatingAnimation style={{ alignSelf: 'center', zIndex: 2, marginTop: 110 }}>
                   <Pedestal style={{ alignSelf: 'center', zIndex: 2 }} />

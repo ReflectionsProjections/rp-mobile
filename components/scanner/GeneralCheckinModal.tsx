@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Pressable,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { RedemptionInfo, MerchandiseItem } from '@/lib/redemptionUtils';
 import { mapBackendTierToFrontend } from '@/lib/redemptionUtils';
@@ -36,31 +29,39 @@ export default function GeneralCheckinModal({
           className="rounded-xl p-[1px] mx-6 max-w-sm w-[95%]"
         >
           <View className="bg-[#111] p-6 rounded-xl border border-white/10 max-h-[80%]">
-            <Text className="text-white text-xl font-bold text-center mb-3">
-              General Check-in
-            </Text>
+            <Text className="text-white text-xl font-bold text-center mb-3">General Check-in</Text>
             {redemptionInfo && (
               <View className="mb-4">
                 <Text className="text-white/80 text-center mb-2">
                   Current Tier: {mapBackendTierToFrontend(redemptionInfo.currentTier as any)}
                 </Text>
                 <Text className="text-white/60 text-center text-sm">
-                  Redeemed: {redemptionInfo.redeemedTiers.map(tier => mapBackendTierToFrontend(tier)).join(', ') || 'None'}
+                  Redeemed:{' '}
+                  {redemptionInfo.redeemedTiers
+                    .map((tier) => mapBackendTierToFrontend(tier))
+                    .join(', ') || 'None'}
                 </Text>
               </View>
             )}
-            
-            <Text className="text-white/80 text-center mb-4">
-              Mark merchandise redemptions:
-            </Text>
-            
-            <ScrollView className="h-full" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+
+            <Text className="text-white/80 text-center mb-4">Mark merchandise redemptions:</Text>
+
+            <ScrollView
+              className="h-full"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
               <View className="space-y-3">
                 {merchandiseItems.map((item) => (
-                  <View key={item.tier} className="flex-row items-center justify-between bg-white/5 rounded-lg p-3">
+                  <View
+                    key={item.tier}
+                    className="flex-row items-center justify-between bg-white/5 rounded-lg p-3"
+                  >
                     <View className="flex-1">
                       <Text className="text-white font-semibold">{item.name}</Text>
-                      <Text className="text-white/60 text-sm">{mapBackendTierToFrontend(item.tier)}</Text>
+                      <Text className="text-white/60 text-sm">
+                        {mapBackendTierToFrontend(item.tier)}
+                      </Text>
                     </View>
                     <View className="flex-row items-center gap-2">
                       {item.isRedeemed ? (
@@ -85,7 +86,7 @@ export default function GeneralCheckinModal({
                 ))}
               </View>
             </ScrollView>
-            
+
             <TouchableOpacity
               className="bg-white/10 py-3 rounded-lg border border-white/10 mt-4"
               onPress={onClose}
