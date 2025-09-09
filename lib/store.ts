@@ -5,6 +5,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import userSlice from './slices/userSlice';
 import favoritesSlice from './slices/favoritesSlice';
 import attendeeSlice from './slices/attendeeSlice';
+import shiftsSlice from './slices/shiftsSlice';
 
 const persistConfig = {
   key: 'root',
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   user: userSlice,
   favorites: favoritesSlice,
   attendee: attendeeSlice,
+  shifts: shiftsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
