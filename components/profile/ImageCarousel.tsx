@@ -40,7 +40,7 @@ const ImageCarousel = () => {
 
   return (
     <View
-      className="items-center my-4 rounded-lg overflow-hidden h-[30%] w-[85%] mx-auto"
+      className="items-center my-4 rounded-lg overflow-hidden h-[25%] w-[85%] mx-auto"
       style={{ position: 'relative' }}
     >
       <LinearGradient

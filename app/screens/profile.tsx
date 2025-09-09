@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
+  ScrollView,
 } from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
 import ColorPicker from '@/components/profile/ColorPicker';
+import TagSelector from '@/components/profile/TagSelector';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
@@ -388,7 +390,10 @@ const ProfileScreen = () => {
       </SafeAreaView>
 
       <SafeAreaView className="flex-1">
-        <View style={{ paddingBottom: 100 }}>
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 300 }}
+          style={{ paddingBottom: 100 }}
+        >
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
             <ProfileHeader points={points} />
@@ -412,6 +417,7 @@ const ProfileScreen = () => {
               pointerEvents="box-none"
             >
               <ColorPicker />
+              <TagSelector />
               <Animated.View
                 style={{
                   marginTop: 10,
@@ -529,7 +535,7 @@ const ProfileScreen = () => {
               </Animated.View>
             </Animated.View>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
