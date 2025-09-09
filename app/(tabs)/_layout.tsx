@@ -188,7 +188,14 @@ type TabButtonProps = {
   width?: number;
   height?: number;
 };
-function TabButton({ tab, activeTab, setActiveTab, themeColor, width = 40, height = 40 }: TabButtonProps) {
+function TabButton({
+  tab,
+  activeTab,
+  setActiveTab,
+  themeColor,
+  width = 40,
+  height = 40,
+}: TabButtonProps) {
   const isActive = activeTab === tab.key;
   const Icon = isActive ? tab.filledIcon : tab.icon;
   return (

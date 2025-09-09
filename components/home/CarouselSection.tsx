@@ -3,6 +3,7 @@ import { View, Dimensions, StyleSheet } from 'react-native';
 import SwipeDeck from '@/components/home/SwipeDeck';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
+import { ShiftCard } from '@/api/types';
 import { useThemeColor } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
@@ -12,19 +13,19 @@ const STACK_SEPARATION = 6;
 const DOTS_HEIGHT = 24;
 const STACK_SIZE = 3;
 
-interface CarouselSectionProps {
+interface CarouselSectionProps<T = CardType> {
   title: string;
-  data: CardType[];
+  data: T[];
   flaggedIds: string[];
   onToggleFlag(id: string): void;
-  onCardPress(item: CardType): void;
+  onCardPress(item: T): void;
   /* Maximum number of cards to display */
   limit?: number;
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
 }
 
-export const CarouselSection: React.FC<CarouselSectionProps> = ({
+export const CarouselSection = <T extends CardType | ShiftCard>({
   title,
   data,
   flaggedIds,
@@ -33,7 +34,7 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
   limit,
   onSwipeTouchStart,
   onSwipeTouchEnd,
-}) => {
+}: CarouselSectionProps<T>) => {
   const displayData = typeof limit === 'number' ? data.slice(0, limit) : data;
   const themeColor = useThemeColor();
 
@@ -65,8 +66,7 @@ export const CarouselSection: React.FC<CarouselSectionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
-    marginBottom: 30,
+    marginBottom: 12,
   },
   titleContainer: {
     paddingHorizontal: 20,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,

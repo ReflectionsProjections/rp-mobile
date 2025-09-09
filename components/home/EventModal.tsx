@@ -43,7 +43,7 @@ export const EventModal: React.FC<EventModalProps> = ({
   onToggleFlag,
 }) => {
   const themeColor = useThemeColor();
-  
+
   // Convert hex color to rgba with transparency
   const hexToRgba = (hex: string, alpha: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -51,7 +51,7 @@ export const EventModal: React.FC<EventModalProps> = ({
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
-  
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -88,7 +88,12 @@ export const EventModal: React.FC<EventModalProps> = ({
                   {/* Event Details */}
                   <View style={styles.detailsContainer}>
                     <View style={styles.detailRow}>
-                      <FontAwesome name="clock-o" size={16} color={themeColor} style={styles.icon} />
+                      <FontAwesome
+                        name="clock-o"
+                        size={16}
+                        color={themeColor}
+                        style={styles.icon}
+                      />
                       <ThemedText variant="body-bold" style={styles.detailText}>
                         {event.time}
                       </ThemedText>
@@ -129,10 +134,10 @@ export const EventModal: React.FC<EventModalProps> = ({
               {/* Flag Button */}
               <TouchableOpacity
                 style={[
-                  styles.flagButton, 
-                  isFlagged && { 
-                    backgroundColor: hexToRgba(themeColor, 0.9) // Slightly transparent theme color
-                  }
+                  styles.flagButton,
+                  isFlagged && {
+                    backgroundColor: hexToRgba(themeColor, 0.9), // Slightly transparent theme color
+                  },
                 ]}
                 onPress={() => onToggleFlag(event.id)}
               >

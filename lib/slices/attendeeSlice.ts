@@ -7,7 +7,7 @@ interface AttendeeState {
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
-  themeColor: string; 
+  themeColor: string;
 }
 
 const initialState: AttendeeState = {
@@ -46,10 +46,22 @@ export const updateAttendeeIcon = createAsyncThunk(
   'attendee/updateIcon',
   async (color: IconColorType, { rejectWithValue }) => {
     try {
-      await (api as any).patch('/attendee/icon', { icon: color });
+      await api.patch('/attendee/icon', { icon: color });
       return color; // Return the color that was successfully set
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update icon color');
+    }
+  },
+);
+
+export const updateAttendeeTags = createAsyncThunk(
+  'attendee/updateTags',
+  async (tags: string[], { rejectWithValue }) => {
+    try {
+      await api.patch('/attendee/tags', { tags });
+      return tags; // Return the tags that were successfully set
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update tags');
     }
   },
 );
@@ -62,18 +74,18 @@ const attendeeSlice = createSlice({
       state.attendee = action.payload;
       state.lastFetched = Date.now();
       state.error = null;
-      
+
       // Update theme color based on attendee icon
       if (action.payload.icon) {
         const apiToHexMap: { [key in IconColorType]: string } = {
-          'BLUE': '#3B82F6',
-          'RED': '#EF4444',
-          'GREEN': '#4ADE80',
-          'PINK': '#EC4899',
-          'PURPLE': '#8B5CF6',
-          'ORANGE': '#F59E0B',
-          'YELLOW': '#EAB308',
-          'BLACK': '#1F2937',
+          BLUE: '#3B82F6',
+          RED: '#EF4444',
+          GREEN: '#4ADE80',
+          PINK: '#EC4899',
+          PURPLE: '#8B5CF6',
+          ORANGE: '#F59E0B',
+          YELLOW: '#EAB308',
+          BLACK: '#1F2937',
         };
         state.themeColor = apiToHexMap[action.payload.icon] || '#3B82F6';
       }
@@ -144,28 +156,50 @@ const attendeeSlice = createSlice({
       })
       .addCase(updateAttendeeIcon.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Update the attendee icon
         if (state.attendee) {
           state.attendee.icon = action.payload;
         }
-        
+
         // Update theme color
         const apiToHexMap: { [key in IconColorType]: string } = {
-          'BLUE': '#3B82F6',
-          'RED': '#EF4444',
-          'GREEN': '#4ADE80',
-          'PINK': '#EC4899',
-          'PURPLE': '#8B5CF6',
-          'ORANGE': '#F59E0B',
-          'YELLOW': '#EAB308',
-          'BLACK': '#1F2937',
+          BLUE: '#3B82F6',
+          RED: '#EF4444',
+          GREEN: '#4ADE80',
+          PINK: '#EC4899',
+          PURPLE: '#8B5CF6',
+          ORANGE: '#F59E0B',
+          YELLOW: '#EAB308',
+          BLACK: '#1F2937',
         };
         state.themeColor = apiToHexMap[action.payload] || '#3B82F6';
         state.lastFetched = Date.now();
         state.error = null;
       })
       .addCase(updateAttendeeIcon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateAttendeeTags.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateAttendeeTags.fulfilled, (state, action) => {
+        state.loading = false;
+
+        // Update the attendee tags
+        if (state.attendee) {
+          state.attendee = {
+            ...state.attendee,
+            tags: action.payload,
+          };
+        }
+
+        state.lastFetched = Date.now();
+        state.error = null;
+      })
+      .addCase(updateAttendeeTags.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
