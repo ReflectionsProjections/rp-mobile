@@ -335,6 +335,29 @@ const ProfileScreen = () => {
                 Continue as Guest
               </Text>
             </TouchableOpacity>
+
+            {/* Go back to sign in */}
+            <TouchableOpacity
+              onPress={() => router.replace('/(auth)/sign-in')}
+              activeOpacity={0.7}
+              style={{
+                marginTop: 20,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  textAlign: 'center',
+                  textDecorationLine: 'underline',
+                }}
+              >
+                Return to Sign In Page
+              </Text>
+            </TouchableOpacity>
           </Animated.View>
         </SafeAreaView>
       </View>

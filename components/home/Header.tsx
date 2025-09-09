@@ -1,8 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { View, TouchableOpacity, Alert, Animated, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Alert, Animated, StyleSheet, Platform, DevSettings } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { logout } from '@/lib/auth';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
@@ -16,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   const spinValue = useRef(new Animated.Value(0)).current;
   const [isSpinning, setIsSpinning] = useState(false);
   const themeColor = useThemeColor();
-  const handleLogoPress = () => {
+  const handleLogoPress = async () => {
     if (isSpinning) return; // Prevent multiple spins
 
     setIsSpinning(true);
@@ -26,8 +25,35 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
-    }).start(() => {
-      setIsSpinning(false);
+    }).start(async () => {
+      try {
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          window.location.reload();
+          return;
+        }
+
+        // Try expo-updates if available (production builds)
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const Updates: any = require('expo-updates');
+          if (Updates?.reloadAsync) {
+            await Updates.reloadAsync();
+            return;
+          }
+        } catch (_) {
+          // expo-updates not available; fall back below
+        }
+
+        // Fallback for native dev
+        if (DevSettings?.reload) {
+          DevSettings.reload();
+          return;
+        }
+      } catch (e) {
+        console.warn('Failed to refresh app:', e);
+      } finally {
+        setIsSpinning(false);
+      }
     });
   };
 
