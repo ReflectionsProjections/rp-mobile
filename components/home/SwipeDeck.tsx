@@ -3,11 +3,13 @@ import React, { useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
+import { FontAwesome } from '@expo/vector-icons';
 import { useThemeColor } from '@/lib/theme';
+import { ShiftCard } from '@/api/types';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = 130;
+const CARD_HEIGHT = 110;
 
 export interface CardType {
   id: string;
@@ -18,23 +20,23 @@ export interface CardType {
   description?: string;
 }
 
-interface SwipeDeckProps {
-  data: CardType[];
-  onCardPress?: (item: CardType) => void;
+interface SwipeDeckProps<T extends CardType | ShiftCard> {
+  data: T[];
+  onCardPress?: (item: T) => void;
   containerStyle?: StyleProp<ViewStyle>;
   onSwipeTouchStart?: () => void;
   onSwipeTouchEnd?: () => void;
   disableSwipeAway?: boolean;
 }
 
-export default function SwipeDeck({
+export default function SwipeDeck<T extends CardType | ShiftCard>({
   data,
   onCardPress = () => {},
   containerStyle,
   onSwipeTouchStart = () => {},
   onSwipeTouchEnd = () => {},
   disableSwipeAway = false,
-}: SwipeDeckProps) {
+}: SwipeDeckProps<T>) {
   const [cardIndex, setCardIndex] = useState(0);
   const themeColor = useThemeColor();
 
@@ -65,7 +67,7 @@ export default function SwipeDeck({
             fontFamily: 'magistral',
           }}
         >
-          No events flagged yet!
+          {'No items to display!'}
         </ThemedText>
       </View>
     );
@@ -73,7 +75,7 @@ export default function SwipeDeck({
 
   const safeIndex = data.length > 0 ? Math.min(cardIndex, data.length - 1) : 0;
 
-  const renderCard = (item: CardType | null, idx: number) => {
+  const renderCard = (item: T | null, idx: number) => {
     if (!item) return <View style={[styles.card, styles.emptyCard]} />;
 
     return (
@@ -85,40 +87,54 @@ export default function SwipeDeck({
               color: '#000',
               fontSize: 20,
               fontFamily: 'magistral-medium',
+              maxWidth: '90%',
             }}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {item.title}
           </ThemedText>
+          {'acknowledged' in item && (
+            item.acknowledged ? (
+              <FontAwesome name="check-circle" size={22} color={themeColor} />
+            ) : (
+              <FontAwesome name="exclamation-circle" size={22} color="#ff3b30" />
+            )
+          )}
         </View>
-        <ThemedText
-          variant="body"
-          style={{
-            color: '#000',
-            fontSize: 14,
-            marginBottom: 4,
-            fontFamily: 'magistral',
-          }}
-        >
-          {item.time}
-        </ThemedText>
-        <ThemedText
-          variant="body"
-          style={{
-            color: '#000',
-            fontSize: 12,
-            textShadowColor: 'rgba(0, 0, 0, 0.3)',
-            textShadowOffset: { width: 0, height: 1 },
-            textShadowRadius: 1,
-          }}
-        >
-          {truncate(item.location, 20)}
-        </ThemedText>
+        <View className='flex-row justify-between'>
+          <ThemedText
+            variant="body"
+            style={{
+              color: '#000',
+              fontSize: 16,
+              marginBottom: 4,
+              fontFamily: 'magistral',
+            }}
+          >
+            {item.time}
+          </ThemedText>
+          <ThemedText
+            variant="body"
+            style={{
+              color: '#000',
+              fontSize: 16,
+              fontFamily: 'magistral',
+            }}
+          >
+            {truncate(item.location, 20)}
+          </ThemedText>
+        </View>
         <View style={styles.footer}>
-          <View style={[styles.points, { backgroundColor: themeColor }]}>
-            <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
-          </View>
+          {'pts' in item ? (
+            <View style={[styles.points, { backgroundColor: themeColor }]}> 
+              <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
+            </View>
+          ) : (
+            <View style={[styles.role, { backgroundColor: themeColor }]}>
+              <ThemedText style={styles.roleText}>{item.role}</ThemedText>
+            </View>
+          )}
         </View>
         <View style={styles.dots} pointerEvents="none">
           {data.map((_, dotIdx) => (
@@ -196,13 +212,15 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   footer: {
+    position: 'absolute',
+    bottom: -10,
+    right: 5,
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
   },
   points: {
     paddingHorizontal: 12,
@@ -215,6 +233,22 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   pointsText: {
+    color: '#fff',
+    fontSize: 12,
+    fontFamily: 'ProRacing',
+    fontWeight: 'bold',
+  },
+  role: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  roleText: {
     color: '#fff',
     fontSize: 12,
     fontFamily: 'ProRacing',
