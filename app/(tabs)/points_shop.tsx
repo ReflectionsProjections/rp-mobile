@@ -15,7 +15,13 @@ const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
 
 // Animated background component that fades between tiers
-const AnimatedBackground = ({ currentTier, testTier }: { currentTier?: TierMappedType; testTier?: TierMappedType }) => {
+const AnimatedBackground = ({
+  currentTier,
+  testTier,
+}: {
+  currentTier?: TierMappedType;
+  testTier?: TierMappedType;
+}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const targetTier = testTier || currentTier || 'TIER1'; // this is what the api gives us
 

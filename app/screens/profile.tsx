@@ -390,10 +390,7 @@ const ProfileScreen = () => {
       </SafeAreaView>
 
       <SafeAreaView className="flex-1">
-        <ScrollView 
-          contentContainerStyle={{ paddingBottom: 300 }}
-          style={{ paddingBottom: 100 }}
-        >
+        <ScrollView contentContainerStyle={{ paddingBottom: 300 }} style={{ paddingBottom: 100 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
             <ProfileHeader points={points} />

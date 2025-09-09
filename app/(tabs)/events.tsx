@@ -149,7 +149,7 @@ const EventsScreen = () => {
         preserveAspectRatio="none"
       />
       <SafeAreaView style={{ top: -12 }}>
-        <Header title={"EVENTS"} bigText={true} />
+        <Header title={'EVENTS'} bigText={true} />
         {/* <ThemedText
           variant="bigName"
           style={{

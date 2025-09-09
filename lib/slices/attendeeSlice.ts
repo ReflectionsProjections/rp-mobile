@@ -187,7 +187,7 @@ const attendeeSlice = createSlice({
       })
       .addCase(updateAttendeeTags.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Update the attendee tags
         if (state.attendee) {
           state.attendee = {
@@ -195,7 +195,7 @@ const attendeeSlice = createSlice({
             tags: action.payload,
           };
         }
-        
+
         state.lastFetched = Date.now();
         state.error = null;
       })

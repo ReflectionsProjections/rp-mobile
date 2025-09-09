@@ -6,13 +6,13 @@ import { logout } from '@/lib/auth';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
-  
+
 interface HeaderProps {
   title?: string;
   bigText: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title = "", bigText = false }) => {
+export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) => {
   const spinValue = useRef(new Animated.Value(0)).current;
   const [isSpinning, setIsSpinning] = useState(false);
   const themeColor = useThemeColor();
@@ -48,8 +48,10 @@ export const Header: React.FC<HeaderProps> = ({ title = "", bigText = false }) =
         </Animated.View>
       </TouchableOpacity>
       {title && (
-      <View style={styles.titleContainer}>
-        <ThemedText variant="bigName" style={[styles.mainTitle, { fontSize: bigText ? 30 : 28 }]}>{title}</ThemedText>
+        <View style={styles.titleContainer}>
+          <ThemedText variant="bigName" style={[styles.mainTitle, { fontSize: bigText ? 30 : 28 }]}>
+            {title}
+          </ThemedText>
           <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
         </View>
       )}

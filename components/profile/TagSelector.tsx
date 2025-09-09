@@ -6,17 +6,17 @@ import { api } from '@/api/api';
 import Toast from 'react-native-toast-message';
 
 const AVAILABLE_TAGS = [
-  "AI",
-  "Research",
-  "Art/Media",
-  "Ethics",
-  "Networking",
-  "Company Talk",
-  "HCI",
-  "Career Readiness",
-  "Cybersecurity",
-  "Interactive Events",
-  "Autonomous Vehicles",
+  'AI',
+  'Research',
+  'Art/Media',
+  'Ethics',
+  'Networking',
+  'Company Talk',
+  'HCI',
+  'Career Readiness',
+  'Cybersecurity',
+  'Interactive Events',
+  'Autonomous Vehicles',
 ];
 
 const TagSelector = () => {
@@ -27,9 +27,9 @@ const TagSelector = () => {
   const handleTagToggle = async (tag: string) => {
     const currentTags = attendee?.tags || [];
     let newTags: string[];
-    
+
     if (currentTags.includes(tag)) {
-      newTags = currentTags.filter(t => t !== tag);
+      newTags = currentTags.filter((t) => t !== tag);
     } else {
       newTags = [...currentTags, tag];
     }
@@ -37,7 +37,7 @@ const TagSelector = () => {
     try {
       await api.patch('/attendee/tags', { tags: newTags });
       await dispatch(updateAttendeeTags(newTags));
-      
+
       Toast.show({
         type: 'success',
         text1: 'Tags Updated',

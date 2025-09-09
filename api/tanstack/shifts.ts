@@ -9,7 +9,6 @@ export function useMyShifts(enabled: boolean = true) {
   const error = useAppSelector((state) => state.shifts.error);
   const lastFetched = useAppSelector((state) => state.shifts.lastFetched);
 
-
   useEffect(() => {
     if (enabled && (!lastFetched || Date.now() - lastFetched > 2 * 60 * 1000)) {
       dispatch(fetchMyShifts());

@@ -87,5 +87,5 @@ const styles = StyleSheet.create({
   },
   swipeContainer: {
     alignSelf: 'center',
-  }
+  },
 });

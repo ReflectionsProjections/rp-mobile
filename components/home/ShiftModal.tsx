@@ -13,7 +13,13 @@ type Props = {
   disabled?: boolean;
 };
 
-export default function ShiftModal({ visible, shift, onClose, onToggleAcknowledge, disabled }: Props) {
+export default function ShiftModal({
+  visible,
+  shift,
+  onClose,
+  onToggleAcknowledge,
+  disabled,
+}: Props) {
   const themeColor = useThemeColor();
 
   return (
@@ -25,11 +31,19 @@ export default function ShiftModal({ visible, shift, onClose, onToggleAcknowledg
           </ThemedText>
           {shift && (
             <>
-              <ThemedText variant="body" className="font-magistral">Role: {shift.role}</ThemedText>
-              <ThemedText variant="body" className="font-magistral">Time: {shift.time}</ThemedText>
-              <ThemedText variant="body" className="font-magistral">Location: {shift.location}</ThemedText>
+              <ThemedText variant="body" className="font-magistral">
+                Role: {shift.role}
+              </ThemedText>
+              <ThemedText variant="body" className="font-magistral">
+                Time: {shift.time}
+              </ThemedText>
+              <ThemedText variant="body" className="font-magistral">
+                Location: {shift.location}
+              </ThemedText>
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                <ThemedText variant="body" className="font-magistral">Acknowledged:</ThemedText>
+                <ThemedText variant="body" className="font-magistral">
+                  Acknowledged:
+                </ThemedText>
                 {shift.acknowledged ? (
                   <FontAwesome name="check-circle" size={22} color={themeColor} />
                 ) : (
@@ -73,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    gap: 4
+    gap: 4,
   },
   title: {
     color: '#000',
@@ -97,5 +111,3 @@ const styles = StyleSheet.create({
     fontFamily: 'magistral-medium',
   },
 });
-
-

@@ -94,15 +94,14 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
           >
             {item.title}
           </ThemedText>
-          {'acknowledged' in item && (
-            item.acknowledged ? (
+          {'acknowledged' in item &&
+            (item.acknowledged ? (
               <FontAwesome name="check-circle" size={22} color={themeColor} />
             ) : (
               <FontAwesome name="exclamation-circle" size={22} color="#ff3b30" />
-            )
-          )}
+            ))}
         </View>
-        <View className='flex-row justify-between'>
+        <View className="flex-row justify-between">
           <ThemedText
             variant="body"
             style={{
@@ -127,7 +126,7 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
         </View>
         <View style={styles.footer}>
           {'pts' in item ? (
-            <View style={[styles.points, { backgroundColor: themeColor }]}> 
+            <View style={[styles.points, { backgroundColor: themeColor }]}>
               <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
             </View>
           ) : (
