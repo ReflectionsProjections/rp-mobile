@@ -1,4 +1,5 @@
-export type Tier = 'TIER0' | 'TIER1' | 'TIER2' | 'TIER3';
+export type TierMappedType = 'TIER0' | 'TIER1' | 'TIER2' | 'TIER3';
+export type TierType = 'TIER1' | 'TIER2' | 'TIER3' | 'TIER4';
 export type IconColorType =
   | 'BLUE'
   | 'RED'
@@ -12,31 +13,23 @@ export type IconColorType =
 export type Attendee = {
   userId: string;
   points: number;
-  hasPriority: {
-    Mon: boolean;
-    Tue: boolean;
-    Wed: boolean;
-    Thu: boolean;
-    Fri: boolean;
-    Sat: boolean;
-    Sun: boolean;
-  };
-  hasRedeemedMerch: {
-    Tshirt: boolean;
-    Button: boolean;
-    Tote: boolean;
-    Cap: boolean;
-  };
-  isEligibleMerch: {
-    Tshirt: boolean;
-    Button: boolean;
-    Tote: boolean;
-    Cap: boolean;
-  };
+  pointsDay1: number;
+  pointsDay2: number;
+  pointsDay3: number;
+  pointsDay4: number;
+  pointsDay5: number;
+  hasPriorityMon: boolean;
+  hasPriorityTue: boolean;
+  hasPriorityWed: boolean;
+  hasPriorityThu: boolean;
+  hasPriorityFri: boolean;
+  hasPrioritySat: boolean;
+  hasPrioritySun: boolean;
+  currentTier: TierType;
+  icon: IconColorType;
   tags: string[];
   favoriteEvents: string[];
-  currentTier: Tier;
-  icon: IconColorType;
+  puzzlesCompleted: string[];
 };
 
 export type Corporate = {
@@ -93,6 +86,31 @@ export type Registration = {
 
 export type Role = 'USER' | 'STAFF' | 'ADMIN' | 'CORPORATE' | 'PUZZLEBANG';
 
+export type ShiftAssignment = {
+  shiftId: string;
+  staffEmail: string;
+  acknowledged: boolean;
+  shifts: {
+    shiftId: string;
+    name: string;
+    role: string;
+    startTime: string;
+    endTime: string;
+    location: string;
+  };
+};
+
+export type ShiftCard = {
+  id: string;
+  title: string;
+  time: string;
+  location: string;
+  role: string;
+  acknowledged: boolean;
+  startTime: string;
+  endTime: string;
+};
+
 export type RoleObject = {
   userId?: string;
   displayName: string;
@@ -143,6 +161,12 @@ export interface APIRoutes {
       response: { message: string };
     };
   };
+  '/attendee/tags': {
+    PATCH: {
+      request: { tags: string[] };
+      response: { tags: string[] };
+    };
+  };
   '/attendee/points': {
     GET: {
       response: { points: number };
@@ -158,10 +182,24 @@ export interface APIRoutes {
       response: Attendee;
     };
   };
-  '/attendee/redeemMerch/:item': {
+  '/attendee/redeemable/:userId': {
+    GET: {
+      response: {
+        userId: string;
+        currentTier: TierMappedType;
+        redeemedTiers: TierType[];
+        redeemableTiers: TierType[];
+      };
+    };
+  };
+  '/attendee/redeem': {
     POST: {
-      request: { userId: string };
-      response: { message: string };
+      request: { userId: string; tier: TierType };
+      response: {
+        message: string;
+        userId: string;
+        tier: TierType;
+      };
     };
   };
   '/attendee/favorites': {
@@ -379,6 +417,16 @@ export interface APIRoutes {
     POST: {
       request: { deviceId: string }; // FCM token
       response: never;
+    };
+  };
+  '/shifts/my-shifts': {
+    GET: {
+      response: ShiftAssignment[];
+    };
+  };
+  '/shifts/:shiftId/acknowledge': {
+    POST: {
+      response: ShiftAssignment;
     };
   };
 }
