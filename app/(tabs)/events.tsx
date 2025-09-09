@@ -14,6 +14,7 @@ import { EventListItem } from '@/components/events/EventListItem';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useAppSelector, RootState } from '@/lib/store';
+import { ThemedText } from '@/components/themed/ThemedText';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -147,14 +148,24 @@ const EventsScreen = () => {
         height={SCREEN_HEIGHT}
         preserveAspectRatio="none"
       />
-      <SafeAreaView className="flex-1">
-        <Header />
-        <Text
-          className="text-[32px] font-bold text-white text-center tracking-wider drop-shadow-sm"
-          style={{ fontFamily: 'ProRacingSlant' }}
+      <SafeAreaView style={{ top: -12 }}>
+        <Header title={"EVENTS"} bigText={true} />
+        {/* <ThemedText
+          variant="bigName"
+          style={{
+            fontSize: 32,
+            textAlign: 'left',
+            color: '#fff',
+            textShadowColor: 'rgba(0,0,0,0.5)',
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 6,
+            zIndex: 2,
+            paddingHorizontal: 20,
+            marginTop: 8,
+          }}
         >
-          Events
-        </Text>
+          EVENTS
+        </ThemedText> */}
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
 
