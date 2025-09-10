@@ -46,7 +46,7 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
     switch (sectionTitle.toUpperCase()) {
       case 'NEXT LAP':
         return 'flag-checkered';
-      case 'TODAY\'S SHIFTS':
+      case "TODAY'S SHIFTS":
         return 'clock-o';
       case 'UPCOMING':
         return 'road';
@@ -63,10 +63,10 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <View style={styles.titleRow}>
-          <FontAwesome 
-            name={getRacingIcon(title)} 
-            size={20} 
-            color={themeColor} 
+          <FontAwesome
+            name={getRacingIcon(title)}
+            size={20}
+            color={themeColor}
             style={styles.titleIcon}
           />
           <ThemedText variant="title" style={styles.title}>

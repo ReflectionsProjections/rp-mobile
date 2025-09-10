@@ -200,8 +200,8 @@ const ScannerGuestScreen = () => {
             </Text>
           </TouchableOpacity>
 
-           {/* Return to sign in page */}
-           <TouchableOpacity
+          {/* Return to sign in page */}
+          <TouchableOpacity
             onPress={() => router.replace('/(auth)/sign-in')}
             activeOpacity={0.7}
             style={{

@@ -80,7 +80,7 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
 
     try {
       const res = await api.get('/attendee/qr');
-      
+
       if (!isMountedRef.current) return;
 
       if (res.data?.qrCode) {
@@ -95,10 +95,10 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
       if (!isMountedRef.current) return;
 
       setError(e.message || 'Failed to fetch QR code');
-      
+
       // Simple retry logic
       if (retryCount < MAX_RETRY_ATTEMPTS) {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
         retryTimeoutRef.current = setTimeout(() => {
           if (isMountedRef.current) fetchQRCode();
         }, RETRY_DELAY);
@@ -120,13 +120,16 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
   }, [fetchQRCode]);
 
   // Handle app state changes
-  const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
-    if (nextAppState === 'active' && !qrValue) {
-      fetchQRCode();
-    } else if (nextAppState === 'background') {
-      clearAllTimers();
-    }
-  }, [qrValue, fetchQRCode, clearAllTimers]);
+  const handleAppStateChange = useCallback(
+    (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && !qrValue) {
+        fetchQRCode();
+      } else if (nextAppState === 'background') {
+        clearAllTimers();
+      }
+    },
+    [qrValue, fetchQRCode, clearAllTimers],
+  );
 
   // Manual refresh function
   const handleManualRefresh = useCallback(() => {
@@ -175,7 +178,14 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
       clearInterval(authCheckInterval);
       appStateSubscription?.remove();
     };
-  }, [fetchQRCode, checkQRExpiry, handleAppStateChange, clearAllTimers, getTimeUntilExpiry, qrValue]);
+  }, [
+    fetchQRCode,
+    checkQRExpiry,
+    handleAppStateChange,
+    clearAllTimers,
+    getTimeUntilExpiry,
+    qrValue,
+  ]);
 
   return {
     // State

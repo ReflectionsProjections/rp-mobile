@@ -1,5 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { View, TouchableOpacity, Alert, Animated, StyleSheet, Platform, DevSettings, Dimensions } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Alert,
+  Animated,
+  StyleSheet,
+  Platform,
+  DevSettings,
+  Dimensions,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import LOGO from '../../assets/images/logo.svg';

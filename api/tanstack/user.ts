@@ -10,11 +10,11 @@ import type { RoleObject } from '../types';
 export const USER_PROFILE_QK = ['user', 'profile'] as const;
 
 async function fetchUserProfile(): Promise<RoleObject> {
-  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
   if (!jwt) {
     throw new Error('Not authenticated');
   }
-  
+
   const response = await api.get('/auth/info');
   return response.data as RoleObject;
 }
