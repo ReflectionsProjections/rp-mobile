@@ -109,7 +109,7 @@ export default function TabLayout() {
           <CurvedBottomBar />
         </View>
 
-        <View className="flex-1 flex-row">
+        <View className={`flex-1 flex-row ${height < 700 ? 'top-5' : ''}`}>
           {TABS.map((tab, idx) => {
             if (idx === 2) {
               return (
@@ -142,7 +142,7 @@ export default function TabLayout() {
         <Pressable
           className="absolute justify-center items-center"
           style={{
-            bottom: HEIGHT - BUTTON_SIZE * 1.11,
+            bottom: HEIGHT - BUTTON_SIZE * 1.11 + (height < 700 ? 10 : 0),
             left: width / 2 - BUTTON_SIZE / 2,
             width: BUTTON_SIZE,
             height: BUTTON_SIZE,
@@ -200,7 +200,7 @@ function TabButton({
   const Icon = isActive ? tab.filledIcon : tab.icon;
   return (
     <TouchableOpacity
-      className="flex-1 justify-center items-center"
+      className="flex-1 justify-center items-center shadow-sm shadow-black shadow-opacity-50"
       onPress={() => setActiveTab(tab.key)}
     >
       <View className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}>

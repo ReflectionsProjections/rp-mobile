@@ -6,10 +6,11 @@ import { ThemedText } from '../themed/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeColor } from '@/lib/theme';
 import { ShiftCard } from '@/api/types';
+import Wheel from '@/assets/home/wheel.svg';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = 110;
+const CARD_HEIGHT = height < 700 ? 95 : 110; // Smaller cards for iPhone SE
 
 export interface CardType {
   id: string;
@@ -101,36 +102,46 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
               <FontAwesome name="exclamation-circle" size={22} color="#ff3b30" />
             ))}
         </View>
+        
         <View className="flex-row justify-between">
-          <ThemedText
-            variant="body"
-            style={{
-              color: '#000',
-              fontSize: 16,
-              marginBottom: 4,
-              fontFamily: 'magistral',
-            }}
-          >
-            {item.time}
-          </ThemedText>
-          <ThemedText
-            variant="body"
-            style={{
-              color: '#000',
-              fontSize: 16,
-              fontFamily: 'magistral',
-            }}
-          >
-            {truncate(item.location, 20)}
-          </ThemedText>
+          <View style={styles.timeContainer}>
+            <FontAwesome name="clock-o" size={14} color="#666" style={styles.timeIcon} />
+            <ThemedText
+              variant="body"
+              style={{
+                color: '#000',
+                fontSize: 16,
+                marginBottom: 4,
+                fontFamily: 'magistral',
+              }}
+            >
+              {item.time}
+            </ThemedText>
+          </View>
+          <View style={styles.locationContainer}>
+            <FontAwesome name="map-marker" size={14} color="#666" style={styles.locationIcon} />
+            <ThemedText
+              variant="body"
+              style={{
+                color: '#000',
+                fontSize: 16,
+                fontFamily: 'magistral',
+              }}
+            >
+              {truncate(item.location, 20)}
+            </ThemedText>
+          </View>
         </View>
+        
         <View style={styles.footer}>
           {'pts' in item ? (
             <View style={[styles.points, { backgroundColor: themeColor }]}>
+              <FontAwesome name="trophy" size={12} color="#fff" style={styles.pointsIcon} />
               <ThemedText style={styles.pointsText}>{item.pts} PTS</ThemedText>
             </View>
           ) : (
             <View style={[styles.role, { backgroundColor: themeColor }]}>
+              <FontAwesome name="flag-checkered" size={12} color="#fff" style={styles.roleIcon} />
               <ThemedText style={styles.roleText}>{item.role}</ThemedText>
             </View>
           )}
@@ -194,7 +205,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: height < 700 ? 12 : 16, // Smaller padding for iPhone SE
     shadowColor: '#000',
     shadowOpacity: 0.4,
     shadowRadius: 8,
@@ -208,11 +219,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
     borderWidth: 0,
   },
+  racingStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    opacity: 0.8,
+    width: '99%',
+    alignSelf: 'center',
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: height < 700 ? 6 : 8, // Tighter spacing for iPhone SE
+    marginTop: height < 700 ? 2 : 4,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  timeIcon: {
+    marginRight: 6,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  locationIcon: {
+    marginRight: 6,
   },
   footer: {
     position: 'absolute',
@@ -230,6 +269,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pointsIcon: {
+    marginRight: 4,
   },
   pointsText: {
     color: '#fff',
@@ -246,6 +290,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  roleIcon: {
+    marginRight: 4,
   },
   roleText: {
     color: '#fff',

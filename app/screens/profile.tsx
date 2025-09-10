@@ -180,18 +180,21 @@ const ProfileScreen = () => {
 
     const fetchAttendeeData = async () => {
       try {
-        const response = await api.get('/attendee');
+        // Only fetch attendee data if user is authenticated (not guest)
+        if (user && user.roles && user.roles.length > 0) {
+          const response = await api.get('/attendee');
 
-        if (response.data) {
-          dispatch(setAttendeeProfile(response.data));
+          if (response.data) {
+            dispatch(setAttendeeProfile(response.data));
+          }
         }
       } catch (error: any) {
-        Alert.alert('Error response data:', error.message);
+        console.error('Error fetching attendee data:', error.message);
       }
     };
 
     fetchAttendeeData();
-  }, []);
+  }, [user, dispatch]);
 
   if (!isInitialized) {
     return (
@@ -346,7 +349,7 @@ const ProfileScreen = () => {
               onPress={() => router.replace('/(auth)/sign-in')}
               activeOpacity={0.7}
               style={{
-                marginTop: 20,
+                marginTop: 10,
                 paddingVertical: 12,
                 paddingHorizontal: 24,
               }}

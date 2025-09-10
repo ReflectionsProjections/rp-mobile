@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useAppSelector, useAppDispatch } from '@/lib/store';
-import { updateAttendeeIcon } from '@/lib/slices/attendeeSlice';
+import { updateAttendeeIcon, setOptimisticThemeColor } from '@/lib/slices/attendeeSlice';
 import { IconColorType } from '@/api/types';
 import { api } from '@/api/api';
 
 const ColorPicker = () => {
   const themeColor = useAppSelector((state) => state.attendee.themeColor);
+  const attendee = useAppSelector((state) => state.attendee.attendee);
   const dispatch = useAppDispatch();
+  const [previousColor, setPreviousColor] = useState<{ color: string; icon: IconColorType } | null>(null);
 
   const colors = [
     '#3B82F6', // Blue
@@ -31,11 +33,20 @@ const ColorPicker = () => {
     const apiColor = colorMap[color];
 
     if (apiColor) {
-      try {
-        await (api as any).patch('/attendee/icon', { icon: apiColor });
+      const currentIcon = attendee?.icon || 'RED';
+      const currentColor = themeColor;
+      setPreviousColor({ color: currentColor, icon: currentIcon });
 
+      dispatch(setOptimisticThemeColor({ color, icon: apiColor }));
+
+      try {
         await dispatch(updateAttendeeIcon(apiColor));
+        setPreviousColor(null);
       } catch (error: any) {
+        if (previousColor) {
+          dispatch(setOptimisticThemeColor(previousColor));
+        }
+        setPreviousColor(null);
         Alert.alert('Error updating theme color:', error.message);
       }
     } else {

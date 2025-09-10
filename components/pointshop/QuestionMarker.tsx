@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, ViewStyle } from 'react-native';
 import QuestionSvg from '../../assets/images/question.svg';
-import { Tier } from '@/api/types';
+import { TierType } from '@/api/types';
 
 interface QuestionMarkerProps {
-  tier: Tier;
+  tier: TierType;
   className?: string;
   style?: ViewStyle;
 }
