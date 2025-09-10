@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { View, TouchableOpacity, Alert, Animated, StyleSheet, Platform, DevSettings } from 'react-native';
+import { View, TouchableOpacity, Alert, Animated, StyleSheet, Platform, DevSettings, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
+
+const { height } = Dimensions.get('window');
 
 interface HeaderProps {
   title?: string;
@@ -67,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   });
 
   return (
-    <View className="flex-row p-4 justify-between items-start z-10">
+    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}>
       <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning}>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <LOGO width={32} height={32} />
@@ -89,15 +91,23 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
 };
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    zIndex: 10,
+  },
   titleContainer: {
     alignItems: 'center',
   },
   mainTitle: {
-    fontSize: 22,
+    fontSize: height < 700 ? 18 : 22, // Smaller title for iPhone SE
+    fontFamily: 'ProRacingSlant',
+    letterSpacing: height < 700 ? 0.5 : 1, // Tighter spacing for small screens
   },
   titleUnderline: {
-    marginTop: 8,
-    width: 120,
+    marginTop: height < 700 ? 6 : 8, // Tighter spacing for iPhone SE
+    width: height < 700 ? 100 : 120, // Smaller underline for small screens
     height: 3,
     borderRadius: 2,
   },

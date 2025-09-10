@@ -16,14 +16,14 @@ import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { useThemeColor } from '@/lib/theme';
 import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
 
-import { HeaderNavBar, HeaderComponentWrapper } from '@/components/headers/parallax';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { height } = Dimensions.get('window'); // For responsive design
 
 export default function HomeScreen() {
   const { isLoading: initLoading } = useDataInitialization();
@@ -286,160 +286,162 @@ export default function HomeScreen() {
 
       <SafeAreaView style={{ top: -12 }}>
         <Header title={'R|P 2025'} bigText={true} />
-        {/* NEXT LAP */}
-        <Animated.View
-          style={[
-            styles.sectionContainer,
-            {
-              opacity: sectionAnims[0],
-              transform: [
-                {
-                  translateY: sectionAnims[0].interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [12, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <CarouselSection
-            key={`next-lap-${themeColor}`}
-            title="NEXT LAP"
-            data={cards.slice(0, 1) || []}
-            flaggedIds={favorites}
-            onToggleFlag={toggleFlag}
-            onCardPress={openEvent}
-            limit={5}
-            onSwipeTouchStart={handleSwipeTouchStart}
-            onSwipeTouchEnd={handleSwipeTouchEnd}
-          />
-        </Animated.View>
+        <View style={{ marginTop: height < 700 ? 8 : 20 }}>
+          {/* NEXT LAP */}
+          <Animated.View
+            style={[
+              styles.sectionContainer,
+              {
+                opacity: sectionAnims[0],
+                transform: [
+                  {
+                    translateY: sectionAnims[0].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [12, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <CarouselSection
+              key={`next-lap-${themeColor}`}
+              title="NEXT LAP"
+              data={cards.slice(0, 1) || []}
+              flaggedIds={favorites}
+              onToggleFlag={toggleFlag}
+              onCardPress={openEvent}
+              limit={5}
+              onSwipeTouchStart={handleSwipeTouchStart}
+              onSwipeTouchEnd={handleSwipeTouchEnd}
+            />
+          </Animated.View>
 
-        {/* Conditional rendering based on user role */}
-        {hasStaffRole ? (
-          <>
-            {/* TODAY'S SHIFTS */}
-            <Animated.View
-              style={[
-                styles.sectionContainer,
-                {
-                  opacity: sectionAnims[1],
-                  transform: [
-                    {
-                      translateY: sectionAnims[1].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [12, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <CarouselSection
-                key={`today-shifts-${themeColor}`}
-                title="TODAY'S SHIFTS"
-                data={todayShifts || []}
-                flaggedIds={[]}
-                onToggleFlag={() => {}}
-                onCardPress={openShift}
-                limit={5}
-                onSwipeTouchStart={handleSwipeTouchStart}
-                onSwipeTouchEnd={handleSwipeTouchEnd}
-              />
-            </Animated.View>
+          {/* Conditional rendering based on user role */}
+          {hasStaffRole ? (
+            <>
+              {/* TODAY'S SHIFTS */}
+              <Animated.View
+                style={[
+                  styles.sectionContainer,
+                  {
+                    opacity: sectionAnims[1],
+                    transform: [
+                      {
+                        translateY: sectionAnims[1].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [12, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <CarouselSection
+                  key={`today-shifts-${themeColor}`}
+                  title="TODAY'S SHIFTS"
+                  data={todayShifts || []}
+                  flaggedIds={[]}
+                  onToggleFlag={() => {}}
+                  onCardPress={openShift}
+                  limit={5}
+                  onSwipeTouchStart={handleSwipeTouchStart}
+                  onSwipeTouchEnd={handleSwipeTouchEnd}
+                />
+              </Animated.View>
 
-            {/* UPCOMING SHIFTS */}
-            <Animated.View
-              style={[
-                styles.sectionContainer,
-                {
-                  opacity: sectionAnims[2],
-                  transform: [
-                    {
-                      translateY: sectionAnims[2].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [12, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <CarouselSection
-                key={`upcoming-shifts-${themeColor}`}
-                title="UPCOMING"
-                data={upcomingShifts || []}
-                flaggedIds={[]}
-                onToggleFlag={() => {}}
-                onCardPress={openShift}
-                onSwipeTouchStart={handleSwipeTouchStart}
-                onSwipeTouchEnd={handleSwipeTouchEnd}
-              />
-            </Animated.View>
-          </>
-        ) : (
-          <>
-            {/* RECOMMENDED */}
-            <Animated.View
-              style={[
-                styles.sectionContainer,
-                {
-                  opacity: sectionAnims[1],
-                  transform: [
-                    {
-                      translateY: sectionAnims[1].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [12, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <CarouselSection
-                key={`recommended-${themeColor}`}
-                title="RECOMMENDED"
-                data={cards || []}
-                flaggedIds={favorites}
-                onToggleFlag={toggleFlag}
-                onCardPress={openEvent}
-                limit={5}
-                onSwipeTouchStart={handleSwipeTouchStart}
-                onSwipeTouchEnd={handleSwipeTouchEnd}
-              />
-            </Animated.View>
+              {/* UPCOMING SHIFTS */}
+              <Animated.View
+                style={[
+                  styles.sectionContainer,
+                  {
+                    opacity: sectionAnims[2],
+                    transform: [
+                      {
+                        translateY: sectionAnims[2].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [12, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <CarouselSection
+                  key={`upcoming-shifts-${themeColor}`}
+                  title="UPCOMING"
+                  data={upcomingShifts || []}
+                  flaggedIds={[]}
+                  onToggleFlag={() => {}}
+                  onCardPress={openShift}
+                  onSwipeTouchStart={handleSwipeTouchStart}
+                  onSwipeTouchEnd={handleSwipeTouchEnd}
+                />
+              </Animated.View>
+            </>
+          ) : (
+            <>
+              {/* RECOMMENDED */}
+              <Animated.View
+                style={[
+                  styles.sectionContainer,
+                  {
+                    opacity: sectionAnims[1],
+                    transform: [
+                      {
+                        translateY: sectionAnims[1].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [12, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <CarouselSection
+                  key={`recommended-${themeColor}`}
+                  title="RECOMMENDED"
+                  data={cards || []}
+                  flaggedIds={favorites}
+                  onToggleFlag={toggleFlag}
+                  onCardPress={openEvent}
+                  limit={5}
+                  onSwipeTouchStart={handleSwipeTouchStart}
+                  onSwipeTouchEnd={handleSwipeTouchEnd}
+                />
+              </Animated.View>
 
-            {/* FLAGGED */}
-            <Animated.View
-              style={[
-                styles.sectionContainer,
-                {
-                  opacity: sectionAnims[2],
-                  transform: [
-                    {
-                      translateY: sectionAnims[2].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [12, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <CarouselSection
-                key={`flagged-${themeColor}`}
-                title="FLAGGED"
-                data={flaggedCards || []}
-                flaggedIds={favorites}
-                onToggleFlag={toggleFlag}
-                onCardPress={openEvent}
-                onSwipeTouchStart={handleSwipeTouchStart}
-                onSwipeTouchEnd={handleSwipeTouchEnd}
-              />
-            </Animated.View>
-          </>
-        )}
+              {/* FLAGGED */}
+              <Animated.View
+                style={[
+                  styles.sectionContainer,
+                  {
+                    opacity: sectionAnims[2],
+                    transform: [
+                      {
+                        translateY: sectionAnims[2].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [12, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <CarouselSection
+                  key={`flagged-${themeColor}`}
+                  title="FLAGGED"
+                  data={flaggedCards || []}
+                  flaggedIds={favorites}
+                  onToggleFlag={toggleFlag}
+                  onCardPress={openEvent}
+                  onSwipeTouchStart={handleSwipeTouchStart}
+                  onSwipeTouchEnd={handleSwipeTouchEnd}
+                />
+              </Animated.View>
+            </>
+          )}
+        </View>
       </SafeAreaView>
 
       <EventModal
@@ -482,6 +484,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginTop: 0,
+    marginBottom: height < 700 ? 0 : 12, // Tighter spacing for iPhone SE
   },
   errorContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',

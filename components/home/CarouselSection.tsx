@@ -5,12 +5,13 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
 import { ShiftCard } from '@/api/types';
 import { useThemeColor } from '@/lib/theme';
+import { FontAwesome } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = 100;
-const STACK_SEPARATION = 6;
-const DOTS_HEIGHT = 24;
+const CARD_HEIGHT = height < 700 ? 95 : 100; // Smaller cards for iPhone SE
+const STACK_SEPARATION = height < 700 ? 4 : 6; // Tighter spacing for small screens
+const DOTS_HEIGHT = height < 700 ? 20 : 24; // Smaller dots area
 const STACK_SIZE = 3;
 
 interface CarouselSectionProps<T = CardType> {
@@ -40,12 +41,38 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
 
   const containerHeight = CARD_HEIGHT + STACK_SEPARATION * (STACK_SIZE - 1) + DOTS_HEIGHT;
 
+  // Get racing icon for section
+  const getRacingIcon = (sectionTitle: string) => {
+    switch (sectionTitle.toUpperCase()) {
+      case 'NEXT LAP':
+        return 'flag-checkered';
+      case 'TODAY\'S SHIFTS':
+        return 'clock-o';
+      case 'UPCOMING':
+        return 'road';
+      case 'RECOMMENDED':
+        return 'star';
+      case 'FLAGGED':
+        return 'bookmark';
+      default:
+        return 'flag';
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
-        <ThemedText variant="title" style={styles.title}>
-          {title}
-        </ThemedText>
+        <View style={styles.titleRow}>
+          <FontAwesome 
+            name={getRacingIcon(title)} 
+            size={20} 
+            color={themeColor} 
+            style={styles.titleIcon}
+          />
+          <ThemedText variant="title" style={styles.title}>
+            {title}
+          </ThemedText>
+        </View>
         <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
       </View>
 
@@ -66,19 +93,28 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 12,
+    marginBottom: height < 700 ? 0 : 12,
   },
   titleContainer: {
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: height < 700 ? 12 : 16, // Tighter spacing for iPhone SE
     alignItems: 'flex-start',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: height < 700 ? 6 : 8, // Tighter spacing for iPhone SE
+  },
+  titleIcon: {
+    marginRight: 8,
+  },
   title: {
-    fontSize: 26,
+    fontSize: height < 700 ? 20 : 26, // Smaller title for iPhone SE
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
-    marginBottom: 8,
+    fontFamily: 'ProRacing',
+    letterSpacing: height < 700 ? 0.5 : 1, // Tighter letter spacing for small screens
   },
   titleUnderline: {
     width: 80,

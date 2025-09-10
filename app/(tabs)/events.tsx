@@ -177,7 +177,7 @@ const EventsScreen = () => {
           <FlatList
             data={filteredEvents}
             keyExtractor={(item) => item.eventId}
-            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 175, gap: 8 }}
             ListFooterComponent={
               <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">
                 End of Events
@@ -243,17 +243,17 @@ const EventsScreen = () => {
                   color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
                 />
 
-                <View className="absolute top-[30%] left-0 right-0 bottom-0 items-center justify-center px-6">
+                <View className="absolute top-[35%] left-0 right-0 bottom-0 items-center justify-center px-6">
                   <Text
-                    className="text-xl font-bold text-[#B60000] text-center mb-2"
+                    className="text-lg font-bold text-[#B60000] text-center mb-2"
                     style={{ fontFamily: 'ProRacingSlant' }}
-                    numberOfLines={2}
+                    numberOfLines={4}
                     ellipsizeMode="tail"
                   >
                     {selectedEvent?.name}
                   </Text>
                   <Text
-                    className="text-base text-[#B60000] text-center mb-2"
+                    className="text-sm text-[#B60000] text-center mb-2"
                     numberOfLines={20}
                     ellipsizeMode="tail"
                   >

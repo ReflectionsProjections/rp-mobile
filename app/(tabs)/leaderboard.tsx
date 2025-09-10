@@ -106,13 +106,7 @@ const LeaderboardScreen = () => {
   const data = activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData;
 
   return (
-    <View className="flex-1">
-      <BackgroundSvg
-        style={StyleSheet.absoluteFillObject}
-        width={SCREEN_WIDTH}
-        height={SCREEN_HEIGHT}
-        preserveAspectRatio="none"
-      />
+    <View className="flex-1 bg-black">
       <AnimatedScrollView
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
