@@ -9,7 +9,9 @@ const ColorPicker = () => {
   const themeColor = useAppSelector((state) => state.attendee.themeColor);
   const attendee = useAppSelector((state) => state.attendee.attendee);
   const dispatch = useAppDispatch();
-  const [previousColor, setPreviousColor] = useState<{ color: string; icon: IconColorType } | null>(null);
+  const [previousColor, setPreviousColor] = useState<{ color: string; icon: IconColorType } | null>(
+    null,
+  );
 
   const colors = [
     '#3B82F6', // Blue

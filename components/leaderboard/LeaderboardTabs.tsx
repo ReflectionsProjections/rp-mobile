@@ -74,7 +74,7 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
               elevation: 8,
             }}
           />
-          
+
           <TouchableOpacity
             onPress={() => handleTabPress(0)}
             style={{
@@ -99,7 +99,7 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
               DAILY
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={() => handleTabPress(1)}
             style={{

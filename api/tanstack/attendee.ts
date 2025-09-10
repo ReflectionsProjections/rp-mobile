@@ -9,21 +9,21 @@ export const ATTENDEE_PROFILE_QK = ['attendee', 'profile'] as const;
 export const ATTENDEE_POINTS_QK = ['attendee', 'points'] as const;
 
 async function fetchAttendeeProfile(): Promise<Attendee> {
-  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
   if (!jwt) {
     throw new Error('Not authenticated');
   }
-  
+
   const response = await api.get('/attendee');
   return response.data as Attendee;
 }
 
 async function fetchAttendeePoints(): Promise<number> {
-  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
   if (!jwt) {
     throw new Error('Not authenticated');
   }
-  
+
   const response = await api.get('/attendee/points');
   return response.data.points;
 }

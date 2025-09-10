@@ -93,7 +93,10 @@ const attendeeSlice = createSlice({
     setThemeColor: (state, action: PayloadAction<string>) => {
       state.themeColor = action.payload;
     },
-    setOptimisticThemeColor: (state, action: PayloadAction<{ color: string; icon: IconColorType }>) => {
+    setOptimisticThemeColor: (
+      state,
+      action: PayloadAction<{ color: string; icon: IconColorType }>,
+    ) => {
       state.themeColor = action.payload.color;
       if (state.attendee) {
         state.attendee.icon = action.payload.icon;

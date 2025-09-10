@@ -16,8 +16,6 @@ import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { useThemeColor } from '@/lib/theme';
 import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
 
-
-
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';

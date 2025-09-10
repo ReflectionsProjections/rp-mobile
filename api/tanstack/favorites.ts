@@ -7,11 +7,11 @@ import { path } from '../types';
 export const USER_FAVORITES_QK = ['user', 'favorites'] as const;
 
 async function fetchUserFavorites(userId: string): Promise<string[]> {
-  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
   if (!jwt) {
     throw new Error('Not authenticated');
   }
-  
+
   console.log('API: Fetching favorites for user:', userId);
   const response = await api.get(path('/attendee/favorites', { userId }));
   console.log('API: Favorites response:', response.data);
@@ -56,11 +56,11 @@ export function useToggleFavorite() {
 
   return useMutation({
     mutationFn: async ({ eventId, userId }: { eventId: string; userId: string }) => {
-      const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+      const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
       if (!jwt) {
         throw new Error('Not authenticated');
       }
-      
+
       dispatch(toggleFavoriteRedux({ eventId, userId }));
 
       const isCurrentlyFavorite = currentFavorites.includes(eventId);

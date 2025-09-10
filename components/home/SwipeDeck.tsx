@@ -102,7 +102,7 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
               <FontAwesome name="exclamation-circle" size={22} color="#ff3b30" />
             ))}
         </View>
-        
+
         <View className="flex-row justify-between">
           <View style={styles.timeContainer}>
             <FontAwesome name="clock-o" size={14} color="#666" style={styles.timeIcon} />
@@ -132,7 +132,7 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
             </ThemedText>
           </View>
         </View>
-        
+
         <View style={styles.footer}>
           {'pts' in item ? (
             <View style={[styles.points, { backgroundColor: themeColor }]}>
