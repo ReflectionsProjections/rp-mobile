@@ -76,7 +76,12 @@ const ProfileScreen = () => {
   const logout = useLogout();
   const dispatch = useAppDispatch();
 
-  const points = attendee?.points || 0;
+  // const day1Points = attendee?.pointsDay1 || 0;
+  // const day2Points = attendee?.pointsDay2 || 0;
+  // const day3Points = attendee?.pointsDay3 || 0;
+  // const day4Points = attendee?.pointsDay4 || 0;
+  // const day5Points = attendee?.pointsDay5 || 0;
+  // const totalPoints = day1Points + day2Points + day3Points + day4Points + day5Points;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -416,7 +421,7 @@ const ProfileScreen = () => {
         <ScrollView contentContainerStyle={{ paddingBottom: 300 }} style={{ paddingBottom: 100 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
-            <ProfileHeader points={points} />
+            <ProfileHeader points={attendee?.points || 0} />
             <ImageCarousel />
             <Separator />
             <UserInfo

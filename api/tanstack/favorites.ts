@@ -7,6 +7,11 @@ import { path } from '../types';
 export const USER_FAVORITES_QK = ['user', 'favorites'] as const;
 
 async function fetchUserFavorites(userId: string): Promise<string[]> {
+  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  if (!jwt) {
+    throw new Error('Not authenticated');
+  }
+  
   console.log('API: Fetching favorites for user:', userId);
   const response = await api.get(path('/attendee/favorites', { userId }));
   console.log('API: Favorites response:', response.data);
@@ -24,11 +29,11 @@ export function useUserFavorites(userId?: string) {
     queryKey: USER_FAVORITES_QK,
     queryFn: async () => {
       if (!userId) {
-        return []; // Return empty array if no userId
+        return [];
       }
       return fetchUserFavorites(userId);
     },
-    enabled: false, // Disabled - we use Redux for data management
+    enabled: false,
     select: (data) => {
       dispatch(setFavorites(data));
       return data;
@@ -51,34 +56,31 @@ export function useToggleFavorite() {
 
   return useMutation({
     mutationFn: async ({ eventId, userId }: { eventId: string; userId: string }) => {
-      console.log('API: Starting toggle favorite for event:', eventId, 'user:', userId);
+      const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+      if (!jwt) {
+        throw new Error('Not authenticated');
+      }
+      
       dispatch(toggleFavoriteRedux({ eventId, userId }));
 
       const isCurrentlyFavorite = currentFavorites.includes(eventId);
-      console.log('API: Is currently favorite:', isCurrentlyFavorite);
 
       if (isCurrentlyFavorite) {
-        console.log('API: Deleting favorite from server');
         await api.delete(path('/attendee/favorites/:eventId', { eventId }), {
           data: { userId },
         });
-        console.log('API: Favorite deleted from server successfully');
       } else {
-        console.log('API: Adding favorite to server');
         await api.post(path('/attendee/favorites/:eventId', { eventId }), {
           userId,
         });
-        console.log('API: Favorite added to server successfully');
       }
 
       return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
     },
-    onError: (error, variables) => {
-      // Revert optimistic update - automatically handled by Redux
+    onError: (error, _) => {
       console.error('Failed to toggle favorite:', error);
     },
     onSuccess: () => {
-      // Invalidate favorites query to ensure consistency - handled by Redux
       queryClient.invalidateQueries({ queryKey: USER_FAVORITES_QK });
     },
   });
