@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { api } from '@/api/api';
+import * as SecureStore from 'expo-secure-store';
 
 // Constants for QR code management
 const QR_REFRESH_INTERVAL = 10000; // 10 seconds
@@ -18,7 +19,6 @@ interface QRCodeState {
 }
 
 interface QRCodeActions {
-  fetchQRCode: (isRetry?: boolean) => Promise<void>;
   handleManualRefresh: () => void;
 }
 
@@ -27,7 +27,6 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
   const [timeUntilExpiry, setTimeUntilExpiry] = useState(0);
 
   // Refs for timer management
@@ -62,99 +61,53 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
   }, []);
 
   // Determine if manual refresh should be shown
-  const shouldShowManualRefresh = useCallback(() => {
-    // Always show on error
-    if (error) return true;
+  const shouldShowManualRefresh = Boolean(error || (qrValue && timeUntilExpiry <= 10));
 
-    // Show if QR is about to expire (less than 10 seconds)
-    if (qrValue && timeUntilExpiry <= 10) return true;
+  // Fetch QR code
+  const fetchQRCode = useCallback(async () => {
+    if (isFetchingRef.current || !isMountedRef.current) return;
 
-    // Show if QR seems stale (no recent fetch)
-    if (qrValue && lastFetchTime > 0) {
-      const timeSinceLastFetch = Date.now() - lastFetchTime;
-      if (timeSinceLastFetch > QR_REFRESH_INTERVAL + 5000) return true;
+    // Check authentication
+    try {
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) return;
+    } catch {
+      return;
     }
 
-    return false;
-  }, [error, qrValue, timeUntilExpiry, lastFetchTime]);
+    isFetchingRef.current = true;
+    setLoading(true);
 
-  // Fetch QR code with retry logic and protection against concurrent calls
-  const fetchQRCode = useCallback(
-    async (isRetry: boolean = false) => {
-      // Prevent concurrent API calls
-      if (isFetchingRef.current) {
-        console.log('QR fetch already in progress, skipping...');
-        return;
+    try {
+      const res = await api.get('/attendee/qr');
+      
+      if (!isMountedRef.current) return;
+
+      if (res.data?.qrCode) {
+        setQrValue(res.data.qrCode);
+        setError(null);
+        setRetryCount(0);
+        qrExpiryTimeRef.current = Date.now() + 30000; // 30 seconds
+      } else {
+        throw new Error('Invalid QR code response');
       }
+    } catch (e: any) {
+      if (!isMountedRef.current) return;
 
-      // Check if component is still mounted
-      if (!isMountedRef.current) {
-        console.log('Component unmounted, skipping QR fetch');
-        return;
+      setError(e.message || 'Failed to fetch QR code');
+      
+      // Simple retry logic
+      if (retryCount < MAX_RETRY_ATTEMPTS) {
+        setRetryCount(prev => prev + 1);
+        retryTimeoutRef.current = setTimeout(() => {
+          if (isMountedRef.current) fetchQRCode();
+        }, RETRY_DELAY);
       }
-
-      isFetchingRef.current = true;
-
-      try {
-        if (!isRetry) {
-          setLoading(true);
-        }
-
-        const res = await api.get('/attendee/qr');
-
-        // Check if component is still mounted before updating state
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        if (res.data?.qrCode) {
-          setQrValue(res.data.qrCode);
-          setError(null);
-          setRetryCount(0);
-          setLastFetchTime(Date.now());
-
-          // Calculate QR expiry time (assuming QR codes are valid for 30 seconds)
-          qrExpiryTimeRef.current = Date.now() + 30000;
-
-          console.log('QR code fetched successfully');
-        } else {
-          throw new Error('Invalid QR code response');
-        }
-      } catch (e: any) {
-        console.error('QR fetch error:', e);
-
-        // Check if component is still mounted before updating state
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setError(e.message || 'Failed to fetch QR code');
-
-        // Implement retry logic
-        if (retryCount < MAX_RETRY_ATTEMPTS) {
-          const newRetryCount = retryCount + 1;
-          setRetryCount(newRetryCount);
-
-          console.log(`Retrying QR fetch (attempt ${newRetryCount}/${MAX_RETRY_ATTEMPTS})`);
-
-          retryTimeoutRef.current = setTimeout(() => {
-            if (isMountedRef.current) {
-              fetchQRCode(true);
-            }
-          }, RETRY_DELAY);
-        } else {
-          console.error('Max retry attempts reached for QR fetch');
-          setRetryCount(0);
-        }
-      } finally {
-        isFetchingRef.current = false;
-        if (!isRetry) {
-          setLoading(false);
-        }
-      }
-    },
-    [retryCount],
-  );
+    } finally {
+      isFetchingRef.current = false;
+      setLoading(false);
+    }
+  }, [retryCount]);
 
   // Check if QR code is about to expire and refresh if needed
   const checkQRExpiry = useCallback(() => {
@@ -162,53 +115,37 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
     const timeUntilExpiry = qrExpiryTimeRef.current - now;
 
     if (timeUntilExpiry <= QR_EXPIRY_BUFFER && !isFetchingRef.current) {
-      console.log('QR code about to expire, refreshing...');
       fetchQRCode();
     }
   }, [fetchQRCode]);
 
   // Handle app state changes
-  const handleAppStateChange = useCallback(
-    (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active') {
-        // App came to foreground, check if QR needs refresh
-        const timeSinceLastFetch = Date.now() - lastFetchTime;
-        if (timeSinceLastFetch > QR_REFRESH_INTERVAL || !qrValue) {
-          console.log('App became active, refreshing QR code');
-          fetchQRCode();
-        }
-      } else if (nextAppState === 'background') {
-        // App went to background, clear timers to save resources
-        console.log('App went to background, clearing timers');
-        clearAllTimers();
-      }
-    },
-    [lastFetchTime, qrValue, fetchQRCode, clearAllTimers],
-  );
+  const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
+    if (nextAppState === 'active' && !qrValue) {
+      fetchQRCode();
+    } else if (nextAppState === 'background') {
+      clearAllTimers();
+    }
+  }, [qrValue, fetchQRCode, clearAllTimers]);
 
   // Manual refresh function
   const handleManualRefresh = useCallback(() => {
     if (!isFetchingRef.current) {
-      console.log('Manual QR refresh triggered');
       fetchQRCode();
     }
   }, [fetchQRCode]);
 
-  // Initialize QR code management
+  // Main effect - initialize and cleanup
   useEffect(() => {
     isMountedRef.current = true;
-
-    // Initial QR fetch
     fetchQRCode();
 
-    // Set up interval for regular QR refresh
+    // Check for expiry every 5 seconds
     intervalRef.current = setInterval(() => {
-      if (isMountedRef.current) {
-        checkQRExpiry();
-      }
-    }, 5000); // Check every 5 seconds
+      if (isMountedRef.current) checkQRExpiry();
+    }, 5000);
 
-    // Set up countdown timer
+    // Update countdown every second
     countdownIntervalRef.current = setInterval(() => {
       if (isMountedRef.current && qrValue) {
         setTimeUntilExpiry(getTimeUntilExpiry());
@@ -218,19 +155,27 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
     // Listen to app state changes
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
 
+    // Check auth state periodically
+    const authCheckInterval = setInterval(async () => {
+      try {
+        const jwt = await SecureStore.getItemAsync('jwt');
+        if (!jwt && qrValue) {
+          setQrValue(null);
+          setError(null);
+          setRetryCount(0);
+          setTimeUntilExpiry(0);
+          clearAllTimers();
+        }
+      } catch {}
+    }, 2000);
+
     return () => {
       isMountedRef.current = false;
       clearAllTimers();
+      clearInterval(authCheckInterval);
       appStateSubscription?.remove();
     };
-  }, [
-    fetchQRCode,
-    checkQRExpiry,
-    handleAppStateChange,
-    clearAllTimers,
-    getTimeUntilExpiry,
-    qrValue,
-  ]);
+  }, [fetchQRCode, checkQRExpiry, handleAppStateChange, clearAllTimers, getTimeUntilExpiry, qrValue]);
 
   return {
     // State
@@ -239,10 +184,9 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
     error,
     retryCount,
     timeUntilExpiry,
-    shouldShowManualRefresh: shouldShowManualRefresh(),
+    shouldShowManualRefresh,
 
     // Actions
-    fetchQRCode,
     handleManualRefresh,
   };
 };

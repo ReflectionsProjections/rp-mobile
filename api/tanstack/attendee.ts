@@ -9,11 +9,21 @@ export const ATTENDEE_PROFILE_QK = ['attendee', 'profile'] as const;
 export const ATTENDEE_POINTS_QK = ['attendee', 'points'] as const;
 
 async function fetchAttendeeProfile(): Promise<Attendee> {
+  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  if (!jwt) {
+    throw new Error('Not authenticated');
+  }
+  
   const response = await api.get('/attendee');
   return response.data as Attendee;
 }
 
 async function fetchAttendeePoints(): Promise<number> {
+  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  if (!jwt) {
+    throw new Error('Not authenticated');
+  }
+  
   const response = await api.get('/attendee/points');
   return response.data.points;
 }
@@ -33,7 +43,6 @@ export function useAttendeeProfile(isAuthenticated?: boolean | null) {
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
-  // Move dispatch to useEffect to avoid calling it during render
   useEffect(() => {
     if (query.data && !reduxAttendee) {
       dispatch(setAttendeeProfile(query.data));
@@ -63,7 +72,6 @@ export function useAttendeePoints(isAuthenticated?: boolean | null) {
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Update Redux when points are fetched
   useEffect(() => {
     if (query.data !== undefined && reduxAttendee) {
       dispatch(updatePoints(query.data));

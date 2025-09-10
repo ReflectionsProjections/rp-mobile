@@ -63,29 +63,6 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
         >
           <QRCode value={qrValue} size={qrSize} backgroundColor="transparent" color="#000" />
         </View>
-
-        {/* QR Code Status */}
-        <View className="mt-4 items-center">
-          <View className="flex-row items-center">
-            <Text className="text-white text-sm">QR Code expires in: {timeUntilExpiry}s</Text>
-            {shouldShowManualRefresh && (
-              <TouchableOpacity
-                onPress={onManualRefresh}
-                disabled={loading}
-                className="ml-3 px-2 py-1 rounded"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-              >
-                <Text className="text-white text-xs">{loading ? '⟳' : '↻'}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <Text className="text-gray-400 text-xs mt-1">
-            {shouldShowManualRefresh
-              ? 'Auto-refresh may be delayed'
-              : 'Auto-refreshing every 10 seconds'}
-          </Text>
-        </View>
       </View>
     );
   }

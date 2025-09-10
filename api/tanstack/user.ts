@@ -10,6 +10,11 @@ import type { RoleObject } from '../types';
 export const USER_PROFILE_QK = ['user', 'profile'] as const;
 
 async function fetchUserProfile(): Promise<RoleObject> {
+  const jwt = await import('expo-secure-store').then(store => store.getItemAsync('jwt'));
+  if (!jwt) {
+    throw new Error('Not authenticated');
+  }
+  
   const response = await api.get('/auth/info');
   return response.data as RoleObject;
 }
@@ -29,7 +34,6 @@ export function useUserProfile(isAuthenticated?: boolean | null) {
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
-  // Move dispatch to useEffect to avoid calling it during render
   useEffect(() => {
     if (query.data && !reduxProfile) {
       dispatch(setUserProfile(query.data));
