@@ -29,7 +29,7 @@ export const fetchAttendeeProfile = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.get('/attendee');
       return response.data as Attendee;
     } catch (error: any) {
@@ -47,7 +47,7 @@ export const fetchAttendeePoints = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.get('/attendee/points');
       return response.data.points;
     } catch (error: any) {

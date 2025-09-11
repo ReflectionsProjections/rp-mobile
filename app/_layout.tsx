@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import React, { useLayoutEffect } from 'react';
 import { Text } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppProvider from '@/app-provider';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -50,22 +51,24 @@ export default function RootLayout() {
   }
 
   return (
-    <AppProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen
-            name="(auth)"
-            options={{
-              headerShown: false,
-              animation: 'ios_from_left',
-            }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="light" />
-        <Toast />
-      </ThemeProvider>
-    </AppProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen
+              name="(auth)"
+              options={{
+                headerShown: false,
+                animation: 'ios_from_left',
+              }}
+            />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="light" />
+          <Toast />
+        </ThemeProvider>
+      </AppProvider>
+    </GestureHandlerRootView>
   );
 }

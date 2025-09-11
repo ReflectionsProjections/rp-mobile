@@ -13,8 +13,9 @@ import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
-import { useAppSelector, RootState } from '@/lib/store';
-import { ThemedText } from '@/components/themed/ThemedText';
+import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
+import { toggleFavorite } from '@/lib/slices/favoritesSlice';
+import Toast from 'react-native-toast-message';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -39,6 +40,10 @@ const typeColors = {
 const EventsScreen = () => {
   // Get data from Redux
   const events = useAppSelector((state: RootState) => state.favorites.events) || [];
+  const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const dispatch = useAppDispatch();
+
   const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -126,6 +131,41 @@ const EventsScreen = () => {
     });
   };
 
+  const handleFlagEvent = async (eventId: string) => {
+    if (!user?.userId) {
+      Toast.show({
+        type: 'error',
+        text1: 'Registration Required',
+        text2: 'Make sure to register for R|P to flag events!',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    try {
+      await dispatch(toggleFavorite({ eventId, userId: user.userId }) as any);
+      const isCurrentlyFlagged = favorites.includes(eventId);
+      Toast.show({
+        type: 'success',
+        text1: isCurrentlyFlagged ? 'Event Unflagged' : 'Event Flagged',
+        text2: isCurrentlyFlagged
+          ? 'Event removed from your favorites'
+          : 'Event added to your favorites',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update favorite status.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    }
+  };
+
   if (!events) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
@@ -150,22 +190,6 @@ const EventsScreen = () => {
       />
       <SafeAreaView style={{ top: -12 }}>
         <Header title={'EVENTS'} bigText={true} />
-        {/* <ThemedText
-          variant="bigName"
-          style={{
-            fontSize: 32,
-            textAlign: 'left',
-            color: '#fff',
-            textShadowColor: 'rgba(0,0,0,0.5)',
-            textShadowOffset: { width: 0, height: 2 },
-            textShadowRadius: 6,
-            zIndex: 2,
-            paddingHorizontal: 20,
-            marginTop: 8,
-          }}
-        >
-          EVENTS
-        </ThemedText> */}
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
 
@@ -201,6 +225,8 @@ const EventsScreen = () => {
                   width={SCREEN_WIDTH - 30}
                   anim={anim}
                   onPress={() => setSelectedEvent(item)}
+                  onFlag={handleFlagEvent}
+                  isFlagged={favorites.includes(item.eventId)}
                 />
               );
             }}

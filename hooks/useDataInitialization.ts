@@ -88,10 +88,7 @@ export function useDataInitialization() {
       ? hasEvents
       : hasEvents && (isAuthenticated ? hasUser && hasAttendeeData : true);
 
-  const isLoading =
-    isAuthenticated === null
-      ? true
-      : !hasEvents;
+  const isLoading = isAuthenticated === null ? true : !hasEvents;
 
   return {
     isInitialized,
