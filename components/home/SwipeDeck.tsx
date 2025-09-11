@@ -84,6 +84,8 @@ export default function SwipeDeck({
               fontSize: 20,
               fontFamily: 'magistral-medium',
             }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {item.title}
           </ThemedText>
