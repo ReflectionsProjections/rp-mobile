@@ -1,10 +1,12 @@
 import '@/global.css';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, View, TouchableOpacity, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SvgProps } from 'react-native-svg';
-import { api } from '../../api/api';
 import { Role } from '../../api/types';
+import { useUserProfile } from '@/api/tanstack/user';
+import * as SecureStore from 'expo-secure-store';
+import { useThemeColor } from '@/lib/theme';
 
 import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
@@ -38,17 +40,48 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
   { key: 'leaderboard', icon: LeaderboardIcon, filledIcon: FilledProfileIcon },
 ];
 
+// Separate component to handle scanner routing with user data
+function ScannerRouter() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const jwt = await SecureStore.getItemAsync('jwt');
+        setIsAuthenticated(!!jwt);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const { data: user, isLoading } = useUserProfile(isAuthenticated);
+
+  if (isAuthenticated === null || isLoading) {
+    return <ScannerGuestScreen />;
+  }
+
+  if (!user || !user.roles || user.roles.length === 0) {
+    return <ScannerGuestScreen />;
+  }
+
+  if (user.roles.includes('STAFF')) {
+    return <ScannerStaffScreen />;
+  }
+
+  if (user.roles.includes('USER')) {
+    return <ScannerUserScreen />;
+  }
+
+  return <ScannerGuestScreen />;
+}
+
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
-  const [roles, setRoles] = useState<Role[] | null>([]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await api.get('/auth/info');
-      setRoles(response.data.roles);
-    };
-    fetchUser();
-  }, []);
+  const themeColor = useThemeColor();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -61,13 +94,7 @@ export default function TabLayout() {
       case 'leaderboard':
         return <LeaderboardScreen />;
       case 'scanner':
-        if (roles === null || roles.length === 0) {
-          return <ScannerGuestScreen />;
-        } else if (roles.includes('STAFF')) {
-          return <ScannerStaffScreen />;
-        } else if (roles.includes('USER')) {
-          return <ScannerUserScreen />;
-        }
+        return <ScannerRouter />;
       default:
         return <HomeScreen />;
     }
@@ -82,7 +109,7 @@ export default function TabLayout() {
           <CurvedBottomBar />
         </View>
 
-        <View className="flex-1 flex-row">
+        <View className={`flex-1 flex-row ${height < 700 ? 'top-5' : ''}`}>
           {TABS.map((tab, idx) => {
             if (idx === 2) {
               return (
@@ -93,6 +120,7 @@ export default function TabLayout() {
                     tab={tab}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
+                    themeColor={themeColor}
                   />
                 </React.Fragment>
               );
@@ -103,6 +131,7 @@ export default function TabLayout() {
                 tab={tab}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                themeColor={themeColor}
                 width={tab.key === 'home' ? 50 : 40}
                 height={tab.key === 'home' ? 50 : 40}
               />
@@ -113,7 +142,7 @@ export default function TabLayout() {
         <Pressable
           className="absolute justify-center items-center"
           style={{
-            bottom: HEIGHT - BUTTON_SIZE * 1.11,
+            bottom: HEIGHT - BUTTON_SIZE * 1.11 + (height < 700 ? 10 : 0),
             left: width / 2 - BUTTON_SIZE / 2,
             width: BUTTON_SIZE,
             height: BUTTON_SIZE,
@@ -128,9 +157,9 @@ export default function TabLayout() {
               width: BUTTON_SIZE,
               height: BUTTON_SIZE,
               borderRadius: BUTTON_SIZE / 2,
-              backgroundColor: activeTab === 'scanner' ? '#DF4F44' : '#E5E5E5',
+              backgroundColor: activeTab === 'scanner' ? themeColor : '#E5E5E5',
               borderWidth: 5,
-              borderColor: '#DF4F44',
+              borderColor: themeColor,
               alignItems: 'center',
               justifyContent: 'center',
               shadowColor: '#000',
@@ -142,7 +171,7 @@ export default function TabLayout() {
             <QrCodeIcon
               width={ICON_SIZE}
               height={ICON_SIZE}
-              color={activeTab === 'scanner' ? '#FFF' : '#DF4F44'}
+              color={activeTab === 'scanner' ? '#FFF' : themeColor}
             />
           </View>
         </Pressable>
@@ -155,19 +184,27 @@ type TabButtonProps = {
   tab: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> };
   activeTab: string;
   setActiveTab: (key: string) => void;
+  themeColor: string;
   width?: number;
   height?: number;
 };
-function TabButton({ tab, activeTab, setActiveTab, width = 40, height = 40 }: TabButtonProps) {
+function TabButton({
+  tab,
+  activeTab,
+  setActiveTab,
+  themeColor,
+  width = 40,
+  height = 40,
+}: TabButtonProps) {
   const isActive = activeTab === tab.key;
   const Icon = isActive ? tab.filledIcon : tab.icon;
   return (
     <TouchableOpacity
-      className="flex-1 justify-center items-center"
+      className="flex-1 justify-center items-center shadow-sm shadow-black shadow-opacity-50"
       onPress={() => setActiveTab(tab.key)}
     >
       <View className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}>
-        <Icon width={width} height={height} color={isActive ? '#DF4F44' : '#00ADB5'} />
+        <Icon width={width} height={height} color={isActive ? themeColor : '#00ADB5'} />
       </View>
     </TouchableOpacity>
   );

@@ -3,4 +3,5 @@
   <color name="iconBackground">#000000</color>
   <color name="colorPrimary">#023c69</color>
   <color name="colorPrimaryDark">#ffffff</color>
+  <color name="launcherBackground">#000000</color>
 </resources>
