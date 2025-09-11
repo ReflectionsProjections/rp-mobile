@@ -26,7 +26,7 @@ export const fetchUserProfile = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.get('/auth/info');
       return response.data as RoleObject;
     } catch (error: any) {

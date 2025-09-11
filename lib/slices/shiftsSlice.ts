@@ -26,17 +26,17 @@ export const fetchMyShifts = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.get('/shifts/my-shifts');
       return response.data as ShiftAssignment[];
     } catch (error: any) {
       console.log('Shifts API error:', error.response?.data || error.message);
-      
+
       if (error.response?.status === 403) {
         console.log('User does not have permission to access shifts');
         return rejectWithValue('User does not have permission to access shifts');
       }
-      
+
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch shifts');
     }
   },
@@ -51,7 +51,7 @@ export const toggleAcknowledgeShift = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.post(path('/shifts/:shiftId/acknowledge', { shiftId }), {});
       return response.data as ShiftAssignment;
     } catch (error: any) {

@@ -31,7 +31,7 @@ export const fetchUserFavorites = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const response = await api.get(path('/attendee/favorites', { userId }));
       return response.data.favoriteEvents as string[];
     } catch (error: any) {
@@ -63,7 +63,7 @@ export const toggleFavorite = createAsyncThunk(
       if (!jwt) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const state = getState() as any;
       const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
 
