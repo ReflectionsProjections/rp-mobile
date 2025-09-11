@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RoleObject } from '@/api/types';
 import { api } from '@/api/api';
+import * as SecureStore from 'expo-secure-store';
 
 interface UserState {
   profile: RoleObject | null;
@@ -20,6 +21,12 @@ export const fetchUserProfile = createAsyncThunk(
   'user/fetchProfile',
   async (_, { rejectWithValue }) => {
     try {
+      // Check if JWT token exists before making API call
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) {
+        return rejectWithValue('No authentication token found');
+      }
+      
       const response = await api.get('/auth/info');
       return response.data as RoleObject;
     } catch (error: any) {
@@ -61,6 +68,12 @@ const userSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    logout: (state) => {
+      state.profile = null;
+      state.loading = false;
+      state.error = null;
+      state.lastFetched = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -86,5 +99,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserProfile, clearUserProfile, setError, clearError } = userSlice.actions;
+export const { setUserProfile, clearUserProfile, setError, clearError, logout } = userSlice.actions;
 export default userSlice.reducer;

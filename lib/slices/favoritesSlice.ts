@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
 import { Event } from '@/api/types';
+import * as SecureStore from 'expo-secure-store';
 
 interface FavoritesState {
   favoriteEventIds: string[];
@@ -25,6 +26,12 @@ export const fetchUserFavorites = createAsyncThunk(
   'favorites/fetchFavorites',
   async (userId: string, { rejectWithValue }) => {
     try {
+      // Check if JWT token exists before making API call
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) {
+        return rejectWithValue('No authentication token found');
+      }
+      
       const response = await api.get(path('/attendee/favorites', { userId }));
       return response.data.favoriteEvents as string[];
     } catch (error: any) {
@@ -52,6 +59,11 @@ export const toggleFavorite = createAsyncThunk(
     { getState, rejectWithValue },
   ) => {
     try {
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) {
+        return rejectWithValue('No authentication token found');
+      }
+      
       const state = getState() as any;
       const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
 

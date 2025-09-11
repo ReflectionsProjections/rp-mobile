@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Attendee, IconColorType } from '@/api/types';
 import { api } from '@/api/api';
+import * as SecureStore from 'expo-secure-store';
+import { getColorFromIcon } from '@/lib/colorUtils';
 
 interface AttendeeState {
   attendee: Attendee | null;
@@ -22,6 +24,12 @@ export const fetchAttendeeProfile = createAsyncThunk(
   'attendee/fetchProfile',
   async (_, { rejectWithValue }) => {
     try {
+      // Check if JWT token exists before making API call
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) {
+        return rejectWithValue('No authentication token found');
+      }
+      
       const response = await api.get('/attendee');
       return response.data as Attendee;
     } catch (error: any) {
@@ -34,6 +42,12 @@ export const fetchAttendeePoints = createAsyncThunk(
   'attendee/fetchPoints',
   async (_, { rejectWithValue }) => {
     try {
+      // Check if JWT token exists before making API call
+      const jwt = await SecureStore.getItemAsync('jwt');
+      if (!jwt) {
+        return rejectWithValue('No authentication token found');
+      }
+      
       const response = await api.get('/attendee/points');
       return response.data.points;
     } catch (error: any) {
@@ -77,17 +91,7 @@ const attendeeSlice = createSlice({
 
       // Update theme color based on attendee icon
       if (action.payload.icon) {
-        const apiToHexMap: { [key in IconColorType]: string } = {
-          BLUE: '#3B82F6',
-          RED: '#EF4444',
-          GREEN: '#4ADE80',
-          PINK: '#EC4899',
-          PURPLE: '#8B5CF6',
-          ORANGE: '#F59E0B',
-          YELLOW: '#EAB308',
-          BLACK: '#1F2937',
-        };
-        state.themeColor = apiToHexMap[action.payload.icon] || '#3B82F6';
+        state.themeColor = getColorFromIcon(action.payload.icon);
       }
     },
     setThemeColor: (state, action: PayloadAction<string>) => {
@@ -144,6 +148,11 @@ const attendeeSlice = createSlice({
         state.attendee = action.payload;
         state.lastFetched = Date.now();
         state.error = null;
+
+        // Update theme color based on attendee icon
+        if (action.payload.icon) {
+          state.themeColor = getColorFromIcon(action.payload.icon);
+        }
       })
       .addCase(fetchAttendeeProfile.rejected, (state, action) => {
         state.loading = false;
@@ -172,17 +181,7 @@ const attendeeSlice = createSlice({
         }
 
         // Update theme color
-        const apiToHexMap: { [key in IconColorType]: string } = {
-          BLUE: '#3B82F6',
-          RED: '#EF4444',
-          GREEN: '#4ADE80',
-          PINK: '#EC4899',
-          PURPLE: '#8B5CF6',
-          ORANGE: '#F59E0B',
-          YELLOW: '#EAB308',
-          BLACK: '#1F2937',
-        };
-        state.themeColor = apiToHexMap[action.payload] || '#3B82F6';
+        state.themeColor = getColorFromIcon(action.payload);
         state.lastFetched = Date.now();
         state.error = null;
       })
