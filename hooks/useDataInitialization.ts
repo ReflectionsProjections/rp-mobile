@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
-import { useUserProfile } from '@/api/tanstack/user';
-import { useAttendeeProfile, useAttendeePoints } from '@/api/tanstack/attendee';
 import { fetchEvents, fetchUserFavorites } from '@/lib/slices/favoritesSlice';
 import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
+import { fetchUserProfile } from '@/lib/slices/userSlice';
+import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 import * as SecureStore from 'expo-secure-store';
 
 /**
@@ -38,51 +38,67 @@ export function useDataInitialization() {
     checkAuth();
   }, []);
 
-  // Pass authentication status to the hooks
-  const { data: user, isLoading: userLoading } = useUserProfile(isAuthenticated);
-  const { data: attendee, isLoading: attendeeLoading } = useAttendeeProfile(isAuthenticated);
-  const { data: points, isLoading: pointsLoading } = useAttendeePoints(isAuthenticated);
+  // Get data from Redux store
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const userLoading = useAppSelector((state: RootState) => state.user.loading);
+  const attendeeLoading = useAppSelector((state: RootState) => state.attendee.loading);
 
-  // Always fetch events (public data)
   useEffect(() => {
     if (!hasEvents) {
       dispatch(fetchEvents());
     }
   }, [hasEvents, dispatch]);
 
-  // Only fetch user-specific data if authenticated
   useEffect(() => {
-    if (isAuthenticated && user?.userId && !hasFavorites) {
-      // Load once and never again - simple approach
+    if (isAuthenticated === true && !user && !userLoading) {
+      dispatch(fetchUserProfile());
+    }
+  }, [isAuthenticated, user, userLoading, dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated === true && !attendee && !attendeeLoading) {
+      dispatch(fetchAttendeeProfile());
+    }
+  }, [isAuthenticated, attendee, attendeeLoading, dispatch]);
+
+  // Fetch user favorites if authenticated
+  useEffect(() => {
+    if (isAuthenticated === true && user?.userId && !hasFavorites) {
       dispatch(fetchUserFavorites(user.userId));
     }
   }, [isAuthenticated, user?.userId, hasFavorites, dispatch]);
 
-  // Fetch shifts for staff users
+  // Fetch shifts for staff and admin users only
   useEffect(() => {
-    if (isAuthenticated && user?.roles?.includes('STAFF') && !hasShifts) {
-      dispatch(fetchMyShifts());
+    if (isAuthenticated === true && user?.roles) {
+      const hasStaffOrAdminRole = user.roles.some((role: string) => {
+        const roleUpper = role.toUpperCase();
+        return roleUpper === 'STAFF' || roleUpper === 'ADMIN';
+      });
+
+      if (hasStaffOrAdminRole && !hasShifts) {
+        dispatch(fetchMyShifts());
+      }
     }
   }, [isAuthenticated, user?.roles, hasShifts, dispatch]);
 
-  // For guests, we only need events to be loaded
-  // For authenticated users, we need events + user data
   const isInitialized =
     isAuthenticated === false
-      ? hasEvents // Guest users only need events
-      : hasEvents && (isAuthenticated ? hasUser && hasAttendeeData : true); // Authenticated users need everything
+      ? hasEvents
+      : hasEvents && (isAuthenticated ? hasUser && hasAttendeeData : true);
 
   const isLoading =
     isAuthenticated === null
-      ? true // Still checking auth status
-      : !hasEvents; // Only show loading if events aren't loaded yet
+      ? true
+      : !hasEvents;
 
   return {
     isInitialized,
     isLoading,
     hasUser: !!user,
     hasAttendee: !!attendee,
-    points: points || 0,
+    points: attendee?.points || 0,
     attendee: attendee,
     isAuthenticated,
   };

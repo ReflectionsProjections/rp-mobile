@@ -27,7 +27,6 @@ export type Attendee = {
   hasPrioritySun: boolean;
   currentTier: TierType;
   icon: IconColorType;
-  tags: string[];
   favoriteEvents: string[];
   puzzlesCompleted: string[];
   tags: string[];

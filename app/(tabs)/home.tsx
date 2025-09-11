@@ -1,7 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView } from 'react-native';
-import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
@@ -10,11 +9,12 @@ import { CardType } from '@/components/home/types';
 import { ShiftCard } from '@/api/types';
 
 import { useToggleFavorite } from '@/api/tanstack/favorites';
-import { useMyShifts } from '@/api/tanstack/shifts';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { useThemeColor } from '@/lib/theme';
-import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
+import { toggleAcknowledgeShift, toggleLocalAcknowledge, fetchMyShifts } from '@/lib/slices/shiftsSlice';
+import { fetchUserProfile } from '@/lib/slices/userSlice';
+import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
@@ -54,6 +54,7 @@ export default function HomeScreen() {
       location: event.location,
       pts: event.points,
       description: event.description,
+      tags: event.tags ?? [],
     }));
   }, [events]);
 
@@ -64,15 +65,25 @@ export default function HomeScreen() {
 
   // Check if user has USER role
   const hasUserRole = useMemo(() => {
-    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'USER');
-  }, [user?.roles]);
+    if (!user) {
+      return false;
+    }
+    return user.roles?.some((r: string) => r.toUpperCase() === 'USER');
+  }, [user]);
 
-  // Check if user has STAFF role
+  // Check if user has STAFF or ADMIN role
   const hasStaffRole = useMemo(() => {
-    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'STAFF');
-  }, [user?.roles]);
+    if (!user) {
+      return false;
+    }
+    return user.roles?.some((r: string) => {
+      const role = r.toUpperCase();
+      return role === 'STAFF' || role === 'ADMIN';
+    });
+  }, [user]);
 
-  const { data: myShifts } = useMyShifts(hasStaffRole);
+  const myShifts = useAppSelector((state: RootState) => state.shifts.shifts);
+
   // Process shift data for staff users
   const shiftCards = useMemo(() => {
     if (!myShifts || !hasStaffRole) return [];
@@ -145,10 +156,11 @@ export default function HomeScreen() {
     }
   }, [initLoading, cards.length]);
 
-  useEffect(() => {
-    const tags = ((user as any)?.tags ?? []).map((t: string) => t.toLowerCase());
-    setUserTags(tags);
-  }, [user]);
+  // Get user tags from attendee profile
+  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const userTags = useMemo(() => {
+    return (attendee?.tags ?? []).map((t: string) => t.toLowerCase());
+  }, [attendee?.tags]);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -186,54 +198,26 @@ export default function HomeScreen() {
     setSelectedEvent(null);
   };
 
-  // unchanged: fetch user once
+  // Fetch user and attendee data using Redux
   useEffect(() => {
-  const fetchUser = async () => {
-    // basic auth info
-    const authResponse = await api.get('/auth/info');
-    const authUser = authResponse.data;
+    if (!user) {
+      dispatch(fetchUserProfile());
+    }
+    if (!attendee) {
+      dispatch(fetchAttendeeProfile());
+    }
+  }, [dispatch, user, attendee]);
 
-    // attendee info (includes tags)
-    const attendeeResponse = await api.get('/attendee');
-    const attendee = attendeeResponse.data;
 
-    console.log('Fetched tags:', attendee.tags);
-
-    // merge auth + attendee
-    setUser({
-      ...authUser,
-      ...attendee,  // will include tags, points, etc.
-    });
-  };
-  fetchUser();
-}, []);
-
-  useEffect(() => {
-    if (!events) return;
-    const formattedEvents = (events as ApiEvent[]).map((event: ApiEvent) => ({
-      id: event.eventId,
-      title: event.name,
-      time: new Date(event.startTime).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      location: event.location,
-      pts: event.points,
-      description: event.description,
-      tags: event.tags ?? [],
-    }));
-    setCards(formattedEvents);
-  }, [events]);
-
-  const recommended = React.useMemo(() => {
+  const recommended = useMemo(() => {
     if (!cards.length) return [];
     if (!userTags.length) return cards; // fallback: show all if user has no tags
 
-    const tagSet = new Set(userTags.map((t) => t.toLowerCase()));
+    const tagSet = new Set(userTags.map((t: string) => t.toLowerCase()));
     const scored = cards.map((c) => {
       const overlap =
         (c.tags ?? []).reduce(
-          (acc, t) => acc + (tagSet.has(t.toLowerCase()) ? 1 : 0),
+          (acc: number, t: string) => acc + (tagSet.has(t.toLowerCase()) ? 1 : 0),
           0
         );
       return { c, score: overlap };
@@ -243,19 +227,9 @@ export default function HomeScreen() {
     const sorted = filtered.sort((a, b) => b.score - a.score);
     const result = sorted.map(({ c }) => c);
 
-    console.log("Recommended cards based on tags:", {
-      userTags,
-      result,
-    });
-
     return result;
   }, [cards, userTags]);
 
-  useEffect(() => {
-    if (eventsLoading) return;
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, [eventsLoading]);
 
   const openShift = (shift: ShiftCard) => {
     setSelectedShift(shift);
