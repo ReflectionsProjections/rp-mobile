@@ -26,8 +26,9 @@ import { RootState, useAppDispatch } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
-import { api } from '@/api/api';
-import { setAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -72,16 +73,8 @@ const ProfileScreen = () => {
   const user = useAppSelector((state: RootState) => state.user.profile);
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
   const themeColor = useAppSelector((state: RootState) => state.attendee.themeColor);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const logout = useLogout();
   const dispatch = useAppDispatch();
-
-  // const day1Points = attendee?.pointsDay1 || 0;
-  // const day2Points = attendee?.pointsDay2 || 0;
-  // const day3Points = attendee?.pointsDay3 || 0;
-  // const day4Points = attendee?.pointsDay4 || 0;
-  // const day5Points = attendee?.pointsDay5 || 0;
-  // const totalPoints = day1Points + day2Points + day3Points + day4Points + day5Points;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -115,11 +108,6 @@ const ProfileScreen = () => {
   const handleRegisterPress = () => {
     router.push('/(auth)/sign-in');
     WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
-  };
-
-  const handleNotificationToggle = (value: boolean) => {
-    setNotificationsEnabled(value);
-    console.log('Notifications:', value ? 'enabled' : 'disabled');
   };
 
   const handleBackPress = () => {
@@ -177,24 +165,16 @@ const ProfileScreen = () => {
     setTimeout(() => {
       pulseAnimation.start();
     }, 2000);
-
-    const fetchAttendeeData = async () => {
-      try {
-        // Only fetch attendee data if user is authenticated (not guest)
-        if (user && user.roles && user.roles.length > 0) {
-          const response = await api.get('/attendee');
-
-          if (response.data) {
-            dispatch(setAttendeeProfile(response.data));
-          }
-        }
-      } catch (error: any) {
-        console.error('Error fetching attendee data:', error.message);
-      }
-    };
-
-    fetchAttendeeData();
   }, [user, dispatch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user && user.roles && user.roles.length > 0) {
+        dispatch(fetchAttendeePoints());
+      }
+      return () => {};
+    }, [dispatch, user]),
+  );
 
   if (!isInitialized) {
     return (
@@ -424,7 +404,7 @@ const ProfileScreen = () => {
         <ScrollView contentContainerStyle={{ paddingBottom: 300 }} style={{ paddingBottom: 100 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
-            <ProfileHeader points={attendee?.points || 0} />
+            <ProfileHeader points={attendee!.points} />
             <ImageCarousel />
             <Separator />
             <UserInfo

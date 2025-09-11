@@ -1,19 +1,21 @@
-import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { ScrollView } from 'react-native';
+import React, { useRef, useEffect, useImperativeHandle, forwardRef, useMemo } from 'react';
+import { FlatList } from 'react-native';
 import { LeaderboardItem } from './LeaderboardItem';
 import { StaggeredAnimation } from './LeaderboardAnimations';
+import { IconColorType, TierType } from '@/api/types';
 
 interface LeaderboardData {
   rank: number;
+  userId: string;
   name: string;
   points: number;
-  color: string;
-  avatar: React.ComponentType<{ width: number; height: number }>;
+  color: IconColorType;
+  currentTier: TierType;
 }
 
 interface LeaderboardListProps {
   data: LeaderboardData[];
-  userName: string;
+  userId: string;
 }
 
 export type LeaderboardListHandle = {
@@ -21,17 +23,17 @@ export type LeaderboardListHandle = {
 };
 
 export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardListProps>(
-  ({ data, userName }, ref) => {
-    const scrollRef = useRef<ScrollView>(null);
+  ({ data, userId }, ref) => {
+    const listRef = useRef<FlatList<LeaderboardData>>(null);
     const ITEM_HEIGHT = 94;
 
+    const userIndex = useMemo(() => data.findIndex((p) => p.userId === userId), [data, userId]);
+
     const scrollToUser = () => {
-      const userIndex = data.findIndex((p) => p.name === userName);
-      if (userIndex !== -1 && scrollRef.current) {
-        scrollRef.current.scrollTo({
-          y: userIndex * ITEM_HEIGHT,
-          animated: true,
-        });
+      if (userIndex !== -1 && listRef.current) {
+        try {
+          listRef.current.scrollToIndex({ index: userIndex, animated: true, viewPosition: 0.5 });
+        } catch {}
       }
     };
 
@@ -39,32 +41,31 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
       scrollToUser,
     }));
 
-    useEffect(() => {
-      scrollToUser();
-    }, [data, userName]);
-
     return (
-      <ScrollView
-        ref={scrollRef}
-        style={{ flex: 1 }}
+      <FlatList
+        ref={listRef}
+        data={data}
+        keyExtractor={(item) => String(item.userId)}
+        scrollEnabled={false}
         contentContainerStyle={{ paddingBottom: 80 }}
-        onContentSizeChange={() => {
-          scrollToUser();
-        }}
-      >
-        {data.map((person, index) => (
-          <StaggeredAnimation key={person.rank} index={index} delay={900}>
+        initialScrollIndex={userIndex >= 0 ? userIndex : undefined}
+        getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+        renderItem={({ item, index }) => (
+          <StaggeredAnimation index={index} delay={900}>
             <LeaderboardItem
-              rank={person.rank}
-              name={person.name}
-              points={person.points}
-              color={person.color}
-              Avatar={person.avatar}
-              isUser={person.name === userName}
+              rank={item.rank}
+              name={item.name}
+              points={item.points}
+              color={item.color}
+              currentTier={item.currentTier}
+              isUser={item.userId === userId}
             />
           </StaggeredAnimation>
-        ))}
-      </ScrollView>
+        )}
+        onScrollToIndexFailed={() => {
+          setTimeout(scrollToUser, 100);
+        }}
+      />
     );
   },
 );

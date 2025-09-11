@@ -16,7 +16,7 @@ const ColorPicker = () => {
   const colors = [
     '#3B82F6', // Blue
     '#EF4444', // Red
-    '#4ADE80', // Green
+    '#4A9E68', // Green
     '#EC4899', // Pink
     '#8B5CF6', // Purple
     '#F59E0B', // Orange
@@ -26,7 +26,7 @@ const ColorPicker = () => {
     const colorMap: { [key: string]: IconColorType } = {
       '#3B82F6': 'BLUE',
       '#EF4444': 'RED',
-      '#4ADE80': 'GREEN',
+      '#4A9E68': 'GREEN',
       '#EC4899': 'PINK',
       '#8B5CF6': 'PURPLE',
       '#F59E0B': 'ORANGE',

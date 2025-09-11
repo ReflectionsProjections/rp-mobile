@@ -13,11 +13,10 @@ import { Header } from '@/components/home/Header';
 import {
   LeaderboardTabs,
   LeaderboardList,
-  globalLeaderboardData,
-  dailyLeaderboardData,
   FadeInWrapper,
   FloatingAnimation,
 } from '@/components/leaderboard';
+import { useDailyLeaderboard, useGlobalLeaderboard } from '@/api/tanstack/leaderboard';
 import type { LeaderboardListHandle } from '@/components/leaderboard/LeaderboardList';
 import {
   AnimatedScrollView,
@@ -34,25 +33,29 @@ import Reanimated, {
   useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
-import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useThemeColor } from '@/lib/theme';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { useAppSelector } from '@/lib/store';
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
   const themeColor = useThemeColor();
-  const dailyUserRank = 14;
-  const globalUserRank = 8;
-  const userName = 'Leila Johnson'; // Replace with user id once data, or username...
-  const dailyPoints = 15;
-  const globalPoints = 250;
+  const attendee = useAppSelector((state) => state.attendee.attendee);
+  const today = new Date();
+  const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
+    today.getDate(),
+  ).padStart(2, '0')}`;
+  const { data: daily } = useDailyLeaderboard(dayStr);
+  const { data: global } = useGlobalLeaderboard();
+  const dailyUserRank = daily?.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const globalUserRank = global?.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const dailyPoints = daily?.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+  const globalPoints = global?.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
 
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
   const outerScrollRef = useRef<any>(null);
   const pulse = useSharedValue(1);
-  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+  // const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
 
   React.useEffect(() => {
     pulse.value = withRepeat(
@@ -65,9 +68,7 @@ const LeaderboardScreen = () => {
   const handleRankPress = () => {
     listRef.current?.scrollToUser();
 
-    const userIndex = (activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData).findIndex(
-      (p) => p.name === userName,
-    );
+    const userIndex = data.findIndex((p: any) => p.userId === attendee?.userId);
 
     if (userIndex !== -1 && outerScrollRef.current) {
       const ITEM_HEIGHT = 94;
@@ -103,7 +104,18 @@ const LeaderboardScreen = () => {
     }),
   ).current;
 
-  const data = activeTab === 0 ? dailyLeaderboardData : globalLeaderboardData;
+  const data = React.useMemo(() => {
+    const src = activeTab === 0 ? daily?.leaderboard : global?.leaderboard;
+    if (!src) return [] as any[];
+    return src.map((p) => ({
+      rank: p.rank,
+      userId: p.userId,
+      name: p.displayName,
+      points: p.points,
+      color: p.icon,
+      currentTier: p.currentTier,
+    }));
+  }, [activeTab, daily, global]);
 
   return (
     <View className="flex-1 bg-black">
@@ -183,7 +195,6 @@ const LeaderboardScreen = () => {
                   <Reanimated.View
                     style={[
                       { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
-                      pulseStyle,
                     ]}
                   >
                     <Ionicons
@@ -247,7 +258,35 @@ const LeaderboardScreen = () => {
         </View>
 
         <FadeInWrapper delay={1000}>
-          <LeaderboardList ref={listRef} data={data} userName={userName} />
+          {activeTab === 0 && (!daily || (daily.leaderboard?.length ?? 0) === 0) ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 18,
+                  fontFamily: 'magistral-medium',
+                  textAlign: 'center',
+                }}
+              >
+                No leaderboard for today — check back tomorrow!
+              </Text>
+            </View>
+          ) : activeTab === 1 && (!global || (global.leaderboard?.length ?? 0) === 0) ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 18,
+                  fontFamily: 'magistral-medium',
+                  textAlign: 'center',
+                }}
+              >
+                No leaderboard found.
+              </Text>
+            </View>
+          ) : (
+            <LeaderboardList ref={listRef} data={data} userId={attendee?.userId ?? ''} />
+          )}
         </FadeInWrapper>
 
         <View style={{ height: 100 }} />

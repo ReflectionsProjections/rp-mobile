@@ -6,7 +6,16 @@ import { Event } from '@/api/types';
 import { Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import ReanimatedAnimated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, runOnJS, Easing, interpolate, Extrapolation } from 'react-native-reanimated';
+import ReanimatedAnimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  runOnJS,
+  Easing,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { useThemeColor } from '@/lib/theme';
 
 const typeColors = {
@@ -52,7 +61,7 @@ export const EventListItem: React.FC<Props> = ({
     if (onFlag) {
       onFlag(item.eventId);
     }
-    
+
     setTimeout(() => {
       translateX.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) });
       flagOpacity.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) });
@@ -73,10 +82,17 @@ export const EventListItem: React.FC<Props> = ({
       const { translationX, velocityX } = event;
 
       if (translationX > triggerThreshold || velocityX > 500) {
-        translateX.value = withTiming(Math.min(width * 0.6, maxSwipe), { duration: 220, easing: Easing.out(Easing.cubic) });
-        flagOpacity.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) }, () => {
-          runOnJS(triggerFlagAndReset)();
+        translateX.value = withTiming(Math.min(width * 0.6, maxSwipe), {
+          duration: 220,
+          easing: Easing.out(Easing.cubic),
         });
+        flagOpacity.value = withTiming(
+          1,
+          { duration: 200, easing: Easing.out(Easing.cubic) },
+          () => {
+            runOnJS(triggerFlagAndReset)();
+          },
+        );
       } else {
         translateX.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
         flagOpacity.value = withTiming(0, { duration: 200, easing: Easing.out(Easing.cubic) });
@@ -100,8 +116,22 @@ export const EventListItem: React.FC<Props> = ({
     return {
       opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.85], Extrapolation.CLAMP),
       transform: [
-        { translateX: interpolate(translateX.value, [0, triggerThreshold], [0, 6], Extrapolation.CLAMP) },
-        { scale: interpolate(translateX.value, [0, triggerThreshold], [1, 0.98], Extrapolation.CLAMP) },
+        {
+          translateX: interpolate(
+            translateX.value,
+            [0, triggerThreshold],
+            [0, 6],
+            Extrapolation.CLAMP,
+          ),
+        },
+        {
+          scale: interpolate(
+            translateX.value,
+            [0, triggerThreshold],
+            [1, 0.98],
+            Extrapolation.CLAMP,
+          ),
+        },
       ],
     };
   });
@@ -110,7 +140,14 @@ export const EventListItem: React.FC<Props> = ({
     return {
       opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.7], Extrapolation.CLAMP),
       transform: [
-        { translateX: interpolate(translateX.value, [0, triggerThreshold], [0, 8], Extrapolation.CLAMP) },
+        {
+          translateX: interpolate(
+            translateX.value,
+            [0, triggerThreshold],
+            [0, 8],
+            Extrapolation.CLAMP,
+          ),
+        },
       ],
     };
   });
@@ -119,7 +156,14 @@ export const EventListItem: React.FC<Props> = ({
     return {
       opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.85], Extrapolation.CLAMP),
       transform: [
-        { translateX: interpolate(translateX.value, [0, triggerThreshold], [-40, 0], Extrapolation.CLAMP) },
+        {
+          translateX: interpolate(
+            translateX.value,
+            [0, triggerThreshold],
+            [-40, 0],
+            Extrapolation.CLAMP,
+          ),
+        },
       ],
       scale: interpolate(translateX.value, [0, triggerThreshold], [1, 0.2], Extrapolation.CLAMP),
     };
@@ -182,8 +226,8 @@ export const EventListItem: React.FC<Props> = ({
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0.3, y: 0 }}
                 className="rounded-lg flex-row items-center h-16 overflow-hidden shadow-lg shadow-black/40"
-                style={{ 
-                  width, 
+                style={{
+                  width,
                   transform: [{ skewX: '-20deg' }],
                   borderLeftWidth: isFlagged ? 8 : 0,
                   borderLeftColor: isFlagged ? themeColor : 'transparent',
@@ -198,7 +242,7 @@ export const EventListItem: React.FC<Props> = ({
                   <View className="flex-1 justify-center pl-2 pr-2">
                     <View className="flex-row items-center">
                       <ReanimatedAnimated.Text
-                        className="text-white text-base font-extrabold font-magistralMedium flex-1" 
+                        className="text-white text-base font-extrabold font-magistralMedium flex-1"
                         numberOfLines={1}
                         style={animatedTitleTextStyle}
                       >
@@ -214,7 +258,11 @@ export const EventListItem: React.FC<Props> = ({
                         />
                       )}
                     </View>
-                    <ReanimatedAnimated.Text className="text-white/80 text-xs font-magistral" numberOfLines={1} style={animatedSubtitleTextStyle}>
+                    <ReanimatedAnimated.Text
+                      className="text-white/80 text-xs font-magistral"
+                      numberOfLines={1}
+                      style={animatedSubtitleTextStyle}
+                    >
                       {item.location}
                     </ReanimatedAnimated.Text>
                   </View>

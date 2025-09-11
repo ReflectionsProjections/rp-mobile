@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 
 // Constants for QR code management
 const QR_REFRESH_INTERVAL = 10000; // 10 seconds
-const QR_EXPIRY_BUFFER = 5000; // 5 seconds before expiry
+const QR_EXPIRY_BUFFER = 1000; // refresh earlier to avoid hitting server expiry
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 2000; // 2 seconds between retries
 
@@ -87,7 +87,8 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
         setQrValue(res.data.qrCode);
         setError(null);
         setRetryCount(0);
-        qrExpiryTimeRef.current = Date.now() + 30000; // 30 seconds
+        // Treat client-side QR lifetime as 10s to ensure server always sees valid
+        qrExpiryTimeRef.current = Date.now() + QR_REFRESH_INTERVAL; // 10 seconds
       } else {
         throw new Error('Invalid QR code response');
       }
@@ -143,10 +144,10 @@ export const useQRCode = (): QRCodeState & QRCodeActions => {
     isMountedRef.current = true;
     fetchQRCode();
 
-    // Check for expiry every 5 seconds
+    // Check for expiry frequently to auto-refresh before expiration
     intervalRef.current = setInterval(() => {
       if (isMountedRef.current) checkQRExpiry();
-    }, 5000);
+    }, 1000);
 
     // Update countdown every second
     countdownIntervalRef.current = setInterval(() => {

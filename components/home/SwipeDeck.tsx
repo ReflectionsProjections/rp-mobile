@@ -164,7 +164,9 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
   return (
     <View style={[containerStyle, { paddingHorizontal: 20 }]} {...panResponder.panHandlers}>
       <Swiper
-        key={`swiper-${themeColor}`} // Force re-render when theme changes
+        key={`swiper-${themeColor}-${data.length}-${data[0]?.id ?? 'none'}-${
+          data[data.length - 1]?.id ?? 'none'
+        }`} // Force re-render when theme or dataset changes
         cards={data}
         renderCard={renderCard}
         keyExtractor={(card) => card.id}

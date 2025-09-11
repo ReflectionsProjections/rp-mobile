@@ -43,19 +43,6 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
           return;
         }
 
-        // Try expo-updates if available (production builds)
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const Updates: any = require('expo-updates');
-          if (Updates?.reloadAsync) {
-            await Updates.reloadAsync();
-            return;
-          }
-        } catch (_) {
-          // expo-updates not available; fall back below
-        }
-
-        // Fallback for native dev
         if (DevSettings?.reload) {
           DevSettings.reload();
           return;
