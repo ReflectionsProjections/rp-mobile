@@ -8,7 +8,7 @@ import Tier4Background from '../../assets/pointshop/tier4_car.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
 import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
-import { TierMappedType } from '@/api/types';
+import { TierMappedType, TierType } from '@/api/types';
 import { tierMapping } from '@/constants/tierMapping';
 
 const { width, height } = Dimensions.get('window');
@@ -19,7 +19,7 @@ const AnimatedBackground = ({
   currentTier,
   testTier,
 }: {
-  currentTier?: TierMappedType;
+  currentTier?: TierType;
   testTier?: TierMappedType;
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -133,11 +133,11 @@ export default function PointsScreen() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   // For testing - specify which tier to animate to
-  const testTier: TierMappedType = 'TIER2';
+  // const testTier: TierMappedType = 'TIER2';
 
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground currentTier={tierMapping[attendee?.currentTier!]} />
+      <AnimatedBackground currentTier={attendee?.currentTier!} /> {/* pass in the API tier */}
 
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />

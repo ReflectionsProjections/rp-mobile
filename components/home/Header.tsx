@@ -17,6 +17,7 @@ import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
+import { fetchStaff } from '@/lib/slices/staffSlice';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
@@ -61,6 +62,9 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
         });
         if (hasStaffOrAdmin) {
           dispatch(fetchMyShifts());
+          if (profile?.email) {
+            dispatch(fetchStaff(profile.email));
+          }
         }
         const today = new Date();
         const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
