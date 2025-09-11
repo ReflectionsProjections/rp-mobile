@@ -30,6 +30,7 @@ export type Attendee = {
   tags: string[];
   favoriteEvents: string[];
   puzzlesCompleted: string[];
+  tags: string[];
 };
 
 export type Corporate = {
@@ -61,6 +62,7 @@ export type Event = {
   isVisible: boolean;
   attendanceCount: number;
   eventType: EventType;
+  tags: string[];
 };
 
 export type Registration = {
@@ -116,6 +118,7 @@ export type RoleObject = {
   displayName: string;
   email: string;
   roles: Role[];
+  tags?: string[];
 };
 
 export type TeamName =
