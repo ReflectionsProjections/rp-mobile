@@ -152,6 +152,39 @@ export type Meeting = {
 };
 
 export interface APIRoutes {
+  '/leaderboard/daily': {
+    GET: {
+      // Query: day (YYYY-MM-DD), n?: number
+      response: {
+        leaderboard: Array<{
+          userId: string;
+          currentTier: TierType;
+          icon: IconColorType;
+          points: number;
+          displayName: string;
+          rank: number;
+        }>;
+        day: string;
+        count: number;
+      };
+    };
+  };
+  '/leaderboard/global': {
+    GET: {
+      // Query: n?: number
+      response: {
+        leaderboard: Array<{
+          userId: string;
+          currentTier: TierType;
+          icon: IconColorType;
+          points: number;
+          displayName: string;
+          rank: number;
+        }>;
+        count: number;
+      };
+    };
+  };
   '/attendee': {
     GET: {
       response: Attendee;

@@ -27,6 +27,7 @@ import FilledEventsIcon from '@/assets/icons/tabIcons/filled/filled_eventsIcon.s
 import FilledPointsIcon from '@/assets/icons/tabIcons/filled/filled_shopIcon.svg';
 import FilledProfileIcon from '@/assets/icons/tabIcons/filled/filled_leaderIcon.svg';
 import ScannerGuestScreen from './scanner/scanner_guest';
+import { useAppSelector } from '@/lib/store';
 
 const { width, height } = Dimensions.get('window');
 const HEIGHT = 0.15 * height;
@@ -42,37 +43,23 @@ const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgPro
 
 // Separate component to handle scanner routing with user data
 function ScannerRouter() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const jwt = SecureStore.getItemAsync('jwt');
 
-  // Check authentication status on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const jwt = await SecureStore.getItemAsync('jwt');
-        setIsAuthenticated(!!jwt);
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-        setIsAuthenticated(false);
-      }
-    };
-    checkAuth();
-  }, []);
+  const profile = useAppSelector((state) => state.user.profile);
 
-  const { data: user, isLoading } = useUserProfile(isAuthenticated);
-
-  if (isAuthenticated === null || isLoading) {
+  if (jwt === null || profile === null) {
     return <ScannerGuestScreen />;
   }
 
-  if (!user || !user.roles || user.roles.length === 0) {
+  if (!profile || !profile.roles || profile.roles.length === 0) {
     return <ScannerGuestScreen />;
   }
 
-  if (user.roles.includes('STAFF')) {
+  if (profile.roles.includes('STAFF')) {
     return <ScannerStaffScreen />;
   }
 
-  if (user.roles.includes('USER')) {
+  if (profile.roles.includes('USER')) {
     return <ScannerUserScreen />;
   }
 

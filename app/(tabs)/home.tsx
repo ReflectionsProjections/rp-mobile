@@ -214,10 +214,27 @@ export default function HomeScreen() {
 
   const recommended = useMemo(() => {
     if (!cards.length) return [];
-    if (!userTags.length) return cards; // fallback: show all if user has no tags
+
+    const today = new Date();
+    const todayWeekday = today.getDay();
+
+    const todaysEventIds = new Set(
+      (events || [])
+        .filter((evt) => {
+          if (!evt?.startTime) return false;
+          const d = new Date(evt.startTime);
+          return d.getDay() === todayWeekday;
+        })
+        .map((evt) => evt.eventId),
+    );
+
+    const todaysCards = cards.filter((c) => todaysEventIds.has(c.id));
+    if (!todaysCards.length) return [];
+
+    if (!userTags.length) return todaysCards;
 
     const tagSet = new Set(userTags.map((t: string) => t.toLowerCase()));
-    const scored = cards.map((c) => {
+    const scored = todaysCards.map((c) => {
       const overlap = (c.tags ?? []).reduce(
         (acc: number, t: string) => acc + (tagSet.has(t.toLowerCase()) ? 1 : 0),
         0,
@@ -230,7 +247,7 @@ export default function HomeScreen() {
     const result = sorted.map(({ c }) => c);
 
     return result;
-  }, [cards, userTags]);
+  }, [cards, events, userTags]);
 
   const openShift = (shift: ShiftCard) => {
     setSelectedShift(shift);
@@ -247,22 +264,18 @@ export default function HomeScreen() {
     ackPendingRef.current[shiftId] = true;
     forceRerender((n) => n + 1);
     try {
-      // optimistic update for modal
       setSelectedShift((prev) =>
         prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,
       );
-      // optimistic toggle
       dispatch(toggleLocalAcknowledge(shiftId));
       const result = await dispatch(toggleAcknowledgeShift(shiftId) as any);
       if (result?.meta?.requestStatus === 'rejected') {
-        // rollback
         dispatch(toggleLocalAcknowledge(shiftId));
         setSelectedShift((prev) =>
           prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,
         );
       }
     } catch (e) {
-      // rollback
       dispatch(toggleLocalAcknowledge(shiftId));
       setSelectedShift((prev) =>
         prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,

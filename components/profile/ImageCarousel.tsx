@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Dimensions } from 'react-native';
-import RedHelmet from '@/assets/profile/red_helmet.svg';
-import BlueHelmet from '@/assets/profile/blue_helmet.svg';
-import GreenHelmet from '@/assets/profile/green_helmet.svg';
-import PinkHelmet from '@/assets/profile/pink_helmet.svg';
-import PurpleHelmet from '@/assets/profile/purple_helmet.svg';
-import OrangeHelmet from '@/assets/profile/orange_helmet.svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/lib/theme';
+import { getAvatarComponent } from '@/lib/utils';
 
 const { width } = Dimensions.get('window');
 const IMAGE_SIZE = width * 0.55;
@@ -20,19 +15,6 @@ const ImageCarousel = () => {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  const getAvatarComponent = (color: string) => {
-    const avatarMap: { [key: string]: React.FC<any> } = {
-      '#3B82F6': BlueHelmet, // Blue
-      '#EF4444': RedHelmet, // Red
-      '#4ADE80': GreenHelmet, // Green
-      '#EC4899': PinkHelmet, // Pink
-      '#8B5CF6': PurpleHelmet, // Purple
-      '#F59E0B': OrangeHelmet, // Orange
-    };
-
-    return avatarMap[color] || RedHelmet;
   };
 
   const lightThemeColor = hexToRgba(themeColor, 0.8);

@@ -95,12 +95,12 @@ export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<Record<string, any>>({});
-  const [selectedDay, setSelectedDay] = useState<number>(2); // Default to Tuesday
+  const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [scanned, setScanned] = useState(false);
-  const [scanReady, setScanReady] = useState(false);
+  const [scanReady, setScanReady] = useState(true);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [_, setLastScannedCode] = useState<string>('');
   const [scanDisabled, setScanDisabled] = useState(false);
@@ -133,18 +133,24 @@ export default function ScannerScreen() {
   useEffect(() => {
     if (!isGeneralCheckinMode && filteredEvents.length && !selectedEvent.eventId) {
       const now = new Date();
-      const upcoming = filteredEvents.find((e) => new Date(e.startTime) >= now);
-      const chosen = upcoming || filteredEvents[filteredEvents.length - 1];
-      setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
-    } else if (
-      !isGeneralCheckinMode &&
-      events.length &&
-      filteredEvents.length === 0 &&
-      !selectedEvent.eventId
-    ) {
-      setSelectedEvent({ eventId: events[0].eventId, name: events[0].name });
+      // Prefer nearest upcoming; fallback to closest by absolute time difference
+      const upcomingSorted = [...filteredEvents]
+        .filter((e) => new Date(e.startTime) >= now)
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+      let chosen = upcomingSorted[0];
+      if (!chosen) {
+        chosen = [...filteredEvents].sort(
+          (a, b) =>
+            Math.abs(new Date(a.startTime).getTime() - now.getTime()) -
+            Math.abs(new Date(b.startTime).getTime() - now.getTime()),
+        )[0];
+      }
+      if (chosen) {
+        setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
+      }
     }
-  }, [filteredEvents, events, selectedEvent.eventId, isGeneralCheckinMode]);
+  }, [filteredEvents, selectedEvent.eventId, isGeneralCheckinMode]);
 
   useEffect(() => {
     return () => {
@@ -247,8 +253,21 @@ export default function ScannerScreen() {
       let errorMsg = 'Scan failed';
 
       if (err.response?.status === 401) {
+        // Treat as expired but auto-reset quickly
         errorMsg = 'QR code has expired';
       } else if (err.response?.status === 403 && err.response?.data?.error === 'IsDuplicate') {
+        // For duplicates: if general check-in, still open modal; otherwise, show info toast
+        if (isGeneralCheckinMode) {
+          try {
+            const parsed = parseQrCode(lastScannedCodeRef.current);
+            if (parsed.userId) {
+              await handleGeneralCheckinFlow(parsed.userId);
+              setShowSuccess(true);
+              setSuccessMessage('Already checked in. Showing redemption.');
+              return;
+            }
+          } catch {}
+        }
         errorMsg = 'User has already been checked in to this event';
       } else if (err.response?.data?.error) {
         errorMsg = err.response.data.error;
@@ -256,9 +275,18 @@ export default function ScannerScreen() {
         errorMsg = err.message;
       }
 
-      setErrorMessage(errorMsg);
-      setErrorOccurred(true);
-      setScanDisabled(true);
+      if (
+        isGeneralCheckinMode &&
+        err.response?.status === 403 &&
+        err.response?.data?.error === 'IsDuplicate'
+      ) {
+        // do not block scanning UI; modal flow handled above
+        setLoading(false);
+      } else {
+        setErrorMessage(errorMsg);
+        setErrorOccurred(true);
+        setScanDisabled(true);
+      }
     } finally {
       setLoading(false);
     }

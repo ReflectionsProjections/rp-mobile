@@ -3,7 +3,7 @@ import { IconColorType } from '@/api/types';
 export const ICON_COLOR_MAP: { [key in IconColorType]: string } = {
   BLUE: '#3B82F6',
   RED: '#EF4444',
-  GREEN: '#4ADE80',
+  GREEN: '#4A9E68',
   PINK: '#EC4899',
   PURPLE: '#8B5CF6',
   ORANGE: '#F59E0B',
@@ -14,7 +14,7 @@ export const ICON_COLOR_MAP: { [key in IconColorType]: string } = {
 export const HEX_TO_ICON_MAP: { [key: string]: IconColorType } = {
   '#3B82F6': 'BLUE',
   '#EF4444': 'RED',
-  '#4ADE80': 'GREEN',
+  '#4A9E68': 'GREEN',
   '#EC4899': 'PINK',
   '#8B5CF6': 'PURPLE',
   '#F59E0B': 'ORANGE',
@@ -23,7 +23,7 @@ export const HEX_TO_ICON_MAP: { [key: string]: IconColorType } = {
 };
 
 export const getColorFromIcon = (icon: IconColorType): string => {
-  return ICON_COLOR_MAP[icon] || '#3B82F6';
+  return ICON_COLOR_MAP[icon] || '#EF4444';
 };
 
 export const getIconFromColor = (hexColor: string): IconColorType | null => {

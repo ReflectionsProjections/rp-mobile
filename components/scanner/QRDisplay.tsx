@@ -18,8 +18,6 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
   loading,
   error,
   retryCount,
-  timeUntilExpiry,
-  shouldShowManualRefresh,
   onManualRefresh,
   qrSize,
 }) => {
