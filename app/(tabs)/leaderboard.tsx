@@ -5,8 +5,6 @@ import {
   Animated,
   Pressable,
   Text,
-  StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
@@ -16,7 +14,8 @@ import {
   FadeInWrapper,
   FloatingAnimation,
 } from '@/components/leaderboard';
-import { useDailyLeaderboard, useGlobalLeaderboard } from '@/api/tanstack/leaderboard';
+import { useAppDispatch } from '@/lib/store';
+import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import type { LeaderboardListHandle } from '@/components/leaderboard/LeaderboardList';
 import {
   AnimatedScrollView,
@@ -40,16 +39,27 @@ const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
   const themeColor = useThemeColor();
   const attendee = useAppSelector((state) => state.attendee.attendee);
+  const profile = useAppSelector((state) => state.user.profile);
+  const dailyLeaderboard = useAppSelector((state) => state.leaderboard.daily);
+  const globalLeaderboard = useAppSelector((state) => state.leaderboard.global);
+  const dispatch = useAppDispatch();
   const today = new Date();
   const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
     today.getDate(),
   ).padStart(2, '0')}`;
-  const { data: daily } = useDailyLeaderboard(dayStr);
-  const { data: global } = useGlobalLeaderboard();
-  const dailyUserRank = daily?.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
-  const globalUserRank = global?.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
-  const dailyPoints = daily?.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
-  const globalPoints = global?.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+
+  React.useEffect(() => {
+    if (!dailyLeaderboard.day || dailyLeaderboard.day !== dayStr) {
+      dispatch(fetchDailyLeaderboard({ day: dayStr }));
+    }
+    if (globalLeaderboard.leaderboard.length === 0) {
+      dispatch(fetchGlobalLeaderboard({}));
+    }
+  }, [dayStr]);
+  const dailyUserRank = dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const globalUserRank = globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const dailyPoints = dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+  const globalPoints = globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
 
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
@@ -105,7 +115,9 @@ const LeaderboardScreen = () => {
   ).current;
 
   const data = React.useMemo(() => {
-    const src = activeTab === 0 ? daily?.leaderboard : global?.leaderboard;
+    const src = activeTab === 0
+      ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
+      : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
     if (!src) return [] as any[];
     return src.map((p) => ({
       rank: p.rank,
@@ -115,7 +127,7 @@ const LeaderboardScreen = () => {
       color: p.icon,
       currentTier: p.currentTier,
     }));
-  }, [activeTab, daily, global]);
+  }, [activeTab, dailyLeaderboard, globalLeaderboard]);
 
   return (
     <View className="flex-1 bg-black">
@@ -151,7 +163,7 @@ const LeaderboardScreen = () => {
 
               <FadeInWrapper delay={600}>
                 <Pressable
-                  onPress={handleRankPress}
+                  onPress={profile?.roles?.includes('STAFF') ? undefined : handleRankPress}
                   accessibilityRole="button"
                   accessibilityHint="Jumps to your position in the leaderboard"
                   hitSlop={12}
@@ -203,9 +215,15 @@ const LeaderboardScreen = () => {
                       color="#fff"
                       style={{ marginRight: 4 }}
                     />
-                    <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
-                      Tap to jump
-                    </Text>
+                    {profile?.roles?.includes('STAFF') ? (
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
+                        ''
+                      </Text>
+                    ) : (
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
+                        Tap to jump
+                      </Text>
+                    )}
                   </Reanimated.View>
                 </Pressable>
               </FadeInWrapper>
@@ -258,7 +276,7 @@ const LeaderboardScreen = () => {
         </View>
 
         <FadeInWrapper delay={1000}>
-          {activeTab === 0 && (!daily || (daily.leaderboard?.length ?? 0) === 0) ? (
+          {activeTab === 0 && (!dailyLeaderboard || (dailyLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{
@@ -271,7 +289,7 @@ const LeaderboardScreen = () => {
                 No leaderboard for today — check back tomorrow!
               </Text>
             </View>
-          ) : activeTab === 1 && (!global || (global.leaderboard?.length ?? 0) === 0) ? (
+          ) : activeTab === 1 && (!globalLeaderboard || (globalLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{
