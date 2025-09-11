@@ -12,6 +12,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
 import { BlurView } from 'expo-blur';
+import { useThemeColor } from '@/lib/theme';
 
 interface EventModalProps {
   visible: boolean;
@@ -41,6 +42,16 @@ export const EventModal: React.FC<EventModalProps> = ({
   onClose,
   onToggleFlag,
 }) => {
+  const themeColor = useThemeColor();
+
+  // Convert hex color to rgba with transparency
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -53,7 +64,7 @@ export const EventModal: React.FC<EventModalProps> = ({
           {event && (
             <>
               {/* Header with close button */}
-              <View style={styles.header}>
+              <View style={[styles.header, { backgroundColor: hexToRgba(themeColor, 0.1) }]}>
                 <View style={styles.headerContent}>
                   <ThemedText variant="h1" style={styles.eventTitle}>
                     {event.title}
@@ -62,7 +73,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                     <FontAwesome name="times" size={20} color="#666" />
                   </TouchableOpacity>
                 </View>
-                <View style={styles.titleUnderline} />
+                <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
               </View>
 
               {/* Content area that can scroll if needed */}
@@ -77,7 +88,12 @@ export const EventModal: React.FC<EventModalProps> = ({
                   {/* Event Details */}
                   <View style={styles.detailsContainer}>
                     <View style={styles.detailRow}>
-                      <FontAwesome name="clock-o" size={16} color="#CA2523" style={styles.icon} />
+                      <FontAwesome
+                        name="clock-o"
+                        size={16}
+                        color={themeColor}
+                        style={styles.icon}
+                      />
                       <ThemedText variant="body-bold" style={styles.detailText}>
                         {event.time}
                       </ThemedText>
@@ -87,7 +103,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                       <FontAwesome
                         name="map-marker"
                         size={16}
-                        color="#CA2523"
+                        color={themeColor}
                         style={styles.icon}
                       />
                       <ThemedText variant="body" style={styles.detailText}>
@@ -102,15 +118,13 @@ export const EventModal: React.FC<EventModalProps> = ({
                       DESCRIPTION
                     </ThemedText>
                     <ThemedText variant="body" style={styles.descriptionText}>
-                      {
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-                      }
+                      {event.description}
                     </ThemedText>
                   </View>
 
                   {/* Points Badge */}
                   <View style={styles.pointsContainer}>
-                    <View style={styles.pointsBadge}>
+                    <View style={[styles.pointsBadge, { backgroundColor: themeColor }]}>
                       <ThemedText style={styles.pointsText}>{event.pts} PTS</ThemedText>
                     </View>
                   </View>
@@ -119,7 +133,12 @@ export const EventModal: React.FC<EventModalProps> = ({
 
               {/* Flag Button */}
               <TouchableOpacity
-                style={[styles.flagButton, isFlagged && styles.flagButtonActive]}
+                style={[
+                  styles.flagButton,
+                  isFlagged && {
+                    backgroundColor: hexToRgba(themeColor, 0.9), // Slightly transparent theme color
+                  },
+                ]}
                 onPress={() => onToggleFlag(event.id)}
               >
                 <FontAwesome
@@ -162,7 +181,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 16,
-    backgroundColor: 'rgba(202, 37, 35, 0.1)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -190,7 +208,6 @@ const styles = StyleSheet.create({
   titleUnderline: {
     width: 60,
     height: 3,
-    backgroundColor: '#CA2523',
     borderRadius: 2,
   },
   contentWrapper: {
@@ -242,7 +259,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pointsBadge: {
-    backgroundColor: '#CA2523',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -271,7 +287,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   flagButtonActive: {
-    backgroundColor: '#CA2523',
+    // backgroundColor will be set dynamically using themeColor
   },
   flagText: {
     color: '#666',

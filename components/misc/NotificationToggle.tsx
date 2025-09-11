@@ -1,33 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import { View, Switch, Text, Alert } from 'react-native';
+import { View, Text, Alert, Linking, Platform, AppState } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+import FirebaseService from '@/lib/firebase';
 
 export const NotificationToggle = () => {
-  const { fcmToken, isLoading, error, registerForNotifications, unregisterFromNotifications } =
-    useFirebaseNotifications();
+  const { fcmToken, isLoading, error } = useFirebaseNotifications();
   const [isEnabled, setIsEnabled] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'unknown'>(
+    'unknown',
+  );
 
   useEffect(() => {
-    // Update toggle state based on whether we have a token
-    setIsEnabled(!!fcmToken);
-  }, [fcmToken]);
+    checkPermissionStatus();
+
+    // Listen for app state changes to refresh permission status
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkPermissionStatus();
+      }
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
+  useEffect(() => {
+    // Update toggle state based on system permission status
+    setIsEnabled(permissionStatus === 'granted');
+  }, [permissionStatus]);
+
+  const checkPermissionStatus = async () => {
+    try {
+      const firebaseService = FirebaseService.getInstance();
+      const { granted } = await firebaseService.checkNotificationPermission();
+      setPermissionStatus(granted ? 'granted' : 'denied');
+    } catch (error) {
+      console.error('Error checking permission status:', error);
+      setPermissionStatus('unknown');
+    }
+  };
 
   const toggleSwitch = async () => {
-    if (isEnabled) {
-      // Unregister
-      await unregisterFromNotifications();
-      setIsEnabled(false);
-      Alert.alert('Notifications Disabled', 'You will no longer receive push notifications.');
-    } else {
-      // Register
-      if (fcmToken) {
-        await registerForNotifications(fcmToken);
-        setIsEnabled(true);
-        Alert.alert('Notifications Enabled', 'You will now receive push notifications.');
+    console.log('Toggle pressed!', { isEnabled, permissionStatus });
+
+    // Use setTimeout to ensure the touch event completes before showing alert
+    setTimeout(() => {
+      if (isEnabled) {
+        // If currently enabled, show guidance to disable in system settings
+        Alert.alert(
+          'Disable Notifications',
+          'To disable notifications, please turn them off in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('app-settings:');
+                } else {
+                  Linking.openSettings();
+                }
+              },
+            },
+          ],
+          { cancelable: true },
+        );
       } else {
-        Alert.alert('Error', 'Unable to enable notifications. Please check your permissions.');
+        // If currently disabled, show guidance to enable in system settings
+        Alert.alert(
+          'Enable Notifications',
+          'To receive notifications, please enable them in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('app-settings:');
+                } else {
+                  Linking.openSettings();
+                }
+              },
+            },
+          ],
+          { cancelable: true },
+        );
       }
-    }
+    }, 100);
   };
 
   if (isLoading) {
@@ -49,33 +109,27 @@ export const NotificationToggle = () => {
   return (
     <View
       style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: 'white',
-        marginHorizontal: 16,
-        marginVertical: 8,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        zIndex: 999,
+        elevation: 999,
+        backgroundColor: 'transparent',
       }}
     >
-      <View>
-        <Text style={{ fontSize: 16, fontWeight: '600' }}>Push Notifications</Text>
-        <Text style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
-          {isEnabled ? 'Receive updates and notifications' : 'Get notified about important updates'}
-        </Text>
-      </View>
-      <Switch
-        trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-        ios_backgroundColor="#3e3e3e"
-        onValueChange={toggleSwitch}
+      <AnimatedSwitch
+        key={`notification-switch-${permissionStatus}`}
         value={isEnabled}
+        onValueChange={toggleSwitch}
+        width={60}
+        height={36}
+        onColor="#4CD964"
+        offColor="rgba(255, 255, 255, 0.4)"
+        thumbColor="#fff"
+        thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
+        thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
+        iconAnimationType="fade"
+        style={{
+          zIndex: 999,
+          elevation: 999,
+        }}
       />
     </View>
   );

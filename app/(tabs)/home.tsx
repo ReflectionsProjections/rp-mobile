@@ -1,49 +1,133 @@
 // apps/tabs/home.tsx
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
+import ShiftModal from '@/components/home/ShiftModal';
 import { CardType } from '@/components/home/types';
-import { Event as ApiEvent, path, RoleObject } from '@/api/types';
-import { api } from '@/api/api';
-import { useEvents } from '@/api/events';
-import {
-  AnimatedScrollView,
-  HeaderNavBar,
-  HeaderComponentWrapper,
-} from '@/components/headers/parallax';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ShiftCard } from '@/api/types';
 
-import BackgroundSvg from '@/assets/home/home_background.svg';
+import { useToggleFavorite } from '@/api/tanstack/favorites';
+import { useMyShifts } from '@/api/tanstack/shifts';
+import { useDataInitialization } from '@/hooks/useDataInitialization';
+import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
+import { useThemeColor } from '@/lib/theme';
+import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
+
+import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { height } = Dimensions.get('window'); // For responsive design
 
 export default function HomeScreen() {
-  // fetched cards
-  const [cards, setCards] = useState<CardType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<RoleObject | null>(null);
-  const [userTags, setUserTags] = useState<string[]>([]);
-  const hasUserRole = (user?.roles ?? []).some(r => r.toUpperCase() === 'USER');
+  const { isLoading: initLoading } = useDataInitialization();
+  const events = useAppSelector((state: RootState) => state.favorites.events) || [];
+  const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
+  const user = useAppSelector((state: RootState) => state.user.profile);
+  const themeColor = useThemeColor();
+  const dispatch = useAppDispatch();
 
+  const toggleFavoriteMutation = useToggleFavorite();
 
-  // flags + modal state
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
-
-  // scrolling lock
+  const [selectedShift, setSelectedShift] = useState<ShiftCard | null>(null);
+  const [shiftModalVisible, setShiftModalVisible] = useState(false);
+  const ackPendingRef = useRef<Record<string, boolean>>({});
+  const [, forceRerender] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  // ⬇️ CHANGED: cached events (served from AsyncStorage if present; otherwise fetched)
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const cards = useMemo(() => {
+    if (!events || events.length === 0) return [];
 
-  // staggered section animations
+    return events.map((event) => ({
+      id: event.eventId,
+      title: event.name,
+      time: new Date(event.startTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      location: event.location,
+      pts: event.points,
+      description: event.description,
+    }));
+  }, [events]);
+
+  // Get flagged cards
+  const flaggedCards = useMemo(() => {
+    return cards.filter((c: CardType) => favorites?.includes(c.id));
+  }, [cards, favorites]);
+
+  // Check if user has USER role
+  const hasUserRole = useMemo(() => {
+    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'USER');
+  }, [user?.roles]);
+
+  // Check if user has STAFF role
+  const hasStaffRole = useMemo(() => {
+    return (user?.roles ?? []).some((r: string) => r.toUpperCase() === 'STAFF');
+  }, [user?.roles]);
+
+  const { data: myShifts } = useMyShifts(hasStaffRole);
+  // Process shift data for staff users
+  const shiftCards = useMemo(() => {
+    if (!myShifts || !hasStaffRole) return [];
+
+    return (myShifts || [])
+      .filter((assignment) => assignment && assignment.shifts)
+      .map((assignment) => {
+        const s = assignment.shifts!;
+        const start = s.startTime ? new Date(s.startTime) : null;
+        const time = start
+          ? start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '-';
+
+        return {
+          id: assignment.shiftId,
+          title: s.name || 'Shift',
+          time,
+          location: s.location || 'TBA',
+          role: s.role || 'STAFF',
+          acknowledged: !!assignment.acknowledged,
+          startTime: s.startTime || '',
+          endTime: s.endTime || '',
+        } as ShiftCard;
+      });
+  }, [myShifts, hasStaffRole]);
+
+  // Separate shifts into today and upcoming
+  const todayShifts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const filtered = shiftCards.filter((shift) => {
+      if (!shift.startTime) return false;
+      const shiftDate = new Date(shift.startTime);
+      return shiftDate >= today && shiftDate < tomorrow;
+    });
+    return filtered;
+  }, [shiftCards]);
+
+  const upcomingShifts = useMemo(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+
+    const filtered = shiftCards.filter((shift) => {
+      if (!shift.startTime) return false;
+      const shiftDate = new Date(shift.startTime);
+      return shiftDate > today;
+    });
+    return filtered;
+  }, [shiftCards]);
+
+  const error = null;
+
   const sectionAnims = React.useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -51,7 +135,7 @@ export default function HomeScreen() {
   ]).current;
 
   useEffect(() => {
-    if (!loading) {
+    if (!initLoading) {
       Animated.stagger(
         120,
         sectionAnims.map((a) =>
@@ -59,7 +143,7 @@ export default function HomeScreen() {
         ),
       ).start();
     }
-  }, [loading, cards.length]);
+  }, [initLoading, cards.length]);
 
   useEffect(() => {
     const tags = ((user as any)?.tags ?? []).map((t: string) => t.toLowerCase());
@@ -72,24 +156,23 @@ export default function HomeScreen() {
       Toast.show({
         type: 'error',
         text1: 'Registration Required',
-        text2: 'You must be registered to flag an event.',
+        text2: 'Make sure to register for R|P to flag events!',
         position: 'top',
         visibilityTime: 3000,
       });
       return;
     }
 
-    const response = await api.post(path('/attendee/favorites/:eventId', { eventId: id }), {
-      userId: user.userId,
-    });
-    if (response.status === 200) {
-      setFlaggedIds((prev) => {
-        const next = new Set(prev);
-        prev.has(id) ? next.delete(id) : next.add(id);
-        return next;
+    try {
+      await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update favorite status.',
+        position: 'top',
+        visibilityTime: 3000,
       });
-    } else {
-      console.error('Failed to toggle flag:', response.data);
     }
   };
 
@@ -125,7 +208,6 @@ export default function HomeScreen() {
   fetchUser();
 }, []);
 
-  // ⬇️ CHANGED: map cached events -> cards (no direct API call here)
   useEffect(() => {
     if (!events) return;
     const formattedEvents = (events as ApiEvent[]).map((event: ApiEvent) => ({
@@ -169,95 +251,65 @@ export default function HomeScreen() {
     return result;
   }, [cards, userTags]);
 
-  // ⬇️ CHANGED: 500ms minimum splash timing based on eventsLoading
   useEffect(() => {
     if (eventsLoading) return;
     const t = setTimeout(() => setLoading(false), 500);
     return () => clearTimeout(t);
   }, [eventsLoading]);
 
-  // ⬇️ CHANGED: surface query error
-  useEffect(() => {
-    if (eventsError) setError('Failed to load events');
-  }, [eventsError]);
+  const openShift = (shift: ShiftCard) => {
+    setSelectedShift(shift);
+    setShiftModalVisible(true);
+  };
 
-  // unchanged: fetch favorites only if user is registered
-  useEffect(() => {
-    const fetchFavs = async () => {
-      if (hasUserRole && user?.userId){
-        const favResponse = await api.get(path('/attendee/favorites', { userId: user.userId }));
-        setFlaggedIds(new Set(favResponse.data.favorites));
-      };
-    };
-    fetchFavs();
-  }, [user?.userId]);
+  const closeShift = () => {
+    setShiftModalVisible(false);
+    setSelectedShift(null);
+  };
 
-  const renderHeaderNavBarComponent = () => (
-    <HeaderNavBar isHeader={true} showTint={false}>
-      <Header />
-    </HeaderNavBar>
-  );
+  const onToggleAcknowledge = async (shiftId: string) => {
+    if (ackPendingRef.current[shiftId]) return;
+    ackPendingRef.current[shiftId] = true;
+    forceRerender((n) => n + 1);
+    try {
+      // optimistic update for modal
+      setSelectedShift((prev) =>
+        prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,
+      );
+      // optimistic toggle
+      dispatch(toggleLocalAcknowledge(shiftId));
+      const result = await dispatch(toggleAcknowledgeShift(shiftId) as any);
+      if (result?.meta?.requestStatus === 'rejected') {
+        // rollback
+        dispatch(toggleLocalAcknowledge(shiftId));
+        setSelectedShift((prev) =>
+          prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,
+        );
+      }
+    } catch (e) {
+      // rollback
+      dispatch(toggleLocalAcknowledge(shiftId));
+      setSelectedShift((prev) =>
+        prev && prev.id === shiftId ? { ...prev, acknowledged: !prev.acknowledged } : prev,
+      );
+    } finally {
+      setTimeout(() => {
+        delete ackPendingRef.current[shiftId];
+        forceRerender((n) => n + 1);
+      }, 800);
+    }
+  };
 
-  const renderHeaderComponent = () => (
-    <HeaderComponentWrapper>
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.4)', 'transparent']}
-        style={styles.headerGradient}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.titleContainer}>
-            <ThemedText variant="bigName" style={styles.mainTitle}>
-              R|P 2025
-            </ThemedText>
-            <View style={styles.titleUnderline} />
-          </View>
-        </View>
-      </LinearGradient>
-    </HeaderComponentWrapper>
-  );
+  const handleSwipeTouchStart = () => {
+    setScrollEnabled(false);
+  };
 
-  const renderTopNavBarComponent = () => (
-    <HeaderNavBar isHeader={true}>
-      <View
-        style={{
-          position: 'relative',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
-      >
-        <Header />
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <ThemedText
-            variant="bigName"
-            style={{
-              fontSize: 20,
-              textAlign: 'center',
-              color: '#fff',
-              textShadowColor: 'rgba(0,0,0,0.5)',
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 6,
-            }}
-          >
-            VROOOM
-          </ThemedText>
-        </View>
-      </View>
-    </HeaderNavBar>
-  );
+  const handleSwipeTouchEnd = () => {
+    setScrollEnabled(true);
+  };
 
-  if (loading) {
+  // Loading screen
+  if (initLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
@@ -277,6 +329,7 @@ export default function HomeScreen() {
     );
   }
 
+  // Error screen
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
@@ -286,9 +339,11 @@ export default function HomeScreen() {
           height={screenHeight}
           preserveAspectRatio="none"
         />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-        </View>
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -303,26 +358,51 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <AnimatedScrollView
-        renderHeaderNavBarComponent={renderHeaderNavBarComponent}
-        renderHeaderComponent={renderHeaderComponent}
-        renderTopNavBarComponent={renderTopNavBarComponent}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        headerMaxHeight={200}
-        showsVerticalScrollIndicator={false}
-        directionalLockEnabled={true}
-        nestedScrollEnabled={true}
-        scrollEnabled={scrollEnabled}
-      >
-        {/* NEXT LAP */}
+<SafeAreaView style={{ top: -12 }}>
+  <Header title={'R|P 2025'} bigText={true} />
+  <View style={{ marginTop: height < 700 ? 8 : 20 }}>
+    {/* NEXT LAP */}
+    <Animated.View
+      style={[
+        styles.sectionContainer,
+        {
+          opacity: sectionAnims[0],
+          transform: [
+            {
+              translateY: sectionAnims[0].interpolate({
+                inputRange: [0, 1],
+                outputRange: [12, 0],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <CarouselSection
+        key={`next-lap-${themeColor}`}
+        title="NEXT LAP"
+        data={cards.slice(0, 1) || []}
+        flaggedIds={favorites}
+        onToggleFlag={toggleFlag}
+        onCardPress={openEvent}
+        limit={5}
+        onSwipeTouchStart={handleSwipeTouchStart}
+        onSwipeTouchEnd={handleSwipeTouchEnd}
+      />
+    </Animated.View>
+
+    {/* Conditional rendering based on user role */}
+    {hasStaffRole ? (
+      <>
+        {/* TODAY'S SHIFTS */}
         <Animated.View
           style={[
             styles.sectionContainer,
             {
-              opacity: sectionAnims[0],
+              opacity: sectionAnims[1],
               transform: [
                 {
-                  translateY: sectionAnims[0].interpolate({
+                  translateY: sectionAnims[1].interpolate({
                     inputRange: [0, 1],
                     outputRange: [12, 0],
                   }),
@@ -332,17 +412,49 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
-            title="NEXT LAP"
-            data={cards.slice(0, 1)}
-            flaggedIds={flaggedIds}
-            onToggleFlag={toggleFlag}
-            onCardPress={openEvent}
+            key={`today-shifts-${themeColor}`}
+            title="TODAY'S SHIFTS"
+            data={todayShifts || []}
+            flaggedIds={[]}
+            onToggleFlag={() => {}}
+            onCardPress={openShift}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
+        {/* UPCOMING SHIFTS */}
+        <Animated.View
+          style={[
+            styles.sectionContainer,
+            {
+              opacity: sectionAnims[2],
+              transform: [
+                {
+                  translateY: sectionAnims[2].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <CarouselSection
+            key={`upcoming-shifts-${themeColor}`}
+            title="UPCOMING"
+            data={upcomingShifts || []}
+            flaggedIds={[]}
+            onToggleFlag={() => {}}
+            onCardPress={openShift}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
+          />
+        </Animated.View>
+      </>
+    ) : (
+      <>
         {/* RECOMMENDED */}
         <Animated.View
           style={[
@@ -361,14 +473,15 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`recommended-${themeColor}`}
             title="RECOMMENDED"
-            data={recommended}
-            flaggedIds={flaggedIds}
+            data={recommended} // 👈 from your branch
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
             limit={5}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
 
@@ -390,35 +503,48 @@ export default function HomeScreen() {
           ]}
         >
           <CarouselSection
+            key={`flagged-${themeColor}`}
             title="FLAGGED"
-            data={cards.filter((c) => flaggedIds.has(c.id))}
-            flaggedIds={flaggedIds}
+            data={cards.filter((c) => favorites.includes(c.id))} // 👈 no flaggedCards state needed
+            flaggedIds={favorites}
             onToggleFlag={toggleFlag}
             onCardPress={openEvent}
-            onSwipeTouchStart={() => setScrollEnabled(false)}
-            onSwipeTouchEnd={() => setScrollEnabled(true)}
+            onSwipeTouchStart={handleSwipeTouchStart}
+            onSwipeTouchEnd={handleSwipeTouchEnd}
           />
         </Animated.View>
-      </AnimatedScrollView>
+      </>
+    )}
+  </View>
+</SafeAreaView>
 
       <EventModal
+        key={`event-modal-${themeColor}`}
         visible={modalVisible}
         event={selectedEvent}
-        isFlagged={selectedEvent ? flaggedIds.has(selectedEvent.id) : false}
+        isFlagged={selectedEvent ? favorites.includes(selectedEvent.id) : false}
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />
+      {hasStaffRole && (
+        <ShiftModal
+          visible={shiftModalVisible}
+          shift={selectedShift}
+          onClose={closeShift}
+          onToggleAcknowledge={onToggleAcknowledge}
+          disabled={selectedShift ? !!ackPendingRef.current[selectedShift.id] : false}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    marginTop: 80,
     alignItems: 'center',
   },
   mainTitle: {
-    fontSize: 48,
+    fontSize: 32,
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
@@ -428,11 +554,11 @@ const styles = StyleSheet.create({
   titleUnderline: {
     width: 120,
     height: 3,
-    backgroundColor: '#CA2523',
     borderRadius: 2,
   },
   sectionContainer: {
     marginTop: 0,
+    marginBottom: height < 700 ? 0 : 12, // Tighter spacing for iPhone SE
   },
   errorContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -462,7 +588,6 @@ const styles = StyleSheet.create({
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 50,
     paddingHorizontal: 20,
   },
   topNavBarContent: {
