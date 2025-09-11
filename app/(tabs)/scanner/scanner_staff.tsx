@@ -219,8 +219,10 @@ export default function ScannerScreen() {
 
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
         const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
-        setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
-        setShowSuccess(true);
+        if (!isGeneralCheckinMode) {
+          setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
+          setShowSuccess(true);
+        }
         await handlePostCheckInFlow(parsedQr.userId);
         return;
       }
@@ -244,8 +246,10 @@ export default function ScannerScreen() {
       }
 
       const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
-      setSuccessMessage(`Successfully checked in user into ${eventName}!`);
-      setShowSuccess(true);
+      if (!isGeneralCheckinMode) {
+        setSuccessMessage(`Successfully checked in user into ${eventName}!`);
+        setShowSuccess(true);
+      }
       await handlePostCheckInFlow(parsedQr.userId);
     } catch (err: any) {
       console.error('Scan error:', err);
@@ -262,8 +266,7 @@ export default function ScannerScreen() {
             const parsed = parseQrCode(lastScannedCodeRef.current);
             if (parsed.userId) {
               await handleGeneralCheckinFlow(parsed.userId);
-              setShowSuccess(true);
-              setSuccessMessage('Already checked in. Showing redemption.');
+              setShowSuccess(false);
               return;
             }
           } catch {}

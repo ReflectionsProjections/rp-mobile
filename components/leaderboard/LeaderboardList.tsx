@@ -50,8 +50,12 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         contentContainerStyle={{ paddingBottom: 80 }}
         initialScrollIndex={userIndex >= 0 ? userIndex : undefined}
         getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+        removeClippedSubviews
+        windowSize={7}
+        maxToRenderPerBatch={8}
+        updateCellsBatchingPeriod={16}
         renderItem={({ item, index }) => (
-          <StaggeredAnimation index={index} delay={900}>
+          <StaggeredAnimation index={index} delay={index < 12 ? 900 : 0}>
             <LeaderboardItem
               rank={item.rank}
               name={item.name}
