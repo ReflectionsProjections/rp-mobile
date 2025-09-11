@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/lib/theme';
 import { getAvatarComponent } from '@/lib/utils';
 
-const { width } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 const IMAGE_SIZE = width * 0.55;
 
 const ImageCarousel = () => {
@@ -22,8 +22,8 @@ const ImageCarousel = () => {
 
   return (
     <View
-      className="items-center my-4 rounded-lg overflow-hidden h-[25%] w-[85%] mx-auto"
-      style={{ position: 'relative' }}
+      className="items-center my-4 rounded-lg overflow-hidden w-[85%] mx-auto"
+      style={{ position: 'relative', height: height * 0.3 }}
     >
       <LinearGradient
         colors={[lightThemeColor, '#000000']}

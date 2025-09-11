@@ -7,6 +7,7 @@ import favoritesSlice from './slices/favoritesSlice';
 import attendeeSlice from './slices/attendeeSlice';
 import shiftsSlice from './slices/shiftsSlice';
 import leaderboardSlice from './slices/leaderboardSlice';
+import staffSlice from './slices/staffSlice';
 
 const persistConfig = {
   key: 'root',
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   attendee: attendeeSlice,
   shifts: shiftsSlice,
   leaderboard: leaderboardSlice,
+  staff: staffSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

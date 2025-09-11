@@ -377,6 +377,11 @@ export interface APIRoutes {
       response: Staff[];
     };
   };
+  '/staff/:email': {
+    GET: {
+      response: Staff;
+    };
+  };
   '/staff/check-in': {
     POST: {
       request: { meetingId: string };
