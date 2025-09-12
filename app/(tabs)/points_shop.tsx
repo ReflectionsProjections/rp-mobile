@@ -138,11 +138,9 @@ export default function PointsScreen() {
   return (
     <View className="flex-1 bg-rpRed relative">
       <AnimatedBackground currentTier={attendee?.currentTier!} /> {/* pass in the API tier */}
-
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />
       </View>
-
       <QuestionMarker
         tier="TIER3"
         className="z-10"
@@ -158,7 +156,6 @@ export default function PointsScreen() {
         className="z-10"
         style={{ top: height * 0.76, left: width * 0.52 }}
       />
-
       <Text
         className="absolute z-10 text-[16px] font-bold text-white font-RacingSansOne"
         style={{

@@ -116,7 +116,9 @@ const ProfileScreen = () => {
             dispatch(clearStaff());
             dispatch(clearLeaderboard());
             // Purge persisted storage to avoid dangling cached roles
-            try { await persistor.purge(); } catch {}
+            try {
+              await persistor.purge();
+            } catch {}
             // Navigate to sign-in
             router.replace('/(auth)/sign-in');
           },

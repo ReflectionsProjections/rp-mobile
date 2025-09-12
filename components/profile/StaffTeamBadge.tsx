@@ -19,10 +19,16 @@ export default function StaffTeamBadge({ team }: Props) {
         >
           {team}
         </Text>
-        <View style={{ width: 100, height: 3, backgroundColor: themeColor, borderRadius: 2, marginTop: 10 }} />
+        <View
+          style={{
+            width: 100,
+            height: 3,
+            backgroundColor: themeColor,
+            borderRadius: 2,
+            marginTop: 10,
+          }}
+        />
       </View>
     </View>
   );
 }
-
-
