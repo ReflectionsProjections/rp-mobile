@@ -23,6 +23,7 @@ import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
+import { triggerIfEnabled } from '@/lib/haptics';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const { height } = Dimensions.get('window'); // For responsive design
@@ -181,6 +182,8 @@ export default function HomeScreen() {
 
     try {
       await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+      const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
+      await triggerIfEnabled(hapticsEnabled, 'light');
     } catch (error) {
       Toast.show({
         type: 'error',

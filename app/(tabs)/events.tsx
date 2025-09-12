@@ -24,6 +24,7 @@ import FoodMenuBottomSheet from '@/components/events/FoodMenuBottomSheet';
 
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
+import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
 import { parseEventLink } from '@/lib/linkUtils';
@@ -58,6 +59,7 @@ const EventsScreen = () => {
   const [selectedDay, setSelectedDay] = useState(2);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFoodMenu, setShowFoodMenu] = useState(false);
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
 
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
   const itemAnimations = useRef<Record<string, Animated.Value>>({});
@@ -220,6 +222,7 @@ const EventsScreen = () => {
     try {
       await dispatch(toggleFavorite({ eventId, userId: user.userId }) as any);
       const isCurrentlyFlagged = favorites.includes(eventId);
+      await triggerIfEnabled(hapticsEnabled, 'light');
       Toast.show({
         type: 'success',
         text1: isCurrentlyFlagged ? 'Event Unflagged' : 'Event Flagged',

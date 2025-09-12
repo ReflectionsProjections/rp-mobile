@@ -98,7 +98,7 @@ const ColorPicker = () => {
           textShadowRadius: 1,
         }}
       >
-        Choose your theme color
+        Choose your car's color!
       </Text>
 
       {/* Color Picker */}
