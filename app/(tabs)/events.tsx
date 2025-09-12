@@ -229,8 +229,8 @@ const EventsScreen = () => {
       />
       <SafeAreaView style={{
         flex: 1,
-        backgroundColor: 'black',
         paddingTop: Platform.OS === 'android' ? 15 : 0,
+        top: Platform.OS === 'ios' ? -12 : 0,
       }}>
         <Header title={'EVENTS'} bigText={true} />
 
