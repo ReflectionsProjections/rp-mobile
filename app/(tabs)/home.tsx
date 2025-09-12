@@ -1,6 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView, Platform } from 'react-native';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
@@ -80,6 +80,7 @@ export default function HomeScreen() {
     if (!user) {
       return false;
     }
+    console.log('User roles:', user.roles);
     return user.roles?.some((r: string) => {
       const role = r.toUpperCase();
       return role === 'STAFF' || role === 'ADMIN';
@@ -249,6 +250,8 @@ export default function HomeScreen() {
     return result;
   }, [cards, events, userTags]);
 
+  console.log('Recommended events:', recommended);
+
   const openShift = (shift: ShiftCard) => {
     setSelectedShift(shift);
     setShiftModalVisible(true);
@@ -346,7 +349,11 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <SafeAreaView style={{ top: -12 }}>
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: 'black',
+        paddingTop: Platform.OS === 'android' ? 25 : 0,
+      }}>
         <Header title={'R|P 2025'} bigText={true} />
         <View style={{ marginTop: height < 700 ? 8 : 20 }}>
           {/* NEXT LAP */}
