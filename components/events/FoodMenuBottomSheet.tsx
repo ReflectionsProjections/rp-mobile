@@ -61,13 +61,14 @@ https://ooni.com/cdn/shop/articles/20220211142347-margherita-9920_ba86be55-674e-
       backdropComponent={renderBackdrop}
       onDismiss={onClose}
       enableDynamicSizing={false}
+      enablePanDownToClose={false}
       backgroundStyle={{
         backgroundColor: '#1a1a1a',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
       }}
       handleIndicatorStyle={{
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
         width: 40,
       }}
     >

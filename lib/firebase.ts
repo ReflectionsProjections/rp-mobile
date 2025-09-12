@@ -114,23 +114,24 @@ class FirebaseService {
 
   private async autoRegisterTokenIfNeeded() {
     try {
-      // Check if we already have a token registered
-      const storedPrefs = await this.getStoredNotificationPreferences();
-
-      if (!storedPrefs.fcmToken || storedPrefs.fcmToken !== this.fcmToken) {
-        // Get fresh token and register it
-        const token = await getToken(this.messaging);
-        if (token) {
-          this.fcmToken = token;
-          await api.post('/notifications/register', { deviceId: token });
+      // Always get a fresh token and register it
+      const token = await getToken(this.messaging);
+      if (token) {
+        this.fcmToken = token;
+        
+        try {
+          // Register with your backend
+          const response = await api.post('/notifications/register', { deviceId: token });
+          console.log('Successfully registered FCM token with backend:', token);
+          console.log('Backend response:', response.data);
 
           // Store the new token
           await this.storeNotificationPreferences({
             permissionGranted: true,
             fcmToken: token,
           });
-
-          console.log('Auto-registered FCM token:', token);
+        } catch (apiError) {
+          console.error('Failed to register token with backend:', apiError);
         }
       }
     } catch (error) {
@@ -158,9 +159,25 @@ class FirebaseService {
         try {
           const fcmToken = await getToken(this.messaging);
           console.log('FCM Token:', fcmToken);
-          await api.post('/notifications/register', { deviceId: fcmToken });
-          this.fcmToken = fcmToken;
-          return { success: true, token: fcmToken };
+          
+          try {
+            const response = await api.post('/notifications/register', { deviceId: fcmToken });
+            console.log('Successfully registered FCM token:', fcmToken);
+            console.log('Backend response:', response.data);
+            
+            this.fcmToken = fcmToken;
+            
+            // Store the token
+            await this.storeNotificationPreferences({
+              permissionGranted: true,
+              fcmToken: fcmToken,
+            });
+            
+            return { success: true, token: fcmToken };
+          } catch (apiError) {
+            console.error('Failed to register token with backend:', apiError);
+            return { success: false, error: 'Failed to register with backend' };
+          }
         } catch (tokenError) {
           console.error('Error getting FCM token:', tokenError);
           return { success: false, error: 'Failed to get FCM token' };
@@ -343,6 +360,37 @@ class FirebaseService {
       console.log('Successfully unregistered for notifications');
     } catch (error) {
       console.error('Failed to unregister notifications:', error);
+    }
+  }
+
+  // Force re-registration of token (useful for debugging)
+  public async forceReregisterToken() {
+    try {
+      console.log('Force re-registering FCM token...');
+      const token = await getToken(this.messaging);
+      if (token) {
+        this.fcmToken = token;
+        
+        try {
+          const response = await api.post('/notifications/register', { deviceId: token });
+          console.log('Force registration successful:', token);
+          console.log('Backend response:', response.data);
+          
+          await this.storeNotificationPreferences({
+            permissionGranted: true,
+            fcmToken: token,
+          });
+          
+          return { success: true, token };
+        } catch (apiError) {
+          console.error('Force registration failed:', apiError);
+          return { success: false, error: apiError };
+        }
+      }
+      return { success: false, error: 'No token available' };
+    } catch (error) {
+      console.error('Error in force re-registration:', error);
+      return { success: false, error };
     }
   }
 
