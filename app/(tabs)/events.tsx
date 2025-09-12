@@ -22,7 +22,7 @@ import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 import FoodMenuBottomSheet from '@/components/events/FoodMenuBottomSheet';
 
-import BackgroundSvg from '@/assets/background/background_grate.svg';
+import BackgroundSvg from '@/assets/background/backgroundEvents.svg';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';

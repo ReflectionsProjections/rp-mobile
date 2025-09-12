@@ -1,12 +1,11 @@
 // --- SwipeDeck.tsx ---
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder } from 'react-native';
+import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder, ImageBackground } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeColor } from '@/lib/theme';
 import { ShiftCard } from '@/api/types';
-import Wheel from '@/assets/home/wheel.svg';
 import { useAppSelector, RootState } from '@/lib/store';
 import { triggerIfEnabled } from '@/lib/haptics';
 
@@ -81,9 +80,28 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
 
   const renderCard = (item: T | null, idx: number) => {
     if (!item) return <View style={[styles.card, styles.emptyCard]} />;
+    const backgroundImages = [
+      require('@/assets/background/cardBackground.png'),
+      require('@/assets/background/cardBackground2.png'),
+      require('@/assets/background/cardBackground3.png'),
+    ];
+    const getImageForId = (id: string) => {
+      let hash = 0;
+      for (let i = 0; i < id.length; i++) {
+        hash = (hash << 5) - hash + id.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+      }
+      const idxSafe = Math.abs(hash) % backgroundImages.length;
+      return backgroundImages[idxSafe];
+    };
 
     return (
-      <View style={styles.card}>
+      <ImageBackground
+        source={getImageForId((item as any).id)}
+        style={styles.card}
+        imageStyle={styles.cardImage}
+      >
+        
         <View style={styles.cardHeader}>
           <ThemedText
             variant="body-bold"
@@ -160,7 +178,7 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
             />
           ))}
         </View>
-      </View>
+      </ImageBackground>
     );
   };
 
@@ -224,11 +242,20 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    overlayColor: 'rgba(255, 255, 255, 0.01)',
   },
   emptyCard: {
     backgroundColor: 'transparent',
     shadowOpacity: 0,
     borderWidth: 0,
+  },
+  cardBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
   },
   racingStripe: {
     position: 'absolute',
@@ -330,5 +357,18 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     // backgroundColor will be set dynamically using themeColor
+  },
+  cardImage: {
+    opacity: 0.1,
+    resizeMode: 'cover',
+    borderRadius: 12,
+  },
+  cardDecor: {
+    position: 'absolute',
+    left: -CARD_WIDTH * 0.3,
+    top: -6,
+    opacity: 0.5,
+    overflow: 'hidden',
+    pointerEvents: 'none',
   },
 });

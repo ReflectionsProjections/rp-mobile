@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import React, { useLayoutEffect } from 'react';
 import { Text } from 'react-native';
 import Toast from 'react-native-toast-message';
+import toastConfig from '@/components/toast/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppProvider from '@/app-provider';
 
@@ -69,7 +70,7 @@ export default function RootLayout() {
             </Stack>
           </BottomSheetModalProvider>
           <StatusBar style="light" />
-          <Toast />
+          <Toast config={toastConfig as any} />
         </ThemeProvider>
       </AppProvider>
     </GestureHandlerRootView>

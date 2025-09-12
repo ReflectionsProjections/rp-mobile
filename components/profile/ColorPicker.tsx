@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useAppSelector, useAppDispatch } from '@/lib/store';
-import { updateAttendeeIcon, setOptimisticThemeColor } from '@/lib/slices/attendeeSlice';
+import { updateAttendeeIcon, setOptimisticThemeColor, fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 import { IconColorType } from '@/api/types';
 import { api } from '@/api/api';
+import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 
 const ColorPicker = () => {
   const themeColor = useAppSelector((state) => state.attendee.themeColor);
@@ -12,6 +13,10 @@ const ColorPicker = () => {
   const [previousColor, setPreviousColor] = useState<{ color: string; icon: IconColorType } | null>(
     null,
   );
+  const today = new Date();
+  const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
+    today.getDate(),
+  ).padStart(2, '0')}`;
 
   const colors = [
     '#3B82F6', // Blue
@@ -38,12 +43,13 @@ const ColorPicker = () => {
       const currentIcon = attendee?.icon || 'RED';
       const currentColor = themeColor;
       setPreviousColor({ color: currentColor, icon: currentIcon });
-
       dispatch(setOptimisticThemeColor({ color, icon: apiColor }));
 
       try {
         await dispatch(updateAttendeeIcon(apiColor));
         setPreviousColor(null);
+        await dispatch(fetchDailyLeaderboard({ day: dayStr }));
+        await dispatch(fetchGlobalLeaderboard({}));
       } catch (error: any) {
         if (previousColor) {
           dispatch(setOptimisticThemeColor(previousColor));

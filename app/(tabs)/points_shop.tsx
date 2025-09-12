@@ -6,7 +6,6 @@ import Tier2Background from '../../assets/pointshop/tier2_car2.svg';
 import Tier3Background from '../../assets/pointshop/tier3_car2.svg';
 import Tier4Background from '../../assets/pointshop/tier4_car.svg';
 import { PointsGauge } from '@/components/pointshop/PointsGuage';
-import { QuestionMarker } from '@/components/pointshop/QuestionMarker';
 import { useAppSelector, RootState } from '@/lib/store';
 import { TierMappedType, TierType } from '@/api/types';
 import { tierMapping } from '@/constants/tierMapping';
@@ -137,13 +136,16 @@ export default function PointsScreen() {
   // For testing - specify which tier to animate to
   // const testTier: TierMappedType = 'TIER2';
 
+  const currentTier = attendee?.currentTier || 'TIER1'; // api tier
+  const mappedTier = tierMapping[currentTier] || 'TIER0'; // mapped tier
+
   return (
     <View className="flex-1 bg-rpRed relative">
-      <AnimatedBackground currentTier={attendee?.currentTier!} /> {/* pass in the API tier */}
+      <AnimatedBackground currentTier={currentTier} />
       <View className="absolute inset-x-0 top-16 items-center z-10">
-        <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />
+        <PointsGauge tier={mappedTier} width={SPEEDO_WIDTH} />
       </View>
-      <UnlockedMarkers mappedTier={tierMapping[attendee?.currentTier!]} width={width} height={height} />
+      <UnlockedMarkers mappedTier={mappedTier} width={width} height={height} />
       <Text
         className="absolute z-10 text-[16px] font-bold text-white font-RacingSansOne"
         style={{
