@@ -16,10 +16,15 @@ interface LeaderboardData {
 interface LeaderboardListProps {
   data: LeaderboardData[];
   userId: string;
-  showSeparator?: boolean;
-  separatorIndex?: number;
-  peopleBetweenCount?: number;
-  isLoadingMore?: boolean;
+  // Top separator
+  showTopSeparator?: boolean;
+  topSeparatorIndex?: number;
+  peopleAboveCount?: number;
+
+  // Bottom separator
+  showBottomSeparator?: boolean;
+  bottomSeparatorIndex?: number;
+  peopleBelowCount?: number;
 }
 
 export type LeaderboardListHandle = {
@@ -31,10 +36,11 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
     {
       data,
       userId,
-      showSeparator = false,
-      separatorIndex = -1,
-      peopleBetweenCount = 0,
-      isLoadingMore = false,
+      showTopSeparator = false,
+      topSeparatorIndex = -1,
+      showBottomSeparator = false,
+      peopleBelowCount = 0,
+      peopleAboveCount = 0,
     },
     ref,
   ) {
@@ -89,11 +95,11 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
           autoscrollToTopThreshold: 10,
         }}
         renderItem={({ item, index }) => {
-          const shouldShowSeparator = showSeparator && index === separatorIndex;
+          const shouldShowTopSeparator = showTopSeparator && index === topSeparatorIndex;
 
           return (
             <>
-              {shouldShowSeparator && (
+              {shouldShowTopSeparator && (
                 <View
                   style={{
                     paddingVertical: 20,
@@ -117,9 +123,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                       textAlign: 'center',
                     }}
                   >
-                    {peopleBetweenCount > 0
-                      ? `${peopleBetweenCount} people between here and your position`
-                      : 'Your Position'}
+                    {peopleAboveCount > 0 ? `${peopleAboveCount} attendees above here` : 'Your Position'}
                   </Text>
                   <View
                     style={{
@@ -131,6 +135,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                   />
                 </View>
               )}
+              {/* Bottom separator moved to ListFooterComponent */}
               {Platform.OS === 'android' ? (
                 <LeaderboardItem
                   rank={item.rank}
@@ -159,25 +164,40 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
           setTimeout(scrollToUser, 100);
         }}
         ListFooterComponent={() =>
-          isLoadingMore ? (
+          showBottomSeparator ? (
             <View
               style={{
                 paddingVertical: 20,
                 alignItems: 'center',
-                justifyContent: 'center',
+                marginHorizontal: 20,
               }}
             >
-              <ActivityIndicator size="small" color="#EDE053" />
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  width: '100%',
+                  marginBottom: 10,
+                }}
+              />
               <Text
                 style={{
                   color: 'rgba(255, 255, 255, 0.7)',
                   fontSize: 14,
                   fontFamily: 'magistral-medium',
-                  marginTop: 8,
+                  textAlign: 'center',
                 }}
               >
-                Loading more...
+                {`${peopleBelowCount} more attendees below here`}
               </Text>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  width: '100%',
+                  marginTop: 10,
+                }}
+              />
             </View>
           ) : null
         }
