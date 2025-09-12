@@ -19,18 +19,6 @@ export default function FoodMenuBottomSheet({
 }: FoodMenuBottomSheetProps) {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['85%'], []);
-  const testDescription = `Join us for a delicious lunch from Shwarma Joint!
-
-:food:
-https://ooni.com/cdn/shop/articles/20220211142347-margherita-9920_ba86be55-674e-4f35-8094-2067ab41a671.jpg?v=1737104576&width=1080 | Pizza Margherita | Vegetarian, Contains Dairy
-
-https://www.burgerartist.com/wp-content/uploads/2016/11/pizza-burger-thumb.jpg | Classic Burger | Contains Gluten, Beef
-
-Caesar Salad | Vegetarian, Gluten-Free, Contains Eggs
-
-https://ooni.com/cdn/shop/articles/20220211142347-margherita-9920_ba86be55-674e-4f35-8094-2067ab41a671.jpg?v=1737104576&width=1080 | Pizza Margherita | Vegetarian, Contains Dairy
-
-:menu: https://www.shawarma-joint.com/  `;
 
   const renderBackdrop = useCallback(
     (props: any) => (

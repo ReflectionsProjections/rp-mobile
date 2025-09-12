@@ -21,6 +21,9 @@ import { fetchStaff } from '@/lib/slices/staffSlice';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
+import { triggerIfEnabled } from '@/lib/haptics';
+import { RootState } from '@/lib/store';
+import Toast from 'react-native-toast-message';
 
 const { height } = Dimensions.get('window');
 
@@ -35,11 +38,15 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   const themeColor = useThemeColor();
   const dispatch = useAppDispatch();
   const profile = useAppSelector((state) => state.user.profile);
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
   const handleLogoPress = async () => {
     if (isSpinning) return; // Prevent multiple spins
 
     setIsSpinning(true);
     spinValue.setValue(0);
+
+    // Haptics on tap
+    await triggerIfEnabled(hapticsEnabled, 'medium');
 
     Animated.timing(spinValue, {
       toValue: 1,
@@ -72,6 +79,15 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
         ).padStart(2, '0')}`;
         dispatch(fetchDailyLeaderboard({ day: dayStr }));
         dispatch(fetchGlobalLeaderboard({}));
+        // Visual feedback: toast confirmation
+        Toast.show({
+          type: 'success',
+          text1: 'All up to speed!',
+          text2: 'Successfully refreshed data',
+          position: 'top',
+          topOffset: 50,
+          visibilityTime: 1500,
+        });
       } catch (e) {
         console.warn('Failed to refresh app:', e);
       } finally {
@@ -90,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   });
 
   return (
-    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}>
+    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}> 
       <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning}>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <LOGO width={32} height={32} />

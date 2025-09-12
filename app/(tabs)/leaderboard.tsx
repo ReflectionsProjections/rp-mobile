@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
@@ -8,7 +8,8 @@ import {
   FadeInWrapper,
   FloatingAnimation,
 } from '@/components/leaderboard';
-import { useAppDispatch } from '@/lib/store';
+import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
+import { triggerIfEnabled } from '@/lib/haptics';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import type { LeaderboardListHandle } from '@/components/leaderboard/LeaderboardList';
 import {
@@ -23,11 +24,9 @@ import Reanimated, {
   useSharedValue,
   withRepeat,
   withTiming,
-  useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/lib/theme';
-import { useAppSelector } from '@/lib/store';
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
@@ -38,6 +37,7 @@ const LeaderboardScreen = () => {
   const globalLeaderboard = useAppSelector((state) => state.leaderboard.global);
   const dispatch = useAppDispatch();
   const today = new Date();
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
   const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
     today.getDate(),
   ).padStart(2, '0')}`;
@@ -50,6 +50,7 @@ const LeaderboardScreen = () => {
       dispatch(fetchGlobalLeaderboard({}));
     }
   }, [dayStr]);
+
   const dailyUserRank =
     dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
   const globalUserRank =
@@ -73,7 +74,8 @@ const LeaderboardScreen = () => {
     );
   }, []);
 
-  const handleRankPress = () => {
+  const handleRankPress = async () => {
+    await triggerIfEnabled(hapticsEnabled, 'medium');
     listRef.current?.scrollToUser();
 
     const userIndex = data.findIndex((p: any) => p.userId === attendee?.userId);
@@ -112,13 +114,24 @@ const LeaderboardScreen = () => {
     }),
   ).current;
 
-  const data = React.useMemo(() => {
+  // No load-more. We'll compute top/user/bottom sections with separators.
+
+  const {
+    data,
+    showTopSeparator,
+    topSeparatorIndex,
+    peopleAboveCount,
+    showBottomSeparator,
+    bottomSeparatorIndex,
+    peopleBelowCount,
+  } = React.useMemo(() => {
     const src =
       activeTab === 0
         ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
         : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
-    if (!src) return [] as any[];
-    return src.map((p) => ({
+    if (!src) return { data: [], showSeparator: false, separatorIndex: -1, peopleBetweenCount: 0 };
+
+    const mappedData = src.map((p) => ({
       rank: p.rank,
       userId: p.userId,
       name: p.displayName,
@@ -126,7 +139,69 @@ const LeaderboardScreen = () => {
       color: p.icon,
       currentTier: p.currentTier,
     }));
-  }, [activeTab, dailyLeaderboard, globalLeaderboard]);
+
+    const userIndex = mappedData.findIndex((item) => item.userId === attendee?.userId);
+
+    const TOP_COUNT = 20;
+    const CONTEXT_BEFORE = 6;
+    const CONTEXT_AFTER = 6;
+    const BOTTOM_COUNT = 20;
+
+    // If no user found or list small, just show up to TOP_COUNT
+    if (userIndex === -1 || mappedData.length <= TOP_COUNT) {
+      return {
+        data: mappedData.slice(0, Math.min(TOP_COUNT, mappedData.length)),
+        showTopSeparator: false,
+        topSeparatorIndex: -1,
+        peopleAboveCount: 0,
+        showBottomSeparator: false,
+        bottomSeparatorIndex: -1,
+        peopleBelowCount: 0,
+      };
+    }
+
+    const top = mappedData.slice(0, TOP_COUNT);
+    const contextStart = Math.max(0, userIndex - CONTEXT_BEFORE);
+    const contextEnd = Math.min(mappedData.length, userIndex + CONTEXT_AFTER + 1);
+    const userContext = mappedData.slice(contextStart, contextEnd);
+
+    // Deduplicate overlaps
+    const seen = new Set<string>();
+    const pushUnique = (arr: typeof mappedData, into: typeof mappedData) => {
+      for (const item of arr) {
+        if (!seen.has(item.userId)) {
+          seen.add(item.userId);
+          into.push(item);
+        }
+      }
+    };
+
+    const assembled: typeof mappedData = [];
+    pushUnique(top, assembled);
+    pushUnique(userContext, assembled);
+
+    // Count everyone before the user's context
+    const peopleAboveCount = Math.max(0, contextStart);
+    // Count everyone after the user's context
+    const peopleBelowCount = Math.max(0, mappedData.length - contextEnd);
+
+    const showTopSeparator = peopleAboveCount > 0;
+    const topSeparatorIndex = showTopSeparator ? top.length : -1;
+
+    const showBottomSeparator = peopleBelowCount > 0;
+    // Place the bottom separator after the user context (end of assembled array)
+    const bottomSeparatorIndex = showBottomSeparator ? assembled.length : -1;
+
+    return {
+      data: assembled,
+      showTopSeparator,
+      topSeparatorIndex,
+      peopleAboveCount,
+      showBottomSeparator,
+      bottomSeparatorIndex,
+      peopleBelowCount,
+    };
+  }, [activeTab, dailyLeaderboard, globalLeaderboard, attendee?.userId]);
 
   return (
     <View className="flex-1 bg-black">
@@ -134,6 +209,7 @@ const LeaderboardScreen = () => {
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
         headerMaxHeight={330}
+        // No load-more scrolling
         renderHeaderNavBarComponent={() => (
           <HeaderNavBar isHeader={true} showTint={false}>
             <Header title={'STANDINGS'} bigText={false} />
@@ -302,7 +378,19 @@ const LeaderboardScreen = () => {
               </Text>
             </View>
           ) : (
-            <LeaderboardList ref={listRef} data={data} userId={attendee?.userId ?? ''} />
+            <View style={{ flex: 1 }}>
+              <LeaderboardList
+                ref={listRef}
+                data={data}
+                userId={attendee?.userId ?? ''}
+                showTopSeparator={showTopSeparator}
+                topSeparatorIndex={topSeparatorIndex}
+                peopleAboveCount={peopleAboveCount}
+                showBottomSeparator={showBottomSeparator}
+                bottomSeparatorIndex={bottomSeparatorIndex}
+                peopleBelowCount={peopleBelowCount}
+              />
+            </View>
           )}
         </FadeInWrapper>
 
