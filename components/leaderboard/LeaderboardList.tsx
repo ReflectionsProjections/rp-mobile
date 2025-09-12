@@ -1,9 +1,4 @@
-import React, {
-  useRef,
-  useImperativeHandle,
-  forwardRef,
-  useMemo,
-} from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { FlatList, Platform, View, Text, ActivityIndicator } from 'react-native';
 import { LeaderboardItem } from './LeaderboardItem';
 import { StaggeredAnimation } from './LeaderboardAnimations';
@@ -32,14 +27,21 @@ export type LeaderboardListHandle = {
 };
 
 export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardListProps>(
-  function LeaderboardList({ data, userId, showSeparator = false, separatorIndex = -1, peopleBetweenCount = 0, isLoadingMore = false }, ref) {
+  function LeaderboardList(
+    {
+      data,
+      userId,
+      showSeparator = false,
+      separatorIndex = -1,
+      peopleBetweenCount = 0,
+      isLoadingMore = false,
+    },
+    ref,
+  ) {
     const listRef = useRef<FlatList<LeaderboardData>>(null);
     const ITEM_HEIGHT = 94;
 
-    const userIndex = useMemo(
-      () => data.findIndex((p) => p.userId === userId),
-      [data, userId]
-    );
+    const userIndex = useMemo(() => data.findIndex((p) => p.userId === userId), [data, userId]);
 
     const scrollToUser = () => {
       if (userIndex !== -1 && listRef.current) {
@@ -84,42 +86,49 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         initialNumToRender={15}
         maintainVisibleContentPosition={{
           minIndexForVisible: 0,
-          autoscrollToTopThreshold: 10
+          autoscrollToTopThreshold: 10,
         }}
         renderItem={({ item, index }) => {
           const shouldShowSeparator = showSeparator && index === separatorIndex;
-          
+
           return (
             <>
               {shouldShowSeparator && (
-                <View style={{ 
-                  paddingVertical: 20, 
-                  alignItems: 'center',
-                  marginHorizontal: 20
-                }}>
-                  <View style={{
-                    height: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    width: '100%',
-                    marginBottom: 10
-                  }} />
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: 14,
-                    fontFamily: 'magistral-medium',
-                    textAlign: 'center'
-                  }}>
-                    {peopleBetweenCount > 0 
+                <View
+                  style={{
+                    paddingVertical: 20,
+                    alignItems: 'center',
+                    marginHorizontal: 20,
+                  }}
+                >
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      width: '100%',
+                      marginBottom: 10,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: 14,
+                      fontFamily: 'magistral-medium',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {peopleBetweenCount > 0
                       ? `${peopleBetweenCount} people between here and your position`
-                      : 'Your Position'
-                    }
+                      : 'Your Position'}
                   </Text>
-                  <View style={{
-                    height: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    width: '100%',
-                    marginTop: 10
-                  }} />
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      width: '100%',
+                      marginTop: 10,
+                    }}
+                  />
                 </View>
               )}
               {Platform.OS === 'android' ? (
@@ -149,20 +158,24 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         onScrollToIndexFailed={() => {
           setTimeout(scrollToUser, 100);
         }}
-        ListFooterComponent={() => 
+        ListFooterComponent={() =>
           isLoadingMore ? (
-            <View style={{ 
-              paddingVertical: 20, 
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <View
+              style={{
+                paddingVertical: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <ActivityIndicator size="small" color="#EDE053" />
-              <Text style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: 14,
-                fontFamily: 'magistral-medium',
-                marginTop: 8
-              }}>
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: 14,
+                  fontFamily: 'magistral-medium',
+                  marginTop: 8,
+                }}
+              >
                 Loading more...
               </Text>
             </View>
@@ -170,5 +183,5 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         }
       />
     );
-  }
+  },
 );
