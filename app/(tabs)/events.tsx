@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, SafeAreaView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
 import BadgeBackSvg from '../../assets/images/badgeback.svg';
