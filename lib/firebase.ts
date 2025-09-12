@@ -118,7 +118,7 @@ class FirebaseService {
       const token = await getToken(this.messaging);
       if (token) {
         this.fcmToken = token;
-        
+
         try {
           // Register with your backend
           const response = await api.post('/notifications/register', { deviceId: token });
@@ -159,20 +159,20 @@ class FirebaseService {
         try {
           const fcmToken = await getToken(this.messaging);
           console.log('FCM Token:', fcmToken);
-          
+
           try {
             const response = await api.post('/notifications/register', { deviceId: fcmToken });
             console.log('Successfully registered FCM token:', fcmToken);
             console.log('Backend response:', response.data);
-            
+
             this.fcmToken = fcmToken;
-            
+
             // Store the token
             await this.storeNotificationPreferences({
               permissionGranted: true,
               fcmToken: fcmToken,
             });
-            
+
             return { success: true, token: fcmToken };
           } catch (apiError) {
             console.error('Failed to register token with backend:', apiError);
@@ -370,17 +370,17 @@ class FirebaseService {
       const token = await getToken(this.messaging);
       if (token) {
         this.fcmToken = token;
-        
+
         try {
           const response = await api.post('/notifications/register', { deviceId: token });
           console.log('Force registration successful:', token);
           console.log('Backend response:', response.data);
-          
+
           await this.storeNotificationPreferences({
             permissionGranted: true,
             fcmToken: token,
           });
-          
+
           return { success: true, token };
         } catch (apiError) {
           console.error('Force registration failed:', apiError);

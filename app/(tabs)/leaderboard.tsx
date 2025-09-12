@@ -1,11 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  PanResponder,
-  Animated,
-  Pressable,
-  Text,
-} from 'react-native';
+import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {
@@ -56,10 +50,14 @@ const LeaderboardScreen = () => {
       dispatch(fetchGlobalLeaderboard({}));
     }
   }, [dayStr]);
-  const dailyUserRank = dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
-  const globalUserRank = globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
-  const dailyPoints = dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
-  const globalPoints = globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+  const dailyUserRank =
+    dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const globalUserRank =
+    globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+  const dailyPoints =
+    dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+  const globalPoints =
+    globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
 
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
@@ -115,9 +113,10 @@ const LeaderboardScreen = () => {
   ).current;
 
   const data = React.useMemo(() => {
-    const src = activeTab === 0
-      ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
-      : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
+    const src =
+      activeTab === 0
+        ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
+        : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
     if (!src) return [] as any[];
     return src.map((p) => ({
       rank: p.rank,
@@ -187,9 +186,7 @@ const LeaderboardScreen = () => {
                       </Text>
                     </Text>
                   </View>
-                  <View>
-
-                  </View>
+                  <View></View>
                   <Text
                     style={{
                       color: '#fff',
@@ -207,23 +204,23 @@ const LeaderboardScreen = () => {
                     </Text>{' '}
                     LAP POINTS
                   </Text>
-                  
-                 {profile?.roles.includes('USER') && profile?.roles.length === 1 ? (
-                  <Reanimated.View
-                    style={[
-                      { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
-                    ]}
-                  >
-                    <Ionicons
-                      name="chevron-down"
-                      size={16}
-                      color="#fff"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
-                      Tap to jump
-                    </Text>
-                  </Reanimated.View>
+
+                  {profile?.roles.includes('USER') && profile?.roles.length === 1 ? (
+                    <Reanimated.View
+                      style={[
+                        { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
+                      ]}
+                    >
+                      <Ionicons
+                        name="chevron-down"
+                        size={16}
+                        color="#fff"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
+                        Tap to jump
+                      </Text>
+                    </Reanimated.View>
                   ) : null}
                 </Pressable>
               </FadeInWrapper>
@@ -276,7 +273,8 @@ const LeaderboardScreen = () => {
         </View>
 
         <FadeInWrapper delay={1000}>
-          {activeTab === 0 && (!dailyLeaderboard || (dailyLeaderboard.leaderboard?.length ?? 0) === 0) ? (
+          {activeTab === 0 &&
+          (!dailyLeaderboard || (dailyLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{
@@ -289,7 +287,8 @@ const LeaderboardScreen = () => {
                 No leaderboard for today — check back tomorrow!
               </Text>
             </View>
-          ) : activeTab === 1 && (!globalLeaderboard || (globalLeaderboard.leaderboard?.length ?? 0) === 0) ? (
+          ) : activeTab === 1 &&
+            (!globalLeaderboard || (globalLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{

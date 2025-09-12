@@ -48,5 +48,3 @@ const staffSlice = createSlice({
 
 export const { clearStaff } = staffSlice.actions;
 export default staffSlice.reducer;
-
-
