@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Linking,
 } from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
@@ -25,6 +26,7 @@ import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
+import { parseEventLink } from '@/lib/linkUtils';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -178,6 +180,31 @@ const EventsScreen = () => {
     setShowFoodMenu(false);
   };
 
+  const handleLinkPress = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Cannot Open Link',
+          text2: 'This link cannot be opened on your device.',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to open link.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    }
+  };
+
   const handleFlagEvent = async (eventId: string) => {
     if (!user?.userId) {
       Toast.show({
@@ -254,7 +281,8 @@ const EventsScreen = () => {
           <FlatList
             data={filteredEvents}
             keyExtractor={(item) => item.eventId}
-            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 175, gap: 8 }}
+            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 8 }}
+            scrollEnabled={!selectedEvent}
             ListFooterComponent={
               <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">
                 End of Events
@@ -322,9 +350,9 @@ const EventsScreen = () => {
                   color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
                 />
 
-                <View className="absolute top-[35%] left-0 right-0 bottom-0 items-center justify-center px-6">
+                <View className="absolute top-[35%] left-0 right-0 bottom-0 items-center justify-center px-4">
                   <Text
-                    className="text-lg font-bold text-[#B60000] text-center mb-2"
+                    className="text-xl font-bold text-[#B60000] text-center mb-2"
                     style={{ fontFamily: 'ProRacingSlant' }}
                     numberOfLines={4}
                     ellipsizeMode="tail"
@@ -375,7 +403,11 @@ const EventsScreen = () => {
 
               <Pressable
                 onPress={(e) => {
+                  e.stopPropagation();
                   toggleFlip();
+                }}
+                onPressIn={(e) => {
+                  e.stopPropagation();
                 }}
                 pointerEvents="box-only"
                 style={{
@@ -400,7 +432,10 @@ const EventsScreen = () => {
                   }}
                 >
                   <TouchableOpacity
-                    onPress={handleFoodMenuPress}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleFoodMenuPress();
+                    }}
                     style={{
                       justifyContent: 'center',
                       backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -425,6 +460,53 @@ const EventsScreen = () => {
                       }}
                     >
                       View Food Menu
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
+
+              {/* Link Button - For all events with links */}
+              {selectedEvent && parseEventLink(selectedEvent.description) && (
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    top: selectedEvent.eventType === 'MEALS' ? '85%' : '82%',
+                    opacity: foodMenuOpacity,
+                    zIndex: 10000,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      const link = parseEventLink(selectedEvent.description);
+                      if (link) {
+                        handleLinkPress(link.url);
+                      }
+                    }}
+                    style={{
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: 'rgba(59, 130, 246, 0.3)',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 4,
+                      elevation: 5,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#ffffff',
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {parseEventLink(selectedEvent.description)?.title || 'Open Link'}
                     </Text>
                   </TouchableOpacity>
                 </Animated.View>

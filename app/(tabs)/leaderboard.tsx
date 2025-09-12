@@ -23,7 +23,6 @@ import Reanimated, {
   useSharedValue,
   withRepeat,
   withTiming,
-  useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/lib/theme';
