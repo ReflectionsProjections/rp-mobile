@@ -1,6 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView, Platform } from 'react-native';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
