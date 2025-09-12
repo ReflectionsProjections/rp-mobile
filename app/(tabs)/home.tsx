@@ -348,8 +348,8 @@ export default function HomeScreen() {
 
       <SafeAreaView style={{
         flex: 1,
-        backgroundColor: 'black',
         paddingTop: Platform.OS === 'android' ? 15 : 0,
+        top: Platform.OS === 'ios' ? -12 : 0,
       }}>
         <Header title={'R|P 2025'} bigText={true} />
         <View style={{ marginTop: height < 700 ? 8 : 20 }}>

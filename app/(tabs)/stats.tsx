@@ -41,7 +41,13 @@ export default function StatsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100" style={{paddingTop: Platform.OS === 'android' ? 15 : 0}}>
+    <SafeAreaView 
+      className="flex-1 bg-gray-100" 
+      style={{
+        paddingTop: Platform.OS === 'android' ? 15 : 0,
+        top: Platform.OS === 'ios' ? -12 : 0,
+      }}
+    >
       <BackgroundSvg
         style={StyleSheet.absoluteFillObject}
         width={screenWidth}
@@ -51,6 +57,7 @@ export default function StatsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
         <Header title={'STATISTICS'} bigText={true} />
 
+        <View style={{ marginTop: 16, paddingHorizontal: 16, paddingBottom: 50 }}>
         {/* Check-in Stats */}
         <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
           <Text className="text-xl font-semibold text-gray-800 mb-2" style={{ fontFamily: 'ProRacing' }}>
@@ -171,6 +178,7 @@ export default function StatsScreen() {
             </View>
           </View>
         )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
