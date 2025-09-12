@@ -97,5 +97,3 @@ const leaderboardSlice = createSlice({
 export const { clearLeaderboard } = leaderboardSlice.actions;
 
 export default leaderboardSlice.reducer;
-
-

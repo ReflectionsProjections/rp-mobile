@@ -55,7 +55,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <BottomSheetModalProvider> 
+          <BottomSheetModalProvider>
             <Stack>
               <Stack.Screen
                 name="(auth)"

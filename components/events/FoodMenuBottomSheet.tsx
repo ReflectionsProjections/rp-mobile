@@ -42,7 +42,7 @@ https://ooni.com/cdn/shop/articles/20220211142347-margherita-9920_ba86be55-674e-
         onPress={onClose}
       />
     ),
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {
