@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions, ActivityIndicator, SafeAreaView, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Dimensions, ActivityIndicator, SafeAreaView, StyleSheet, ScrollView, Platform } from 'react-native';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useThemeColor } from '@/lib/theme';
 import { useAllStats } from '@/api/tanstack/stats';
@@ -41,7 +41,7 @@ export default function StatsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 bg-gray-100" style={{paddingTop: Platform.OS === 'android' ? 15 : 0}}>
       <BackgroundSvg
         style={StyleSheet.absoluteFillObject}
         width={screenWidth}
@@ -49,7 +49,6 @@ export default function StatsScreen() {
         preserveAspectRatio="none"
       />
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
-        <View style={{ top: -12 }}>
         <Header title={'STATISTICS'} bigText={true} />
 
         {/* Check-in Stats */}
@@ -172,7 +171,6 @@ export default function StatsScreen() {
             </View>
           </View>
         )}
-      </View>
       </ScrollView>
     </SafeAreaView>
   );
