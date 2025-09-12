@@ -7,6 +7,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useThemeColor } from '@/lib/theme';
 import { ShiftCard } from '@/api/types';
 import Wheel from '@/assets/home/wheel.svg';
+import { useAppSelector, RootState } from '@/lib/store';
+import { triggerIfEnabled } from '@/lib/haptics';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -40,6 +42,7 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
 }: SwipeDeckProps<T>) {
   const [cardIndex, setCardIndex] = useState(0);
   const themeColor = useThemeColor();
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -174,8 +177,14 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
         stackSeparation={0}
         infinite
         cardIndex={safeIndex}
-        onSwipedLeft={() => setCardIndex((prev) => (prev + 1) % data.length)}
-        onSwipedRight={() => setCardIndex((prev) => (prev - 1 + data.length) % data.length)}
+        onSwipedLeft={async () => {
+          await triggerIfEnabled(hapticsEnabled, 'light');
+          setCardIndex((prev) => (prev + 1) % data.length);
+        }}
+        onSwipedRight={async () => {
+          await triggerIfEnabled(hapticsEnabled, 'light');
+          setCardIndex((prev) => (prev - 1 + data.length) % data.length);
+        }}
         onTapCard={(i) => {
           if (i < data.length) {
             onCardPress(data[i]);

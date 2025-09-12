@@ -3,7 +3,7 @@ import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions } from
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import Background from '@/assets/images/profile_background.svg';
+import Background from '@/assets/background/dottedBackground2.svg';
 
 const { width, height } = Dimensions.get('window');
 

@@ -21,7 +21,7 @@ import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-import Background from '@/assets/images/profile_background.svg';
+import Background from '@/assets/background/dottedBackground2.svg';
 import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
 import { RootState, useAppDispatch, persistor } from '@/lib/store';
