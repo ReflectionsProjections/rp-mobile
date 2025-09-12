@@ -54,9 +54,9 @@ export default function LoadingScreen() {
   });
 
   return (
-    <View className="flex-1 justify-center items-center bg-white p-5">
-      <Text className="text-center font-proRacing mb-10">
-        <Text className="text-[32px] font-bold text-black tracking-[2px]">reflections</Text>
+    <View className="flex-1 justify-center items-center bg-black p-5">
+      <Text className="text-center font-proRacing mb-8">
+        <Text className="text-[32px] font-bold text-white tracking-[2px]">reflections</Text>
         {'\n'}
         <Text className="text-[32px] font-bold text-[#F0363D] tracking-[2px]">projections</Text>
       </Text>
