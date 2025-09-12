@@ -227,7 +227,11 @@ const EventsScreen = () => {
         height={SCREEN_HEIGHT}
         preserveAspectRatio="none"
       />
-      <SafeAreaView style={{ top: -12 }}>
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: 'black',
+        paddingTop: Platform.OS === 'android' ? 15 : 0,
+      }}>
         <Header title={'EVENTS'} bigText={true} />
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />

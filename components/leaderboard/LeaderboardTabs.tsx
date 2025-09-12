@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, Animated, TouchableOpacity } from 'react-native';
+import { View, Text, Animated, TouchableOpacity, Platform } from 'react-native';
 import { FadeInWrapper } from './LeaderboardAnimations';
 import { useThemeColor } from '@/lib/theme';
 
@@ -11,7 +11,9 @@ interface LeaderboardTabsProps {
 export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps) => {
   const themeColor = useThemeColor();
   const slideAnimation = useRef(new Animated.Value(activeTab)).current;
+
   const tabWidth = 130;
+  const tabHeight = 40; // unified height (Android only)
 
   useEffect(() => {
     Animated.spring(slideAnimation, {
@@ -39,7 +41,7 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
           style={{
             flexDirection: 'row',
             backgroundColor: '#FFFFFF',
-            borderRadius: 20,
+            borderRadius: Platform.OS === 'android' ? tabHeight / 2 : 20,
             padding: 4,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
@@ -53,12 +55,12 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
           <Animated.View
             style={{
               position: 'absolute',
-              top: 4,
+              top: Platform.OS === 'android' ? 4 : 4,
               left: 4,
-              width: tabWidth - 4,
-              height: 32,
+              width: Platform.OS === 'android' ? tabWidth : tabWidth - 4,
+              height: Platform.OS === 'android' ? tabHeight : 32,
               backgroundColor: themeColor,
-              borderRadius: 16,
+              borderRadius: Platform.OS === 'android' ? tabHeight / 2 : 16,
               transform: [
                 {
                   translateX: slideAnimation.interpolate({
@@ -75,13 +77,16 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
             }}
           />
 
+          {/* Daily Tab */}
           <TouchableOpacity
             onPress={() => handleTabPress(0)}
             style={{
-              paddingHorizontal: 20,
-              paddingVertical: 8,
               width: tabWidth,
+              height: Platform.OS === 'android' ? tabHeight : undefined,
+              paddingHorizontal: Platform.OS === 'android' ? 0 : 20,
+              paddingVertical: Platform.OS === 'android' ? 0 : 8,
               alignItems: 'center',
+              justifyContent: 'center',
               zIndex: 1,
             }}
             activeOpacity={0.7}
@@ -93,20 +98,22 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
                 fontWeight: 'bold',
                 fontFamily: 'magistral',
                 textAlign: 'center',
-                justifyContent: 'center',
               }}
             >
               DAILY
             </Text>
           </TouchableOpacity>
 
+          {/* Global Tab */}
           <TouchableOpacity
             onPress={() => handleTabPress(1)}
             style={{
-              paddingHorizontal: 20,
-              paddingVertical: 8,
               width: tabWidth,
+              height: Platform.OS === 'android' ? tabHeight : undefined,
+              paddingHorizontal: Platform.OS === 'android' ? 0 : 20,
+              paddingVertical: Platform.OS === 'android' ? 0 : 8,
               alignItems: 'center',
+              justifyContent: 'center',
               zIndex: 1,
             }}
             activeOpacity={0.7}
@@ -118,7 +125,6 @@ export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps
                 fontWeight: 'bold',
                 fontFamily: 'magistral',
                 textAlign: 'center',
-                justifyContent: 'center',
               }}
             >
               GLOBAL
