@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, SafeAreaView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
 import BadgeBackSvg from '../../assets/images/badgeback.svg';
@@ -227,11 +235,13 @@ const EventsScreen = () => {
         height={SCREEN_HEIGHT}
         preserveAspectRatio="none"
       />
-      <SafeAreaView style={{
-        flex: 1,
-        backgroundColor: 'black',
-        paddingTop: Platform.OS === 'android' ? 15 : 0,
-      }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS === 'android' ? 15 : 0,
+          top: Platform.OS === 'ios' ? -12 : 0,
+        }}
+      >
         <Header title={'EVENTS'} bigText={true} />
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
