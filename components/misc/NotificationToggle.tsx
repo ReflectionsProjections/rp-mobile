@@ -125,7 +125,7 @@ export const NotificationToggle = () => {
         thumbColor="#fff"
         thumbOffIcon={<Ionicons name="notifications-off" size={20} color="grey" />}
         thumbOnIcon={<Ionicons name="notifications" size={20} color="black" />}
-        iconAnimationType="fade"
+        iconAnimationType="rotate"
         style={{
           zIndex: 999,
           elevation: 999,

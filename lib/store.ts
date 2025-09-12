@@ -8,11 +8,12 @@ import attendeeSlice from './slices/attendeeSlice';
 import shiftsSlice from './slices/shiftsSlice';
 import leaderboardSlice from './slices/leaderboardSlice';
 import staffSlice from './slices/staffSlice';
+import settingsSlice from './slices/settingsSlice';
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['favorites', 'user', 'attendee'], // Only persist these slices
+  whitelist: ['favorites', 'user', 'attendee', 'settings'], // Only persist these slices
 };
 
 const rootReducer = combineReducers({
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   shifts: shiftsSlice,
   leaderboard: leaderboardSlice,
   staff: staffSlice,
+  settings: settingsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -93,7 +93,7 @@ const TagSelector = () => {
           textShadowRadius: 1,
         }}
       >
-        Select your areas of interest to get personalized recommendations
+        Select to follow your favorite drivers!
       </Text>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, paddingVertical: 8 }}>
