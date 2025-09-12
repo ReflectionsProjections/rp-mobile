@@ -8,7 +8,8 @@ import {
   FadeInWrapper,
   FloatingAnimation,
 } from '@/components/leaderboard';
-import { useAppDispatch } from '@/lib/store';
+import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
+import { triggerIfEnabled } from '@/lib/haptics';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import type { LeaderboardListHandle } from '@/components/leaderboard/LeaderboardList';
 import {
@@ -26,7 +27,6 @@ import Reanimated, {
   Easing,
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/lib/theme';
-import { useAppSelector } from '@/lib/store';
 
 const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
@@ -37,6 +37,7 @@ const LeaderboardScreen = () => {
   const globalLeaderboard = useAppSelector((state) => state.leaderboard.global);
   const dispatch = useAppDispatch();
   const today = new Date();
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
   const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
     today.getDate(),
   ).padStart(2, '0')}`;
@@ -73,7 +74,8 @@ const LeaderboardScreen = () => {
     );
   }, []);
 
-  const handleRankPress = () => {
+  const handleRankPress = async () => {
+    await triggerIfEnabled(hapticsEnabled, 'medium');
     listRef.current?.scrollToUser();
 
     const userIndex = data.findIndex((p: any) => p.userId === attendee?.userId);

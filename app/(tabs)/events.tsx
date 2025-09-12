@@ -82,6 +82,8 @@ const EventsScreen = () => {
     if (newFlippedState) {
       // Flipping to back - hide food menu button immediately
       setIsFlipped(newFlippedState);
+      // Haptics on flip
+      triggerIfEnabled(hapticsEnabled, 'light');
       Animated.timing(foodMenuOpacity, {
         toValue: 0,
         duration: 150,
@@ -90,6 +92,8 @@ const EventsScreen = () => {
     } else {
       // Flipping to front - update state first, then fade in after flip
       setIsFlipped(newFlippedState);
+      // Haptics on flip
+      triggerIfEnabled(hapticsEnabled, 'light');
     }
 
     Animated.spring(flip, {
