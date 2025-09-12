@@ -346,11 +346,13 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <SafeAreaView style={{
-        flex: 1,
-        backgroundColor: 'black',
-        paddingTop: Platform.OS === 'android' ? 15 : 0,
-      }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS === 'android' ? 15 : 0,
+          top: Platform.OS === 'ios' ? -12 : 0,
+        }}
+      >
         <Header title={'R|P 2025'} bigText={true} />
         <View style={{ marginTop: height < 700 ? 8 : 20 }}>
           {/* NEXT LAP */}
