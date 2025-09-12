@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Dimensions, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, ActivityIndicator, SafeAreaView, StyleSheet, ScrollView } from 'react-native';
 import { api } from '@/api/api';
 import { DietaryRestrictionStats, path } from '@/api/types';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
@@ -12,6 +12,9 @@ export default function StatsScreen() {
   const [priorityAttendeeCount, setPriorityAttendeeCount] = useState<number>(0);
   const [dietaryStats, setDietaryStats] = useState<DietaryRestrictionStats | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<number[]>([]);
+  const [registrationCount, setRegistrationCount] = useState<number>(0);
+  const [tierCounts, setTierCounts] = useState<{ TIER1: number; TIER2: number; TIER3: number; TIER4: number } | null>(null);
+  const [tagCounts, setTagCounts] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -27,18 +30,27 @@ export default function StatsScreen() {
           checkInResponse,
           priorityResponse,
           dietaryResponse,
-          attendanceResponse
+          attendanceResponse,
+          registrationResponse,
+          tierCountsResponse,
+          tagCountsResponse
         ] = await Promise.all([
           api.get('/stats/check-in'),
           api.get('/stats/priority-attendee'),
           api.get('/stats/dietary-restrictions'),
-          api.get(path('/stats/attendance/:n', { n: '7' })) // Get last 7 days of attendance
+          api.get(path('/stats/attendance/:n', { n: '7' })), // Get last 7 days of attendance
+          api.get('/stats/registrations'),
+          api.get('/stats/tier-counts'),
+          api.get('/stats/tag-counts')
         ]);
 
         setCheckInCount(checkInResponse.data.count);
         setPriorityAttendeeCount(priorityResponse.data.count);
         setDietaryStats(dietaryResponse.data);
         setAttendanceCounts(attendanceResponse.data.attendanceCounts);
+        setRegistrationCount(registrationResponse.data.count);
+        setTierCounts(tierCountsResponse.data);
+        setTagCounts(tagCountsResponse.data);
       } catch (err) {
         setError('Failed to fetch stats');
         console.error('Failed to fetch stats:', err);
@@ -69,13 +81,14 @@ export default function StatsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-                <BackgroundSvg
-          style={StyleSheet.absoluteFillObject}
-          width={screenWidth}
-          height={screenHeight}
-          preserveAspectRatio="none"
-        />
-      <View className="px-6 py-8">
+      <BackgroundSvg
+        style={StyleSheet.absoluteFillObject}
+        width={screenWidth}
+        height={screenHeight}
+        preserveAspectRatio="none"
+      />
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-6 py-8">
         <Text className="text-3xl font-bold text-white mb-8 text-center" style={{ fontFamily: 'ProRacing' }}>
           Event Statistics
         </Text>
@@ -97,6 +110,16 @@ export default function StatsScreen() {
           </Text>
           <Text className="text-4xl font-bold" style={{ fontFamily: 'ProRacing', color: themeColor }}>
             {priorityAttendeeCount}
+          </Text>
+        </View>
+
+        {/* Total Registrations */}
+        <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
+          <Text className="text-xl font-semibold text-gray-800 mb-2" style={{ fontFamily: 'ProRacing' }}>
+            Total Registrations
+          </Text>
+          <Text className="text-4xl font-bold" style={{ fontFamily: 'ProRacing', color: themeColor }}>
+            {registrationCount}
           </Text>
         </View>
 
@@ -143,7 +166,55 @@ export default function StatsScreen() {
             </View>
           </View>
         )}
+
+        {/* Tier Distribution */}
+        {tierCounts && (
+          <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
+            <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing' }}>
+              Tier Distribution
+            </Text>
+            <View className="space-y-2">
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 1:</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER1}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 2:</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER2}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 3:</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER3}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 4:</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER4}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Popular Tags */}
+        {tagCounts && Object.keys(tagCounts).length > 0 && (
+          <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
+            <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing' }}>
+              Popular Tags
+            </Text>
+            <View className="space-y-2">
+              {Object.entries(tagCounts)
+                .sort(([,a], [,b]) => b - a) // Sort by count descending
+                .slice(0, 8) // Show top 8 tags
+                .map(([tag, count]) => (
+                <View key={tag} className="flex-row justify-between">
+                  <Text className="text-gray-600 capitalize" style={{ fontFamily: 'ProRacing' }}>{tag.replace('_', ' ')}:</Text>
+                  <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{count}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
