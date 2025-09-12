@@ -32,15 +32,15 @@ export default function ScannerScreen() {
 
   const handleRefreshWithCooldown = useCallback(() => {
     if (isRefreshing || isRefreshCooldown) return;
-    
+
     setIsRefreshing(true);
     handleManualRefresh();
-    
+
     // Set cooldown for 3 seconds after a brief delay
     setTimeout(() => {
       setIsRefreshing(false);
       setIsRefreshCooldown(true);
-      
+
       setTimeout(() => {
         setIsRefreshCooldown(false);
       }, 3000);
@@ -76,7 +76,7 @@ export default function ScannerScreen() {
           qrSize={QR_SIZE}
         />
       </View>
-      
+
       <View
         style={{
           bottom: '25%',
@@ -102,12 +102,14 @@ export default function ScannerScreen() {
             zIndex: 1000,
           }}
         >
-          <Text style={{ 
-            fontSize: 18, 
-            color: isRefreshing || isRefreshCooldown ? '#999999' : '#E66300', 
-            fontWeight: '600', 
-            fontFamily: 'Magistral'
-          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              color: isRefreshing || isRefreshCooldown ? '#999999' : '#E66300',
+              fontWeight: '600',
+              fontFamily: 'Magistral',
+            }}
+          >
             {isRefreshing ? 'Loading' : isRefreshCooldown ? 'On cooldown' : 'Refresh QR'}
           </Text>
         </TouchableOpacity>

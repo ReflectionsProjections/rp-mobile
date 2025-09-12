@@ -40,7 +40,12 @@ async function fetchRegistrationCount(): Promise<number> {
   return response.data.count;
 }
 
-async function fetchTierCounts(): Promise<{ TIER1: number; TIER2: number; TIER3: number; TIER4: number }> {
+async function fetchTierCounts(): Promise<{
+  TIER1: number;
+  TIER2: number;
+  TIER3: number;
+  TIER4: number;
+}> {
   const response = await api.get('/stats/tier-counts');
   return response.data;
 }
@@ -132,9 +137,21 @@ export function useAllStats() {
     registrations,
     tierCounts,
     tagCounts,
-    isLoading: checkIn.isLoading || priorityAttendee.isLoading || dietary.isLoading || 
-               attendance.isLoading || registrations.isLoading || tierCounts.isLoading || tagCounts.isLoading,
-    error: checkIn.error || priorityAttendee.error || dietary.error || 
-           attendance.error || registrations.error || tierCounts.error || tagCounts.error,
+    isLoading:
+      checkIn.isLoading ||
+      priorityAttendee.isLoading ||
+      dietary.isLoading ||
+      attendance.isLoading ||
+      registrations.isLoading ||
+      tierCounts.isLoading ||
+      tagCounts.isLoading,
+    error:
+      checkIn.error ||
+      priorityAttendee.error ||
+      dietary.error ||
+      attendance.error ||
+      registrations.error ||
+      tierCounts.error ||
+      tagCounts.error,
   };
 }

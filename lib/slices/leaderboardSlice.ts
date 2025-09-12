@@ -66,13 +66,18 @@ const leaderboardSlice = createSlice({
       })
       .addCase(
         fetchDailyLeaderboard.fulfilled,
-        (state, action: PayloadAction<{ day: string; leaderboard: LeaderboardEntry[]; append: boolean }>) => {
+        (
+          state,
+          action: PayloadAction<{ day: string; leaderboard: LeaderboardEntry[]; append: boolean }>,
+        ) => {
           state.daily.loading = false;
           state.daily.day = action.payload.day;
           if (action.payload.append) {
             // Append new data, avoiding duplicates
-            const existingIds = new Set(state.daily.leaderboard.map(item => item.userId));
-            const newItems = action.payload.leaderboard.filter(item => !existingIds.has(item.userId));
+            const existingIds = new Set(state.daily.leaderboard.map((item) => item.userId));
+            const newItems = action.payload.leaderboard.filter(
+              (item) => !existingIds.has(item.userId),
+            );
             state.daily.leaderboard = [...state.daily.leaderboard, ...newItems];
           } else {
             state.daily.leaderboard = action.payload.leaderboard;
@@ -93,8 +98,10 @@ const leaderboardSlice = createSlice({
           state.global.loading = false;
           if (action.payload.append) {
             // Append new data, avoiding duplicates
-            const existingIds = new Set(state.global.leaderboard.map(item => item.userId));
-            const newItems = action.payload.leaderboard.filter(item => !existingIds.has(item.userId));
+            const existingIds = new Set(state.global.leaderboard.map((item) => item.userId));
+            const newItems = action.payload.leaderboard.filter(
+              (item) => !existingIds.has(item.userId),
+            );
             state.global.leaderboard = [...state.global.leaderboard, ...newItems];
           } else {
             state.global.leaderboard = action.payload.leaderboard;

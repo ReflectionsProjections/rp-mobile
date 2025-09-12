@@ -123,25 +123,30 @@ const LeaderboardScreen = () => {
 
   const loadMoreData = useCallback(async () => {
     if (isLoadingMore) return;
-    
+
     setIsLoadingMore(true);
     try {
       // Get current data length to determine how many more to fetch
-      const currentData = activeTab === 0 ? dailyLeaderboard.leaderboard : globalLeaderboard.leaderboard;
+      const currentData =
+        activeTab === 0 ? dailyLeaderboard.leaderboard : globalLeaderboard.leaderboard;
       const newCount = currentData.length + 20;
-      
+
       // Fetch more data from API
       if (activeTab === 0) {
-        await dispatch(fetchDailyLeaderboard({ 
-          day: dayStr, 
-          n: newCount, 
-          append: true 
-        }));
+        await dispatch(
+          fetchDailyLeaderboard({
+            day: dayStr,
+            n: newCount,
+            append: true,
+          }),
+        );
       } else {
-        await dispatch(fetchGlobalLeaderboard({ 
-          n: newCount, 
-          append: true 
-        }));
+        await dispatch(
+          fetchGlobalLeaderboard({
+            n: newCount,
+            append: true,
+          }),
+        );
       }
       setHasLoadedMore(true);
     } catch (error) {
@@ -149,21 +154,32 @@ const LeaderboardScreen = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, activeTab, dayStr, dispatch, dailyLeaderboard.leaderboard.length, globalLeaderboard.leaderboard.length]);
+  }, [
+    isLoadingMore,
+    activeTab,
+    dayStr,
+    dispatch,
+    dailyLeaderboard.leaderboard.length,
+    globalLeaderboard.leaderboard.length,
+  ]);
 
-  const handleScroll = useCallback((event: any) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const isCloseToBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
-    const isCloseToTop = contentOffset.y <= 200;
-    
-    if (isCloseToBottom && !isLoadingMore) {
-      loadMoreData();
-    }
-    
-    // Note: For now, we only load more data when scrolling down
-    // Scrolling up to load more data would require more complex logic
-    // to handle the user context positioning
-  }, [loadMoreData, isLoadingMore]);
+  const handleScroll = useCallback(
+    (event: any) => {
+      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+      const isCloseToBottom =
+        contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
+      const isCloseToTop = contentOffset.y <= 200;
+
+      if (isCloseToBottom && !isLoadingMore) {
+        loadMoreData();
+      }
+
+      // Note: For now, we only load more data when scrolling down
+      // Scrolling up to load more data would require more complex logic
+      // to handle the user context positioning
+    },
+    [loadMoreData, isLoadingMore],
+  );
 
   const { data, showSeparator, separatorIndex, peopleBetweenCount } = React.useMemo(() => {
     const src =
@@ -171,7 +187,7 @@ const LeaderboardScreen = () => {
         ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
         : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
     if (!src) return { data: [], showSeparator: false, separatorIndex: -1, peopleBetweenCount: 0 };
-    
+
     const mappedData = src.map((p) => ({
       rank: p.rank,
       userId: p.userId,
@@ -182,55 +198,65 @@ const LeaderboardScreen = () => {
     }));
 
     const userIndex = mappedData.findIndex((item) => item.userId === attendee?.userId);
-    
+
     if (userIndex === -1) {
       const initialCount = hasLoadedMore ? mappedData.length : Math.min(20, mappedData.length);
-      return { data: mappedData.slice(0, initialCount), showSeparator: false, separatorIndex: -1, peopleBetweenCount: 0 };
+      return {
+        data: mappedData.slice(0, initialCount),
+        showSeparator: false,
+        separatorIndex: -1,
+        peopleBetweenCount: 0,
+      };
     }
-    
+
     // If user is in top 20, return first 20 items (or more if loaded)
     if (userIndex < 20) {
       const initialCount = hasLoadedMore ? mappedData.length : Math.min(20, mappedData.length);
-      return { data: mappedData.slice(0, initialCount), showSeparator: false, separatorIndex: -1, peopleBetweenCount: 0 };
+      return {
+        data: mappedData.slice(0, initialCount),
+        showSeparator: false,
+        separatorIndex: -1,
+        peopleBetweenCount: 0,
+      };
     }
-    
+
     const contextSize = 12; // 6 items before and 6 items after user
     const startIndex = Math.max(0, userIndex - 6);
     const endIndex = Math.min(mappedData.length, userIndex + 7);
-    
+
     // Always show first 20, then user context
     const firstDisplayed = mappedData.slice(0, 20);
     const userContext = mappedData.slice(startIndex, endIndex);
-    
-    const userIds = new Set(firstDisplayed.map(item => item.userId));
-    const uniqueUserContext = userContext.filter(item => !userIds.has(item.userId));
-    
+
+    const userIds = new Set(firstDisplayed.map((item) => item.userId));
+    const uniqueUserContext = userContext.filter((item) => !userIds.has(item.userId));
+
     // Calculate how many people are between rank 20 and user position
     const peopleBetweenCount = Math.max(0, userIndex - 20);
-    
+
     if (mappedData.length <= 20) {
       return {
         data: mappedData,
         showSeparator: false,
         separatorIndex: -1,
-        peopleBetweenCount: 0
+        peopleBetweenCount: 0,
       };
     }
-    
+
     // If we've loaded more data, show more items below the user context
     let dataToShow = [...firstDisplayed, ...uniqueUserContext];
-    
+
     if (hasLoadedMore && endIndex < mappedData.length) {
       // Show more data below the user context
       const additionalData = mappedData.slice(endIndex);
       dataToShow = [...dataToShow, ...additionalData];
     }
-    
+
     return {
       data: dataToShow,
       showSeparator: uniqueUserContext.length > 0,
       separatorIndex: 20,
-      peopleBetweenCount
+      peopleBetweenCount,
     };
   }, [activeTab, dailyLeaderboard, globalLeaderboard, attendee?.userId, hasLoadedMore]);
 
@@ -411,33 +437,37 @@ const LeaderboardScreen = () => {
             </View>
           ) : (
             <View style={{ flex: 1 }}>
-              <LeaderboardList 
-                ref={listRef} 
-                data={data} 
-                userId={attendee?.userId ?? ''} 
+              <LeaderboardList
+                ref={listRef}
+                data={data}
+                userId={attendee?.userId ?? ''}
                 showSeparator={showSeparator}
                 separatorIndex={separatorIndex}
                 peopleBetweenCount={peopleBetweenCount}
                 isLoadingMore={isLoadingMore}
               />
               {isLoadingMore && data.length === 0 && (
-                <View style={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  right: 0, 
-                  bottom: 0, 
-                  backgroundColor: 'black',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'black',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
                   <ActivityIndicator size="large" color="#EDE053" />
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: 16,
-                    fontFamily: 'magistral-medium',
-                    marginTop: 16
-                  }}>
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: 16,
+                      fontFamily: 'magistral-medium',
+                      marginTop: 16,
+                    }}
+                  >
                     Loading leaderboard...
                   </Text>
                 </View>
