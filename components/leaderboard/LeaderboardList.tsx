@@ -36,9 +36,9 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
     {
       data,
       userId,
-      showTopSeparator = false,
+      showTopSeparator = true,
       topSeparatorIndex = -1,
-      showBottomSeparator = false,
+      showBottomSeparator = true,
       peopleBelowCount = 0,
       peopleAboveCount = 0,
     },
@@ -163,7 +163,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         onScrollToIndexFailed={() => {
           setTimeout(scrollToUser, 100);
         }}
-        ListFooterComponent={() =>
+        ListFooterComponent={() => (
           showBottomSeparator ? (
             <View
               style={{
@@ -199,8 +199,27 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                 }}
               />
             </View>
-          ) : null
-        }
+          ) : (
+            <View
+              style={{
+                paddingVertical: 24,
+                alignItems: 'center',
+                marginHorizontal: 20,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontSize: 13,
+                  fontFamily: 'magistral',
+                  textAlign: 'center',
+                }}
+              >
+                You're at the end of the leaderboard
+              </Text>
+            </View>
+          )
+        )}
       />
     );
   },
