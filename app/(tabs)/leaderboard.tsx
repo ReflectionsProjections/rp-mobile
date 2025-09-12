@@ -187,6 +187,9 @@ const LeaderboardScreen = () => {
                       </Text>
                     </Text>
                   </View>
+                  <View>
+
+                  </View>
                   <Text
                     style={{
                       color: '#fff',
@@ -196,14 +199,16 @@ const LeaderboardScreen = () => {
                       textShadowOffset: { width: 0, height: 2 },
                       textShadowRadius: 6,
                       fontFamily: 'magistral',
-                      alignItems: 'center',
+                      alignItems: 'baseline',
                     }}
                   >
-                    <Text style={{ color: themeColor, fontSize: 24 }}>
+                    <Text style={{ color: themeColor, fontSize: 28 }}>
                       {activeTab === 0 ? dailyPoints : globalPoints}
                     </Text>{' '}
                     LAP POINTS
                   </Text>
+                  
+                 {profile?.roles.includes('USER') && profile?.roles.length === 1 ? (
                   <Reanimated.View
                     style={[
                       { flexDirection: 'row', alignItems: 'center', marginTop: 6, opacity: 0.9 },
@@ -215,16 +220,11 @@ const LeaderboardScreen = () => {
                       color="#fff"
                       style={{ marginRight: 4 }}
                     />
-                    {profile?.roles?.includes('STAFF') ? (
-                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
-                        ''
-                      </Text>
-                    ) : (
-                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
-                        Tap to jump
-                      </Text>
-                    )}
+                    <Text style={{ color: '#fff', fontSize: 13, fontFamily: 'magistral-medium' }}>
+                      Tap to jump
+                    </Text>
                   </Reanimated.View>
+                  ) : null}
                 </Pressable>
               </FadeInWrapper>
             </View>
