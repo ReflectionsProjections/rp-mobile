@@ -17,7 +17,7 @@ import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
-
+  
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
   { label: 'WED', dayNumber: 3, barColor: '#831C1C' },

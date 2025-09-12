@@ -1,68 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, Dimensions, ActivityIndicator, SafeAreaView, StyleSheet, ScrollView } from 'react-native';
-import { api } from '@/api/api';
-import { DietaryRestrictionStats, path } from '@/api/types';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useThemeColor } from '@/lib/theme';
-
-const { width, height } = Dimensions.get('window');
+import { useAllStats } from '@/api/tanstack/stats';
+import { Header } from '@/components/home/Header';
 
 export default function StatsScreen() {
-  const [checkInCount, setCheckInCount] = useState<number>(0);
-  const [priorityAttendeeCount, setPriorityAttendeeCount] = useState<number>(0);
-  const [dietaryStats, setDietaryStats] = useState<DietaryRestrictionStats | null>(null);
-  const [attendanceCounts, setAttendanceCounts] = useState<number[]>([]);
-  const [registrationCount, setRegistrationCount] = useState<number>(0);
-  const [tierCounts, setTierCounts] = useState<{ TIER1: number; TIER2: number; TIER3: number; TIER4: number } | null>(null);
-  const [tagCounts, setTagCounts] = useState<Record<string, number> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   const themeColor = useThemeColor();
+  
+  const {
+    checkIn,
+    priorityAttendee,
+    dietary,
+    attendance,
+    registrations,
+    tierCounts,
+    tagCounts,
+    isLoading,
+    error
+  } = useAllStats();
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch all stats in parallel
-        const [
-          checkInResponse,
-          priorityResponse,
-          dietaryResponse,
-          attendanceResponse,
-          registrationResponse,
-          tierCountsResponse,
-          tagCountsResponse
-        ] = await Promise.all([
-          api.get('/stats/check-in'),
-          api.get('/stats/priority-attendee'),
-          api.get('/stats/dietary-restrictions'),
-          api.get(path('/stats/attendance/:n', { n: '7' })), // Get last 7 days of attendance
-          api.get('/stats/registrations'),
-          api.get('/stats/tier-counts'),
-          api.get('/stats/tag-counts')
-        ]);
-
-        setCheckInCount(checkInResponse.data.count);
-        setPriorityAttendeeCount(priorityResponse.data.count);
-        setDietaryStats(dietaryResponse.data);
-        setAttendanceCounts(attendanceResponse.data.attendanceCounts);
-        setRegistrationCount(registrationResponse.data.count);
-        setTierCounts(tierCountsResponse.data);
-        setTagCounts(tagCountsResponse.data);
-      } catch (err) {
-        setError('Failed to fetch stats');
-        console.error('Failed to fetch stats:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-100">
         <ActivityIndicator size="large" color="#DF4F44" />
@@ -74,7 +33,9 @@ export default function StatsScreen() {
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-100">
-        <Text className="text-red-500 text-lg" style={{ fontFamily: 'ProRacing' }}>{error}</Text>
+        <Text className="text-red-500 text-lg" style={{ fontFamily: 'ProRacing' }}>
+          {error instanceof Error ? error.message : 'Failed to load stats'}
+        </Text>
       </View>
     );
   }
@@ -87,11 +48,9 @@ export default function StatsScreen() {
         height={screenHeight}
         preserveAspectRatio="none"
       />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-6 py-8">
-        <Text className="text-3xl font-bold text-white mb-8 text-center" style={{ fontFamily: 'ProRacing' }}>
-          Event Statistics
-        </Text>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
+        <View style={{ top: -12 }}>
+        <Header title={'STATISTICS'} bigText={true} />
 
         {/* Check-in Stats */}
         <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
@@ -99,7 +58,7 @@ export default function StatsScreen() {
             Total Check-ins
           </Text>
           <Text className="text-4xl font-bold" style={{ fontFamily: 'ProRacing', color: themeColor }}>
-            {checkInCount}
+            {checkIn.data || 0}
           </Text>
         </View>
 
@@ -109,7 +68,7 @@ export default function StatsScreen() {
             Priority Attendees
           </Text>
           <Text className="text-4xl font-bold" style={{ fontFamily: 'ProRacing', color: themeColor }}>
-            {priorityAttendeeCount}
+            {priorityAttendee.data || 0}
           </Text>
         </View>
 
@@ -119,12 +78,12 @@ export default function StatsScreen() {
             Total Registrations
           </Text>
           <Text className="text-4xl font-bold" style={{ fontFamily: 'ProRacing', color: themeColor }}>
-            {registrationCount}
+            {registrations.data || 0}
           </Text>
         </View>
 
         {/* Dietary Restrictions */}
-        {dietaryStats && (
+        {dietary.data && (
           <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
             <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing' }}>
               Dietary Restrictions
@@ -132,32 +91,32 @@ export default function StatsScreen() {
             <View className="space-y-2">
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>No restrictions:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietaryStats.none}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietary.data.none}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Dietary restrictions:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietaryStats.dietaryRestrictions}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietary.data.dietaryRestrictions}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Allergies only:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietaryStats.allergies}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietary.data.allergies}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Both:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietaryStats.both}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{dietary.data.both}</Text>
               </View>
             </View>
           </View>
         )}
 
         {/* Recent Attendance */}
-        {attendanceCounts.length > 0 && (
+        {attendance.data && attendance.data.length > 0 && (
           <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
             <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing-Regular' }}>
               Attendance (Last 7 Days)
             </Text>
             <View className="space-y-2">
-              {attendanceCounts.map((count, index) => (
+              {attendance.data.map((count, index) => (
                 <View key={index} className="flex-row justify-between">
                   <Text className="text-gray-600" style={{ fontFamily: 'ProRacing-Regular' }}>Day {index + 1}:</Text>
                   <Text className="font-semibold" style={{ fontFamily: 'ProRacing-Regular', color: themeColor }}>{count}</Text>
@@ -168,7 +127,7 @@ export default function StatsScreen() {
         )}
 
         {/* Tier Distribution */}
-        {tierCounts && (
+        {tierCounts.data && (
           <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
             <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing' }}>
               Tier Distribution
@@ -176,32 +135,32 @@ export default function StatsScreen() {
             <View className="space-y-2">
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 1:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER1}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.data.TIER1}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 2:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER2}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.data.TIER2}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 3:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER3}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.data.TIER3}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>Tier 4:</Text>
-                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.TIER4}</Text>
+                <Text className="font-semibold" style={{ fontFamily: 'ProRacing', color: themeColor }}>{tierCounts.data.TIER4}</Text>
               </View>
             </View>
           </View>
         )}
 
         {/* Popular Tags */}
-        {tagCounts && Object.keys(tagCounts).length > 0 && (
+        {tagCounts.data && Object.keys(tagCounts.data).length > 0 && (
           <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
             <Text className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'ProRacing' }}>
               Popular Tags
             </Text>
             <View className="space-y-2">
-              {Object.entries(tagCounts)
+              {Object.entries(tagCounts.data)
                 .sort(([,a], [,b]) => b - a) // Sort by count descending
                 .slice(0, 8) // Show top 8 tags
                 .map(([tag, count]) => (
