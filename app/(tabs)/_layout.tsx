@@ -12,6 +12,7 @@ import CurvedBottomBar from '../../components/misc/curvedBottomBar';
 import HomeScreen from './home';
 import EventsScreen from './events';
 import PointsShopScreen from './points_shop';
+import StatsScreen from './stats';
 import ScannerStaffScreen from './scanner/scanner_staff';
 import ScannerUserScreen from './scanner/scanner_user';
 import LeaderboardScreen from './leaderboard';
@@ -69,6 +70,7 @@ function ScannerRouter() {
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
   const themeColor = useThemeColor();
+  const profile = useAppSelector((state) => state.user.profile);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -77,7 +79,12 @@ export default function TabLayout() {
       case 'events':
         return <EventsScreen />;
       case 'points':
-        return <PointsShopScreen />;
+        // Show stats for staff, points shop for everyone else
+        if (profile && profile.roles && profile.roles.includes('STAFF')) {
+          return <StatsScreen />;
+        } else {
+          return <PointsShopScreen />;
+        }
       case 'leaderboard':
         return <LeaderboardScreen />;
       case 'scanner':

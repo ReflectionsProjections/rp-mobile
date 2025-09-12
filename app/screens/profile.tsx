@@ -19,15 +19,16 @@ import StaffRolesList from '@/components/profile/StaffRolesList';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-import Background from '@/assets/images/profile_background.svg';
+import Background from '@/assets/background/dottedBackground2.svg';
 import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
 import { RootState, useAppDispatch, persistor } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
+import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
@@ -37,6 +38,7 @@ import { clearFavorites, clearEvents } from '@/lib/slices/favoritesSlice';
 import { clearShifts } from '@/lib/slices/shiftsSlice';
 import { clearStaff } from '@/lib/slices/staffSlice';
 import { clearLeaderboard } from '@/lib/slices/leaderboardSlice';
+import { toggleHaptics } from '@/lib/slices/settingsSlice';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -84,6 +86,7 @@ const ProfileScreen = () => {
   const logout = useLogout();
   const dispatch = useAppDispatch();
   const staffMe = useAppSelector((s: RootState) => s.staff.me);
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -523,10 +526,89 @@ const ProfileScreen = () => {
                         textShadowRadius: 1,
                       }}
                     >
-                      Receive updates about events
+                      Stay up to date at each turn!
                     </Text>
                   </View>
                   <NotificationToggle />
+                </View>
+              </Animated.View>
+
+              {/* Haptics toggle */}
+              <Animated.View
+                style={{
+                  marginTop: 10,
+                  opacity: notificationAnim,
+                  transform: [
+                    {
+                      translateX: notificationAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-10, 0],
+                      }),
+                    },
+                  ],
+                }}
+                pointerEvents="box-none"
+              >
+                <View
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    paddingVertical: 20,
+                    paddingHorizontal: 24,
+                    borderRadius: 12,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}
+                  pointerEvents="box-none"
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 18,
+                        fontWeight: '700',
+                        fontFamily: 'ProRacing',
+                        marginBottom: 6,
+                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                    >
+                      HAPTICS
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 1,
+                      }}
+                    >
+                      Feel the roar of the engines!
+                    </Text>
+                  </View>
+                  <AnimatedSwitch
+                    value={hapticsEnabled}
+                    onValueChange={() => dispatch(toggleHaptics())}
+                    width={60}
+                    height={36}
+                    onColor="#EDE053" 
+                    offColor="rgba(255, 255, 255, 0.4)"
+                    thumbColor="#fff"
+                    thumbOnIcon={<MaterialCommunityIcons name="vibrate" size={20} color="black" />}
+                    thumbOffIcon={<MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />}
+                    iconAnimationType="rotate"
+                    style={{}}
+                  />
                 </View>
               </Animated.View>
 

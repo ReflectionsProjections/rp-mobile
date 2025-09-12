@@ -15,14 +15,14 @@ import { useThemeColor } from '@/lib/theme';
 import {
   toggleAcknowledgeShift,
   toggleLocalAcknowledge,
-  fetchMyShifts,
 } from '@/lib/slices/shiftsSlice';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
-import BackgroundSvg from '@/assets/background/background_grate.svg';
+import BackgroundSvg from '@/assets/background/home_background.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
+import { triggerIfEnabled } from '@/lib/haptics';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const { height } = Dimensions.get('window'); // For responsive design
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   const events = useAppSelector((state: RootState) => state.favorites.events) || [];
   const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
   const user = useAppSelector((state: RootState) => state.user.profile);
+  const myShifts = useAppSelector((state: RootState) => state.shifts.shifts);
   const themeColor = useThemeColor();
   const dispatch = useAppDispatch();
 
@@ -85,8 +86,6 @@ export default function HomeScreen() {
       return role === 'STAFF' || role === 'ADMIN';
     });
   }, [user]);
-
-  const myShifts = useAppSelector((state: RootState) => state.shifts.shifts);
 
   // Process shift data for staff users
   const shiftCards = useMemo(() => {
@@ -181,6 +180,8 @@ export default function HomeScreen() {
 
     try {
       await toggleFavoriteMutation.mutateAsync({ eventId: id, userId: user.userId });
+      const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
+      await triggerIfEnabled(hapticsEnabled, 'light');
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -323,8 +324,8 @@ export default function HomeScreen() {
       <View className="flex-1 justify-center items-center bg-black">
         <BackgroundSvg
           style={StyleSheet.absoluteFillObject}
-          width={screenWidth}
-          height={screenHeight}
+          width={screenWidth * 2}
+          height={screenHeight * 2}
           preserveAspectRatio="none"
         />
         {error && (
@@ -346,11 +347,13 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <SafeAreaView style={{
-        flex: 1,
-        backgroundColor: 'black',
-        paddingTop: Platform.OS === 'android' ? 15 : 0,
-      }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS === 'android' ? 15 : 0,
+          top: Platform.OS === 'ios' ? -12 : 0,
+        }}
+      >
         <Header title={'R|P 2025'} bigText={true} />
         <View style={{ marginTop: height < 700 ? 8 : 20 }}>
           {/* NEXT LAP */}

@@ -453,6 +453,26 @@ export interface APIRoutes {
       response: { count: number };
     };
   };
+  '/stats/registrations': {
+    GET: {
+      response: { count: number };
+    };
+  };
+  '/stats/event/:eventId/attendance': {
+    GET: {
+      response: { attendanceCount: number };
+    };
+  };
+  '/stats/tier-counts': {
+    GET: {
+      response: { TIER1: number; TIER2: number; TIER3: number; TIER4: number };
+    };
+  };
+  '/stats/tag-counts': {
+    GET: {
+      response: Record<string, number>;
+    };
+  };
   '/notifications/register': {
     POST: {
       request: { deviceId: string }; // FCM token

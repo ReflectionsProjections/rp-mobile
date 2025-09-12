@@ -25,17 +25,17 @@ type GlobalState = {
 
 export const fetchDailyLeaderboard = createAsyncThunk(
   'leaderboard/fetchDaily',
-  async ({ day, n }: { day: string; n?: number }) => {
+  async ({ day, n, append = false }: { day: string; n?: number; append?: boolean }) => {
     const res = await api.get('/leaderboard/daily', { params: { day, n } });
-    return { day, leaderboard: res.data.leaderboard as LeaderboardEntry[] };
+    return { day, leaderboard: res.data.leaderboard as LeaderboardEntry[], append };
   },
 );
 
 export const fetchGlobalLeaderboard = createAsyncThunk(
   'leaderboard/fetchGlobal',
-  async ({ n }: { n?: number } = {}) => {
+  async ({ n, append = false }: { n?: number; append?: boolean } = {}) => {
     const res = await api.get('/leaderboard/global', { params: { n } });
-    return { leaderboard: res.data.leaderboard as LeaderboardEntry[] };
+    return { leaderboard: res.data.leaderboard as LeaderboardEntry[], append };
   },
 );
 
@@ -66,10 +66,22 @@ const leaderboardSlice = createSlice({
       })
       .addCase(
         fetchDailyLeaderboard.fulfilled,
-        (state, action: PayloadAction<{ day: string; leaderboard: LeaderboardEntry[] }>) => {
+        (
+          state,
+          action: PayloadAction<{ day: string; leaderboard: LeaderboardEntry[]; append: boolean }>,
+        ) => {
           state.daily.loading = false;
           state.daily.day = action.payload.day;
-          state.daily.leaderboard = action.payload.leaderboard;
+          if (action.payload.append) {
+            // Append new data, avoiding duplicates
+            const existingIds = new Set(state.daily.leaderboard.map((item) => item.userId));
+            const newItems = action.payload.leaderboard.filter(
+              (item) => !existingIds.has(item.userId),
+            );
+            state.daily.leaderboard = [...state.daily.leaderboard, ...newItems];
+          } else {
+            state.daily.leaderboard = action.payload.leaderboard;
+          }
         },
       )
       .addCase(fetchDailyLeaderboard.rejected, (state, action) => {
@@ -82,9 +94,18 @@ const leaderboardSlice = createSlice({
       })
       .addCase(
         fetchGlobalLeaderboard.fulfilled,
-        (state, action: PayloadAction<{ leaderboard: LeaderboardEntry[] }>) => {
+        (state, action: PayloadAction<{ leaderboard: LeaderboardEntry[]; append: boolean }>) => {
           state.global.loading = false;
-          state.global.leaderboard = action.payload.leaderboard;
+          if (action.payload.append) {
+            // Append new data, avoiding duplicates
+            const existingIds = new Set(state.global.leaderboard.map((item) => item.userId));
+            const newItems = action.payload.leaderboard.filter(
+              (item) => !existingIds.has(item.userId),
+            );
+            state.global.leaderboard = [...state.global.leaderboard, ...newItems];
+          } else {
+            state.global.leaderboard = action.payload.leaderboard;
+          }
         },
       )
       .addCase(fetchGlobalLeaderboard.rejected, (state, action) => {
