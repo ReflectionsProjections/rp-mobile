@@ -1,5 +1,5 @@
 import { useAppSelector } from './store';
 
 export const useThemeColor = () => {
-  return useAppSelector((state) => state.attendee.themeColor || '#3B82F6');
+  return useAppSelector((state) => state.attendee.themeColor || '#E53F33');
 };
