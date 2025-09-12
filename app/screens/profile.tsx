@@ -14,6 +14,8 @@ import ImageCarousel from '@/components/profile/ImageCarousel';
 import UserInfo from '@/components/profile/UserInfo';
 import ColorPicker from '@/components/profile/ColorPicker';
 import TagSelector from '@/components/profile/TagSelector';
+import StaffTeamBadge from '@/components/profile/StaffTeamBadge';
+import StaffRolesList from '@/components/profile/StaffRolesList';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
@@ -22,13 +24,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Background from '@/assets/images/profile_background.svg';
 import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
-import { RootState, useAppDispatch } from '@/lib/store';
+import { RootState, useAppDispatch, persistor } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
+import { clearAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import { clearUserProfile, logout as logoutUserSlice } from '@/lib/slices/userSlice';
+import { clearFavorites, clearEvents } from '@/lib/slices/favoritesSlice';
+import { clearShifts } from '@/lib/slices/shiftsSlice';
+import { clearStaff } from '@/lib/slices/staffSlice';
+import { clearLeaderboard } from '@/lib/slices/leaderboardSlice';
 
 const { width, height } = Dimensions.get('window');
 const Separator = () => <View className="h-0.5 bg-white mb-2" />;
@@ -75,6 +83,7 @@ const ProfileScreen = () => {
   const themeColor = useAppSelector((state: RootState) => state.attendee.themeColor);
   const logout = useLogout();
   const dispatch = useAppDispatch();
+  const staffMe = useAppSelector((s: RootState) => s.staff.me);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -93,10 +102,24 @@ const ProfileScreen = () => {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
+            // Server-side logout (if any)
             logout();
-
+            // Clear secure tokens
             await clearAuthTokens();
-
+            // Clear Redux slices
+            dispatch(logoutUserSlice());
+            dispatch(clearUserProfile());
+            dispatch(clearAttendeeProfile());
+            dispatch(clearFavorites());
+            dispatch(clearEvents());
+            dispatch(clearShifts());
+            dispatch(clearStaff());
+            dispatch(clearLeaderboard());
+            // Purge persisted storage to avoid dangling cached roles
+            try {
+              await persistor.purge();
+            } catch {}
+            // Navigate to sign-in
             router.replace('/(auth)/sign-in');
           },
         },
@@ -352,6 +375,11 @@ const ProfileScreen = () => {
     );
   }
 
+  const isStaffOrAdmin = (user?.roles || []).some((r: string) => {
+    const R = (r || '').toUpperCase();
+    return R === 'STAFF' || R === 'ADMIN';
+  });
+
   return (
     <View className="flex-1">
       <Background
@@ -401,10 +429,14 @@ const ProfileScreen = () => {
       </SafeAreaView>
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 300 }} style={{ paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />
-            <ProfileHeader points={attendee!.points} />
+            {isStaffOrAdmin ? (
+              <StaffTeamBadge team={staffMe?.team || 'FULL TEAM'} />
+            ) : (
+              <ProfileHeader points={attendee!.points} />
+            )}
             <ImageCarousel />
             <Separator />
             <UserInfo
@@ -425,7 +457,13 @@ const ProfileScreen = () => {
               pointerEvents="box-none"
             >
               <ColorPicker />
-              <TagSelector />
+              {isStaffOrAdmin ? (
+                <StaffRolesList roles={user?.roles || []} />
+              ) : (
+                <>
+                  <TagSelector />
+                </>
+              )}
               <Animated.View
                 style={{
                   marginTop: 10,

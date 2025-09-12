@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
 import { fetchEvents, fetchUserFavorites } from '@/lib/slices/favoritesSlice';
 import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
+import { fetchStaff } from '@/lib/slices/staffSlice';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 import * as SecureStore from 'expo-secure-store';
@@ -69,7 +70,7 @@ export function useDataInitialization() {
     }
   }, [isAuthenticated, user?.userId, hasFavorites, dispatch]);
 
-  // Fetch shifts for staff and admin users only
+  // Fetch shifts and profile for staff and admin users only
   useEffect(() => {
     if (isAuthenticated === true && user?.roles) {
       const hasStaffOrAdminRole = user.roles.some((role: string) => {
@@ -79,6 +80,9 @@ export function useDataInitialization() {
 
       if (hasStaffOrAdminRole && !hasShifts) {
         dispatch(fetchMyShifts());
+      }
+      if (hasStaffOrAdminRole && user?.email) {
+        dispatch(fetchStaff(user.email));
       }
     }
   }, [isAuthenticated, user?.roles, hasShifts, dispatch]);

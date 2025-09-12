@@ -11,6 +11,13 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
+import { fetchEvents } from '@/lib/slices/favoritesSlice';
+import { fetchUserProfile } from '@/lib/slices/userSlice';
+import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
+import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
+import { fetchStaff } from '@/lib/slices/staffSlice';
 import LOGO from '../../assets/images/logo.svg';
 import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
@@ -26,6 +33,8 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   const spinValue = useRef(new Animated.Value(0)).current;
   const [isSpinning, setIsSpinning] = useState(false);
   const themeColor = useThemeColor();
+  const dispatch = useAppDispatch();
+  const profile = useAppSelector((state) => state.user.profile);
   const handleLogoPress = async () => {
     if (isSpinning) return; // Prevent multiple spins
 
@@ -42,11 +51,27 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
           window.location.reload();
           return;
         }
-
-        if (DevSettings?.reload) {
-          DevSettings.reload();
-          return;
+        // Re-initialize app data via Redux fetches so routes refetch
+        dispatch(fetchEvents());
+        dispatch(fetchUserProfile());
+        dispatch(fetchAttendeeProfile());
+        const roles: string[] = Array.isArray(profile?.roles) ? (profile?.roles as string[]) : [];
+        const hasStaffOrAdmin = roles.some((r) => {
+          const R = (r || '').toUpperCase();
+          return R === 'STAFF' || R === 'ADMIN';
+        });
+        if (hasStaffOrAdmin) {
+          dispatch(fetchMyShifts());
+          if (profile?.email) {
+            dispatch(fetchStaff(profile.email));
+          }
         }
+        const today = new Date();
+        const dayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
+          today.getDate(),
+        ).padStart(2, '0')}`;
+        dispatch(fetchDailyLeaderboard({ day: dayStr }));
+        dispatch(fetchGlobalLeaderboard({}));
       } catch (e) {
         console.warn('Failed to refresh app:', e);
       } finally {

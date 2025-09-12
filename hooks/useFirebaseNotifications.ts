@@ -51,8 +51,6 @@ export const useFirebaseNotifications = () => {
   const registerForNotifications = async (token: string) => {
     try {
       console.log('Registering token with server:', token);
-      // This is now handled automatically by the Firebase service
-      // when permission is granted in system settings
     } catch (err) {
       console.error('Error registering token with server:', err);
     }
@@ -68,11 +66,27 @@ export const useFirebaseNotifications = () => {
     }
   };
 
+  const forceReregisterToken = async () => {
+    try {
+      const firebaseService = FirebaseService.getInstance();
+      const result = await firebaseService.forceReregisterToken();
+      if (result.success && result.token) {
+        setFcmToken(result.token);
+        console.log('Force re-registration successful');
+      }
+      return result;
+    } catch (err) {
+      console.error('Error force re-registering token:', err);
+      return { success: false, error: err };
+    }
+  };
+
   return {
     fcmToken,
     isLoading,
     error,
     registerForNotifications,
     unregisterFromNotifications,
+    forceReregisterToken,
   };
 };
