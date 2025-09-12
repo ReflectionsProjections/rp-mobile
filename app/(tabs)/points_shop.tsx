@@ -11,6 +11,8 @@ import { useAppSelector, RootState } from '@/lib/store';
 import { TierMappedType, TierType } from '@/api/types';
 import { tierMapping } from '@/constants/tierMapping';
 
+import UnlockedMarkers from '@/components/pointshop/UnlockedMarkers';
+
 const { width, height } = Dimensions.get('window');
 const SPEEDO_WIDTH = width * 0.7;
 
@@ -141,21 +143,7 @@ export default function PointsScreen() {
       <View className="absolute inset-x-0 top-16 items-center z-10">
         <PointsGauge tier={tierMapping[attendee?.currentTier!]} width={SPEEDO_WIDTH} />
       </View>
-      <QuestionMarker
-        tier="TIER3"
-        className="z-10"
-        style={{ top: height * 0.32, left: width * 0.3 }}
-      />
-      <QuestionMarker
-        tier="TIER2"
-        className="z-10"
-        style={{ top: height * 0.63, left: width * 0.04 }}
-      />
-      <QuestionMarker
-        tier="TIER1"
-        className="z-10"
-        style={{ top: height * 0.76, left: width * 0.52 }}
-      />
+      <UnlockedMarkers mappedTier={tierMapping[attendee?.currentTier!]} width={width} height={height} />
       <Text
         className="absolute z-10 text-[16px] font-bold text-white font-RacingSansOne"
         style={{
