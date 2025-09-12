@@ -16,5 +16,3 @@ export function useStaff(email: string) {
     staleTime: 60 * 1000,
   });
 }
-
-

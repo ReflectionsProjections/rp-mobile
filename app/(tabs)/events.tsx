@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, SafeAreaView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Modal, Pressable } from 'react-native';
 import BadgeSvg from '../../assets/images/badge.svg';
 import BadgeBackSvg from '../../assets/images/badgeback.svg';
@@ -66,7 +66,7 @@ const EventsScreen = () => {
 
   const toggleFlip = () => {
     const newFlippedState = !isFlipped;
-    
+
     if (newFlippedState) {
       // Flipping to back - hide food menu button immediately
       setIsFlipped(newFlippedState);
@@ -79,7 +79,7 @@ const EventsScreen = () => {
       // Flipping to front - update state first, then fade in after flip
       setIsFlipped(newFlippedState);
     }
-    
+
     Animated.spring(flip, {
       toValue: newFlippedState ? 1 : 0,
       useNativeDriver: true,
@@ -227,7 +227,11 @@ const EventsScreen = () => {
         height={SCREEN_HEIGHT}
         preserveAspectRatio="none"
       />
-      <SafeAreaView style={{ top: -12 }}>
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: 'black',
+        paddingTop: Platform.OS === 'android' ? 15 : 0,
+      }}>
         <Header title={'EVENTS'} bigText={true} />
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
@@ -374,47 +378,47 @@ const EventsScreen = () => {
                   borderRadius: 20,
                 }}
               />
-            
-            {/* Food Menu Button - Fixed overlay outside flipable area */}
-            {selectedEvent && selectedEvent.eventType === 'MEALS' && (
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  top: '80%',
-                  opacity: foodMenuOpacity,
-                  zIndex: 10000,
-                }}
-              >
-                <TouchableOpacity
-                  onPress={handleFoodMenuPress}
+
+              {/* Food Menu Button - Fixed overlay outside flipable area */}
+              {selectedEvent && selectedEvent.eventType === 'MEALS' && (
+                <Animated.View
                   style={{
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: 'rgba(182, 0, 0, 0.3)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 4,
-                    elevation: 5,
+                    position: 'absolute',
+                    top: '80%',
+                    opacity: foodMenuOpacity,
+                    zIndex: 10000,
                   }}
                 >
-                  <Text
+                  <TouchableOpacity
+                    onPress={handleFoodMenuPress}
                     style={{
-                      color: '#B60000',
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: '600',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: 'rgba(182, 0, 0, 0.3)',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 4,
+                      elevation: 5,
                     }}
                   >
-                    View Food Menu
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
-            )}
+                    <Text
+                      style={{
+                        color: '#B60000',
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: '600',
+                      }}
+                    >
+                      View Food Menu
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
             </Animated.View>
           </Pressable>
         </Modal>
@@ -426,7 +430,6 @@ const EventsScreen = () => {
           eventDescription={selectedEvent?.description || ''}
           eventName={selectedEvent?.name || ''}
         />
-
       </SafeAreaView>
     </View>
   );

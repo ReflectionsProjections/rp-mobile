@@ -1,6 +1,6 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView, Platform } from 'react-native';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
@@ -346,7 +346,11 @@ export default function HomeScreen() {
         preserveAspectRatio="none"
       />
 
-      <SafeAreaView style={{ top: -12 }}>
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: 'black',
+        paddingTop: Platform.OS === 'android' ? 15 : 0,
+      }}>
         <Header title={'R|P 2025'} bigText={true} />
         <View style={{ marginTop: height < 700 ? 8 : 20 }}>
           {/* NEXT LAP */}

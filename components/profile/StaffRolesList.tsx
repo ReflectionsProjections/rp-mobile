@@ -6,7 +6,7 @@ type Props = { roles: string[] };
 export default function StaffRolesList({ roles }: Props) {
   if (!roles || roles.length === 0) return null;
   const themeColor = useAppSelector((s) => s.attendee.themeColor);
-    return (
+  return (
     <View
       style={{
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -72,5 +72,3 @@ export default function StaffRolesList({ roles }: Props) {
     </View>
   );
 }
-
-
