@@ -2,11 +2,9 @@ import React, { useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
-  Alert,
   Animated,
   StyleSheet,
   Platform,
-  DevSettings,
   Dimensions,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';

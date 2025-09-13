@@ -128,6 +128,7 @@ const attendeeSlice = createSlice({
       state.attendee = null;
       state.lastFetched = null;
       state.error = null;
+      state.themeColor = '#E53F33'; // Reset to default theme color for guests
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -135,6 +136,9 @@ const attendeeSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    resetThemeColor: (state) => {
+      state.themeColor = '#E53F33'; // Reset to default red color
     },
   },
   extraReducers: (builder) => {
@@ -224,6 +228,7 @@ export const {
   clearError,
   setThemeColor,
   setOptimisticThemeColor,
+  resetThemeColor,
 } = attendeeSlice.actions;
 
 export default attendeeSlice.reducer;

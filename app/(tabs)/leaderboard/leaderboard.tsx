@@ -28,7 +28,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/lib/theme';
 
-const LeaderboardScreen = () => {
+const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Daily, 1 for Global
   const themeColor = useThemeColor();
   const attendee = useAppSelector((state) => state.attendee.attendee);
@@ -62,9 +62,8 @@ const LeaderboardScreen = () => {
 
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
-  const outerScrollRef = useRef<any>(null);
+  const outerScrollRef = scrollRef || useRef<any>(null);
   const pulse = useSharedValue(1);
-  // const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
 
   React.useEffect(() => {
     pulse.value = withRepeat(
