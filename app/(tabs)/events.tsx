@@ -215,8 +215,8 @@ const EventsScreen = () => {
     if (!user?.userId) {
       Toast.show({
         type: 'error',
-        text1: 'Registration Required',
-        text2: 'Make sure to register for R|P to flag events!',
+        text1: 'Sign In Required',
+        text2: 'Sign in to flag events and access all features!',
         position: 'top',
         visibilityTime: 3000,
       });
