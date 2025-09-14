@@ -33,7 +33,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/rp_logo_2025_no_bg.png',
+        foregroundImage: './assets/images/rp-logo.png',
         backgroundColor: '#000000',
       },
       package: 'com.reflectionsprojections',
@@ -54,14 +54,14 @@ export default {
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/rp_logo_2025_no_bg.png',
+      favicon: './assets/images/rp-logo.png',
     },
     plugins: [
       'expo-router',
       [
         'expo-splash-screen',
         {
-          image: './assets/images/rp_logo_2025_no_bg.png',
+          image: './assets/images/rp-logo.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#000000',
