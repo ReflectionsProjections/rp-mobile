@@ -191,57 +191,6 @@ export default function SignInScreen() {
                   <SlantedButton onPress={handleGuestLogin}>Continue as Guest</SlantedButton>
                 </SlantedButtonGroup>
               </View>
-
-              <View className="flex-row items-center my-6 w-full">
-                <View className="flex-1 h-[2px] bg-gray-300" />
-                <ThemedText
-                  variant="h3"
-                  className="mx-4 text-black-600"
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    fontFamily: 'Magistral',
-                  }}
-                >
-                  OR
-                </ThemedText>
-                <View className="flex-1 h-[2px] bg-gray-300" />
-              </View>
-
-              <View className="flex-row items-baseline justify-center">
-                <ThemedText
-                  variant="body"
-                  className="text-black-600"
-                  style={{
-                    fontSize: 18,
-                    fontFamily: 'Magistral',
-                  }}
-                >
-                  Register for R|P
-                </ThemedText>
-                <Pressable
-                  onPress={() => {
-                    WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
-                  }}
-                  style={{
-                    paddingHorizontal: 4,
-                    paddingVertical: 2,
-                  }}
-                >
-                  <ThemedText
-                    variant="body-bold"
-                    className="underline text-black"
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '700',
-                      fontFamily: 'Magistral',
-                      color: '#CA2523',
-                    }}
-                  >
-                    here!
-                  </ThemedText>
-                </Pressable>
-              </View>
             </Animated.View>
           </View>
         </View>

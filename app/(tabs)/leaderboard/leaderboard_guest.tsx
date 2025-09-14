@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import Background from '@/assets/background/dottedBackground2.svg';
 
 const { width, height } = Dimensions.get('window');
@@ -12,7 +11,6 @@ const LeaderboardGuestScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Start animations immediately
@@ -38,31 +36,8 @@ const LeaderboardGuestScreen = () => {
 
     animationSequence.start();
 
-    // Pulse animation for register button
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    setTimeout(() => {
-      pulseAnimation.start();
-    }, 2000);
   }, []);
 
-  const handleRegisterPress = () => {
-    router.push('/(auth)/sign-in');
-    WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
-  };
 
   return (
     <View className="flex-1">
@@ -133,95 +108,80 @@ const LeaderboardGuestScreen = () => {
               textShadowRadius: 2,
             }}
           >
-            Register for R|P to secure your spot on the podium!
+            Sign in to view the leaderboard and see your standing!
           </Text>
 
-          {/* Register button */}
-          <Animated.View
-            style={{
-              transform: [{ scale: pulseAnim }],
-            }}
-          >
+
+          {/* Action buttons */}
+          <View className="w-full max-w-[280px] mt-8 space-y-4">
+            {/* Continue as Guest button */}
             <TouchableOpacity
-              onPress={handleRegisterPress}
+              onPress={() => router.back()}
               activeOpacity={0.8}
               style={{
-                backgroundColor: '#CA2523',
-                paddingVertical: 18,
-                paddingHorizontal: 40,
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                paddingVertical: 16,
+                paddingHorizontal: 32,
                 borderRadius: 12,
                 alignItems: 'center',
-                borderWidth: 2,
+                borderWidth: 1,
                 borderColor: 'rgba(255, 255, 255, 0.3)',
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.4,
-                shadowRadius: 12,
-                elevation: 12,
-                minWidth: 220,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
               }}
             >
               <Text
                 style={{
                   color: '#fff',
-                  fontSize: 18,
-                  fontWeight: '700',
-                  fontFamily: 'ProRacing',
-                  textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  fontFamily: 'Inter',
+                  textShadowColor: 'rgba(0, 0, 0, 0.3)',
                   textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 2,
                 }}
               >
-                REGISTER NOW
+                Continue as Guest
               </Text>
             </TouchableOpacity>
-          </Animated.View>
 
-          {/* Guest continue option */}
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-            style={{
-              marginTop: 20,
-              paddingVertical: 12,
-              paddingHorizontal: 24,
-            }}
-          >
-            <Text
+            {/* Return to sign in page button */}
+            <TouchableOpacity
+              onPress={() => router.replace('/(auth)/sign-in')}
+              activeOpacity={0.8}
               style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: 14,
-                fontFamily: 'Inter',
-                textAlign: 'center',
-                textDecorationLine: 'underline',
+                backgroundColor: 'rgba(202, 37, 35, 0.8)',
+                paddingVertical: 16,
+                paddingHorizontal: 32,
+                borderRadius: 12,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
               }}
             >
-              Continue as Guest
-            </Text>
-          </TouchableOpacity>
-
-          {/* Return to sign in page */}
-          <TouchableOpacity
-            onPress={() => router.replace('/(auth)/sign-in')}
-            activeOpacity={0.7}
-            style={{
-              marginTop: 10,
-              paddingVertical: 12,
-              paddingHorizontal: 24,
-            }}
-          >
-            <Text
-              style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: 14,
-                fontFamily: 'Inter',
-                textAlign: 'center',
-                textDecorationLine: 'underline',
-              }}
-            >
-              Return to Sign In Page
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  fontFamily: 'Inter',
+                  textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                }}
+              >
+                Return to Sign In Page
+              </Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </SafeAreaView>
     </View>

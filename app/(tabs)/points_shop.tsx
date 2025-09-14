@@ -155,7 +155,7 @@ export default function PointsScreen() {
         }}
       >
         {!attendee
-          ? 'Make sure to register for R|P to track your points!'
+          ? 'Sign in to track your points!'
           : 'Attend events to earn points and unlock prizes!'}
       </Text>
     </View>
