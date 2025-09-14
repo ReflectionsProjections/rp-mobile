@@ -26,7 +26,6 @@ import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
 import { RootState, useAppDispatch, persistor } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
-import * as WebBrowser from 'expo-web-browser';
 import { NotificationToggle } from '@/components/misc/NotificationToggle';
 import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { useFocusEffect } from '@react-navigation/native';
@@ -93,7 +92,6 @@ const ProfileScreen = () => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const notificationAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
   const handleLogout = () => {
     Alert.alert(
@@ -131,10 +129,6 @@ const ProfileScreen = () => {
     );
   };
 
-  const handleRegisterPress = () => {
-    router.push('/(auth)/sign-in');
-    WebBrowser.openBrowserAsync('https://reflectionsprojections.org/register');
-  };
 
   const handleBackPress = () => {
     router.back();
@@ -173,24 +167,6 @@ const ProfileScreen = () => {
 
     animationSequence.start();
 
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    setTimeout(() => {
-      pulseAnimation.start();
-    }, 2000);
   }, [user, dispatch]);
 
   useFocusEffect(
@@ -284,94 +260,80 @@ const ProfileScreen = () => {
                 textShadowRadius: 2,
               }}
             >
-              Make sure to register for R|P to track your points and unlock exclusive rewards!
+              Sign in to track your points and unlock exclusive rewards!
             </Text>
 
-            <Animated.View
-              style={{
-                transform: [{ scale: pulseAnim }],
-              }}
-            >
+
+            {/* Action buttons */}
+            <View className="w-full max-w-[280px] mt-8 space-y-4">
+              {/* Continue as Guest button */}
               <TouchableOpacity
-                onPress={handleRegisterPress}
+                onPress={() => router.back()}
                 activeOpacity={0.8}
                 style={{
-                  backgroundColor: '#CA2523',
-                  paddingVertical: 18,
-                  paddingHorizontal: 40,
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  paddingVertical: 16,
+                  paddingHorizontal: 32,
                   borderRadius: 12,
                   alignItems: 'center',
-                  borderWidth: 2,
+                  borderWidth: 1,
                   borderColor: 'rgba(255, 255, 255, 0.3)',
                   shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 6 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 12,
-                  elevation: 12,
-                  minWidth: 220,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
                 }}
               >
                 <Text
                   style={{
                     color: '#fff',
-                    fontSize: 18,
-                    fontWeight: '700',
-                    fontFamily: 'ProRacing',
-                    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: 'Inter',
+                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
                     textShadowOffset: { width: 0, height: 1 },
                     textShadowRadius: 2,
                   }}
                 >
-                  REGISTER NOW
+                  Continue as Guest
                 </Text>
               </TouchableOpacity>
-            </Animated.View>
 
-            {/* Guest continue option */}
-            <TouchableOpacity
-              onPress={() => router.back()}
-              activeOpacity={0.7}
-              style={{
-                marginTop: 20,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-              }}
-            >
-              <Text
+              {/* Return to sign in page button */}
+              <TouchableOpacity
+                onPress={() => router.replace('/(auth)/sign-in')}
+                activeOpacity={0.8}
                 style={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  textAlign: 'center',
-                  textDecorationLine: 'underline',
+                  backgroundColor: 'rgba(202, 37, 35, 0.8)',
+                  paddingVertical: 16,
+                  paddingHorizontal: 32,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
                 }}
               >
-                Continue as Guest
-              </Text>
-            </TouchableOpacity>
-
-            {/* Go back to sign in */}
-            <TouchableOpacity
-              onPress={() => router.replace('/(auth)/sign-in')}
-              activeOpacity={0.7}
-              style={{
-                marginTop: 10,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-              }}
-            >
-              <Text
-                style={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  textAlign: 'center',
-                  textDecorationLine: 'underline',
-                }}
-              >
-                Return to Sign In Page
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: 'Inter',
+                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  Return to Sign In Page
+                </Text>
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </SafeAreaView>
       </View>
@@ -398,13 +360,10 @@ const ProfileScreen = () => {
             opacity: backButtonAnim,
             transform: [
               {
-                scale: Animated.multiply(
-                  backButtonAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.8, 1],
-                  }),
-                  pulseAnim,
-                ),
+                scale: backButtonAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
               },
             ],
           }}

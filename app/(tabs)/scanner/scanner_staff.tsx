@@ -219,10 +219,8 @@ export default function ScannerScreen() {
 
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
         const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
-        if (!isGeneralCheckinMode) {
-          setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
-          setShowSuccess(true);
-        }
+        setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
+        setShowSuccess(true);
         await handlePostCheckInFlow(parsedQr.userId);
         return;
       }
@@ -311,12 +309,16 @@ export default function ScannerScreen() {
       setGeneralCheckinModalVisible(true);
     } catch (e: any) {
       console.error('Failed to fetch redemption info:', e);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to load redemption info',
-        text2: e?.message || 'Please try again',
-        position: 'top',
-      });
+      // Don't show error toast for demo account
+      if (userId !== DEMO_ACCOUNT_ID) {
+        Toast.show({
+          type: 'error',
+          text1: 'Unable to load redemption info',
+          text2: e?.message || 'Please try again',
+          position: 'top',
+          topOffset: 50,
+        });
+      }
       setTimeout(resetScan, 2000);
     }
   };
