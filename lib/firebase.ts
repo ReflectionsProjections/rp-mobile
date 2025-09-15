@@ -155,35 +155,32 @@ class FirebaseService {
         authStatus === AuthorizationStatus.AUTHORIZED ||
         authStatus === AuthorizationStatus.PROVISIONAL;
 
-      if (enabled) {
+      // Always try to get FCM token regardless of permission status
+      try {
+        const fcmToken = await getToken(this.messaging);
+        console.log('FCM Token:', fcmToken);
+
+        // Store the token and permission status
+        await this.storeNotificationPreferences({
+          permissionGranted: enabled,
+          fcmToken: fcmToken,
+        });
+
+        this.fcmToken = fcmToken;
+
+        // Always register with backend - iOS will handle permission enforcement
         try {
-          const fcmToken = await getToken(this.messaging);
-          console.log('FCM Token:', fcmToken);
-
-          try {
-            const response = await api.post('/notifications/register', { deviceId: fcmToken });
-            console.log('Successfully registered FCM token:', fcmToken);
-            console.log('Backend response:', response.data);
-
-            this.fcmToken = fcmToken;
-
-            // Store the token
-            await this.storeNotificationPreferences({
-              permissionGranted: true,
-              fcmToken: fcmToken,
-            });
-
-            return { success: true, token: fcmToken };
-          } catch (apiError) {
-            console.error('Failed to register token with backend:', apiError);
-            return { success: false, error: 'Failed to register with backend' };
-          }
-        } catch (tokenError) {
-          console.error('Error getting FCM token:', tokenError);
-          return { success: false, error: 'Failed to get FCM token' };
+          const response = await api.post('/notifications/register', { deviceId: fcmToken });
+          console.log('Successfully registered FCM token:', fcmToken);
+          console.log('Backend response:', response.data);
+          return { success: true, token: fcmToken };
+        } catch (apiError) {
+          console.error('Failed to register token with backend:', apiError);
+          return { success: false, error: 'Failed to register with backend', token: fcmToken };
         }
-      } else {
-        return { success: false, error: 'Permission denied' };
+      } catch (tokenError) {
+        console.error('Error getting FCM token:', tokenError);
+        return { success: false, error: 'Failed to get FCM token' };
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
