@@ -27,6 +27,9 @@ const typeColors = {
   DEFAULT: '#388e3cff',
 };
 
+// Keynote Speaker
+const SPECIAL_EVENT_ID = '8852aff5-015a-40b2-a32b-f1f738db34c8';
+
 type Props = {
   item: Event;
   index: number;
@@ -160,7 +163,18 @@ export const EventListItem: React.FC<Props> = ({
         {/* Main content */}
         <GestureDetector gesture={panGesture}>
           <ReanimatedAnimated.View style={animatedCardStyle}>
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity 
+              onPress={onPress}
+              style={{
+                ...(item.eventId === SPECIAL_EVENT_ID && {
+                  shadowColor: '#FFD700',
+                  shadowOpacity: 0.6,
+                  shadowRadius: 12,
+                  shadowOffset: { width: 0, height: 0.2 },
+                  elevation: 10,
+                }),
+              }}
+            >
               <LinearGradient
                 colors={[
                   '#FFFFFF00',
@@ -174,6 +188,11 @@ export const EventListItem: React.FC<Props> = ({
                   transform: [{ skewX: '-20deg' }],
                   borderLeftWidth: isFlagged ? 6 : 0,
                   borderLeftColor: isFlagged ? 'red' : 'transparent',
+                  // Gold glow effect for special event
+                  ...(item.eventId === SPECIAL_EVENT_ID && {
+                    borderWidth: 1,
+                    borderColor: '#FFD700',
+                  }),
                 }}
               >
                 <View

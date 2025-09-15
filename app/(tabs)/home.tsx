@@ -29,6 +29,7 @@ import BackgroundSvg from '@/assets/background/home_background.svg';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import { triggerIfEnabled } from '@/lib/haptics';
+import { format } from 'date-fns';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const { height } = Dimensions.get('window'); // For responsive design
@@ -421,7 +422,7 @@ export default function HomeScreen() {
                 >
                   <CarouselSection
                     key={`today-shifts-${themeColor}`}
-                    title="TODAY'S SHIFTS"
+                    title={`SHIFTS (${format(new Date(), 'M/d')})`}
                     data={todayShifts || []}
                     flaggedIds={[]}
                     onToggleFlag={() => {}}
