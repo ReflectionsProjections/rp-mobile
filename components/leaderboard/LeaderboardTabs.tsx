@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, Animated, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, Animated, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { FadeInWrapper } from './LeaderboardAnimations';
 import { useThemeColor } from '@/lib/theme';
 
@@ -8,11 +8,13 @@ interface LeaderboardTabsProps {
   onTabChange: (tab: number) => void;
 }
 
+const { width } = Dimensions.get('window');
+
 export const LeaderboardTabs = ({ activeTab, onTabChange }: LeaderboardTabsProps) => {
   const themeColor = useThemeColor();
   const slideAnimation = useRef(new Animated.Value(activeTab)).current;
 
-  const tabWidth = 130;
+  const tabWidth = width * 0.45;
   const tabHeight = 40; // unified height (Android only)
 
   useEffect(() => {

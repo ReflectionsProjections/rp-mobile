@@ -130,6 +130,7 @@ export const EventListItem: React.FC<Props> = ({
               alignItems: 'center',
               overflow: 'hidden',
               pointerEvents: 'none',
+              transform: [{ skewX: '-20deg' }]
             },
             animatedBgStyle,
           ]}
