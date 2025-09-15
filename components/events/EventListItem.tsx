@@ -171,12 +171,11 @@ export const EventListItem: React.FC<Props> = ({
                 style={{
                   width,
                   transform: [{ skewX: '-20deg' }],
-                  // ✅ Only a thin red strip if flagged
                   borderLeftWidth: isFlagged ? 6 : 0,
                   borderLeftColor: isFlagged ? 'red' : 'transparent',
                 }}
               >
-                <View className="flex-row flex-1 h-full" style={{ transform: [{ skewX: '8deg' }] }}>
+                <View className="flex-row flex-1 h-full py-0" style={{ transform: [{ skewX: '8deg' }] }}>
                   <View className="justify-center items-center w-12">
                     <Text className="text-white text-xl font-extrabold italic font-proRacingSlant">
                       {index + 1}
@@ -184,8 +183,8 @@ export const EventListItem: React.FC<Props> = ({
                   </View>
                   <View className="flex-1 justify-center pl-2 pr-2">
                     <ReanimatedAnimated.Text
-                      className="text-white text-base font-extrabold font-magistralMedium flex-1"
-                      numberOfLines={1}
+                      className="text-white text-base font-extrabold font-magistralMedium "
+                      numberOfLines={2}
                       style={animatedTitleTextStyle}
                     >
                       {item.name}
