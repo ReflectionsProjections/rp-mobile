@@ -46,3 +46,13 @@ export function parseEventLink(description: string): ParsedLink | null {
   
   return null;
 }
+
+export function stripEventLinks(description: string): string {
+  if (!description) return '';
+
+  const lines = description.split('\n');
+  return lines
+    .filter(line => !line.trim().startsWith(':link:')) // drop link lines
+    .join('\n')
+    .trim();
+}
