@@ -203,7 +203,7 @@ function TabButton({
 }: TabButtonProps) {
   const isActive = activeTab === tab.key;
   const Icon = isActive ? tab.filledIcon : tab.icon;
-  
+
   const handlePress = () => {
     if (tab.key === 'leaderboard' && isActive && leaderboardScrollRef?.current) {
       // If leaderboard tab is already active, scroll to top
@@ -212,7 +212,7 @@ function TabButton({
       setActiveTab(tab.key);
     }
   };
-  
+
   return (
     <TouchableOpacity
       className="flex-1 justify-center items-center shadow-sm shadow-black shadow-opacity-50"

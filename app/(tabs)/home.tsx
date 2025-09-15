@@ -1,6 +1,15 @@
 // apps/tabs/home.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, Animated, SafeAreaView, Platform, ScrollView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Animated,
+  SafeAreaView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Header } from '@/components/home/Header';
 import { CarouselSection } from '@/components/home/CarouselSection';
 import { EventModal } from '@/components/home/EventModal';
@@ -12,10 +21,7 @@ import { useToggleFavorite } from '@/api/tanstack/favorites';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { useThemeColor } from '@/lib/theme';
-import {
-  toggleAcknowledgeShift,
-  toggleLocalAcknowledge,
-} from '@/lib/slices/shiftsSlice';
+import { toggleAcknowledgeShift, toggleLocalAcknowledge } from '@/lib/slices/shiftsSlice';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
@@ -357,9 +363,9 @@ export default function HomeScreen() {
         <Header title={'R|P 2025'} bigText={true} />
 
         <ScrollView
-        style={{ flex: 1 }}
+          style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 80 }}
-          scrollEnabled={scrollEnabled}  
+          scrollEnabled={scrollEnabled}
           showsVerticalScrollIndicator={false}
         >
           <View style={{ marginTop: height < 700 ? 8 : 20 }}>
