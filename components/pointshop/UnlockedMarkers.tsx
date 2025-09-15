@@ -57,7 +57,12 @@ export const UnlockedMarkers: React.FC<Props> = ({ mappedTier, width, height }) 
     scaleAnim[tierKey].setValue(0.6);
     opacityAnim[tierKey].setValue(0);
     Animated.parallel([
-      Animated.spring(scaleAnim[tierKey], { toValue: 1, useNativeDriver: true, friction: 6, tension: 80 }),
+      Animated.spring(scaleAnim[tierKey], {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 6,
+        tension: 80,
+      }),
       Animated.timing(opacityAnim[tierKey], { toValue: 1, duration: 350, useNativeDriver: true }),
     ]).start(async () => {
       try {
@@ -111,12 +116,10 @@ export const UnlockedMarkers: React.FC<Props> = ({ mappedTier, width, height }) 
   return (
     <>
       {renderSlot('TIER3', hasTier3, BeanieSvg, height * 0.32, width * 0.3)}
-      {renderSlot('TIER2', hasTier2, SquishSvg, height * 0.60, width * 0.04)}
+      {renderSlot('TIER2', hasTier2, SquishSvg, height * 0.6, width * 0.04)}
       {renderSlot('TIER1', hasTier1, KeyChainSvg, height * 0.76, width * 0.52)}
     </>
   );
 };
 
 export default UnlockedMarkers;
-
-

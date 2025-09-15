@@ -23,5 +23,3 @@ const settingsSlice = createSlice({
 
 export const { setHapticsEnabled, toggleHaptics } = settingsSlice.actions;
 export default settingsSlice.reducer;
-
-

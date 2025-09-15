@@ -123,7 +123,9 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                       textAlign: 'center',
                     }}
                   >
-                    {peopleAboveCount > 0 ? `${peopleAboveCount} attendees above here` : 'Your Position'}
+                    {peopleAboveCount > 0
+                      ? `${peopleAboveCount} attendees above here`
+                      : 'Your Position'}
                   </Text>
                   <View
                     style={{
@@ -163,7 +165,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         onScrollToIndexFailed={() => {
           setTimeout(scrollToUser, 100);
         }}
-        ListFooterComponent={() => (
+        ListFooterComponent={() =>
           showBottomSeparator ? (
             <View
               style={{
@@ -219,7 +221,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
               </Text>
             </View>
           )
-        )}
+        }
       />
     );
   },
