@@ -46,8 +46,6 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
     switch (sectionTitle.toUpperCase()) {
       case 'NEXT LAP':
         return 'flag-checkered';
-      case "TODAY'S SHIFTS":
-        return 'clock-o';
       case 'UPCOMING':
         return 'road';
       case 'RECOMMENDED':
@@ -55,6 +53,10 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
       case 'FLAGGED':
         return 'bookmark';
       default:
+        // Handle "SHIFTS (M/d)" format
+        if (sectionTitle.toUpperCase().startsWith('SHIFTS')) {
+          return 'clock-o';
+        }
         return 'flag';
     }
   };
