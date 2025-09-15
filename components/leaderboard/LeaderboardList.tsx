@@ -124,7 +124,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                     }}
                   >
                     {peopleAboveCount > 0
-                      ? `${peopleAboveCount} attendees above here`
+                      ? `...`
                       : 'Your Position'}
                   </Text>
                   <View
@@ -190,7 +190,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                   textAlign: 'center',
                 }}
               >
-                {`${peopleBelowCount} more attendees below here`}
+                {`...`}
               </Text>
               <View
                 style={{
