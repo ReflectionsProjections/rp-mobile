@@ -123,9 +123,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                       textAlign: 'center',
                     }}
                   >
-                    {peopleAboveCount > 0
-                      ? `...`
-                      : 'Your Position'}
+                    {peopleAboveCount > 0 ? `...` : 'Your Position'}
                   </Text>
                   <View
                     style={{
