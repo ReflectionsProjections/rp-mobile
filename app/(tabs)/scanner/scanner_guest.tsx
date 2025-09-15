@@ -35,9 +35,7 @@ const ScannerGuestScreen = () => {
     ]);
 
     animationSequence.start();
-
   }, []);
-
 
   return (
     <View className="flex-1">
@@ -110,7 +108,6 @@ const ScannerGuestScreen = () => {
           >
             Sign in to get your QR code and start earning points at events!
           </Text>
-
 
           {/* Action buttons */}
           <View className="w-full max-w-[280px] mt-8 space-y-4">

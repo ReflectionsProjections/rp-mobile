@@ -27,7 +27,7 @@ import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
-import { parseEventLink } from '@/lib/linkUtils';
+import { parseEventLink, stripEventLinks } from '@/lib/linkUtils';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -373,7 +373,7 @@ const EventsScreen = () => {
                   >
                     {selectedEvent?.description === 'none'
                       ? 'No description available'
-                      : selectedEvent?.description}
+                      : stripEventLinks(selectedEvent?.description || '')}
                   </Text>
                 </View>
                 <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">

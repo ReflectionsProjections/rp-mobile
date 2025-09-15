@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { formatAMPM } from '@/lib/utils';
@@ -10,7 +10,6 @@ import ReanimatedAnimated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
   runOnJS,
   Easing,
   interpolate,
@@ -49,7 +48,6 @@ export const EventListItem: React.FC<Props> = ({
 }) => {
   const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] });
   const translateX = useSharedValue(0);
-  const flagOpacity = useSharedValue(0);
   const themeColor = useThemeColor();
 
   const start = new Date(item.startTime);
@@ -59,13 +57,9 @@ export const EventListItem: React.FC<Props> = ({
 
   const triggerFlagAndReset = () => {
     if (onFlag) {
-      onFlag(item.eventId);
+      runOnJS(onFlag)(item.eventId);
     }
-
-    setTimeout(() => {
-      translateX.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) });
-      flagOpacity.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) });
-    }, 800);
+    translateX.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
   };
 
   const maxSwipe = Math.max(60, width * 0.9);
@@ -74,105 +68,55 @@ export const EventListItem: React.FC<Props> = ({
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
       if (event.translationX > 0) {
-        const capped = Math.min(event.translationX, maxSwipe);
-        translateX.value = capped;
+        translateX.value = Math.min(event.translationX, maxSwipe);
       }
     })
     .onEnd((event) => {
-      const { translationX, velocityX } = event;
-
-      if (translationX > triggerThreshold || velocityX > 500) {
-        translateX.value = withTiming(Math.min(width * 0.6, maxSwipe), {
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
+      if (event.translationX > triggerThreshold || event.velocityX > 500) {
+        translateX.value = withTiming(width * 0.4, { duration: 150 }, () => {
+          runOnJS(triggerFlagAndReset)();
         });
-        flagOpacity.value = withTiming(
-          1,
-          { duration: 200, easing: Easing.out(Easing.cubic) },
-          () => {
-            runOnJS(triggerFlagAndReset)();
-          },
-        );
       } else {
-        translateX.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
-        flagOpacity.value = withTiming(0, { duration: 200, easing: Easing.out(Easing.cubic) });
+        translateX.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.cubic) });
       }
     });
 
-  const animatedCardStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    };
-  });
+  const animatedCardStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
-  const animatedBgStyle = useAnimatedStyle(() => {
-    return {
-      width: translateX.value,
-      opacity: translateX.value > 0 ? 1 : 0,
-    };
-  });
+  // Red overlay while swiping
+  const animatedBgStyle = useAnimatedStyle(() => ({
+    width: translateX.value,
+    opacity: translateX.value > 0 ? 1 : 0,
+  }));
 
-  const animatedTitleTextStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.85], Extrapolation.CLAMP),
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [0, triggerThreshold],
-            [0, 6],
-            Extrapolation.CLAMP,
-          ),
-        },
-        {
-          scale: interpolate(
-            translateX.value,
-            [0, triggerThreshold],
-            [1, 0.98],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-    };
-  });
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [0, triggerThreshold], [0, 1], Extrapolation.CLAMP),
+    transform: [
+      {
+        translateX: interpolate(
+          translateX.value,
+          [0, triggerThreshold],
+          [-30, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
-  const animatedSubtitleTextStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.7], Extrapolation.CLAMP),
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [0, triggerThreshold],
-            [0, 8],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-    };
-  });
+  const animatedTitleTextStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.85], Extrapolation.CLAMP),
+  }));
 
-  const animatedBgContentStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.85], Extrapolation.CLAMP),
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [0, triggerThreshold],
-            [-40, 0],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-      scale: interpolate(translateX.value, [0, triggerThreshold], [1, 0.2], Extrapolation.CLAMP),
-    };
-  });
+  const animatedSubtitleTextStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [0, triggerThreshold], [1, 0.7], Extrapolation.CLAMP),
+  }));
 
   return (
     <Animated.View style={{ opacity: anim, transform: [{ translateY }] }}>
       <View className="mb-3 relative">
-        {/* Flag indicator background (stretches with swipe) */}
+        {/* Red overlay shown only while swiping */}
         <ReanimatedAnimated.View
           style={[
             {
@@ -180,11 +124,10 @@ export const EventListItem: React.FC<Props> = ({
               left: 0,
               top: 0,
               bottom: 0,
-              backgroundColor: themeColor,
+              backgroundColor: 'red',
               borderRadius: 8,
               justifyContent: 'center',
               alignItems: 'center',
-              transform: [{ skewX: '-20deg' }],
               overflow: 'hidden',
               pointerEvents: 'none',
             },
@@ -194,27 +137,26 @@ export const EventListItem: React.FC<Props> = ({
           <ReanimatedAnimated.View
             style={[
               {
-                transform: [{ skewX: '8deg' }],
-                justifyContent: 'center',
+                flexDirection: 'column',
                 alignItems: 'center',
-                paddingHorizontal: 12,
-                minWidth: 50,
+                justifyContent: 'center',
+                paddingHorizontal: 6,
               },
-              animatedBgContentStyle,
+              animatedContentStyle,
             ]}
           >
             <MaterialCommunityIcons
               name={isFlagged ? 'flag' : 'flag-outline'}
-              size={24}
+              size={20}
               color="white"
             />
-            <Text className="text-white text-xs font-bold mt-1">
+            <Text className="text-white text-[10px] font-bold mt-1">
               {isFlagged ? 'UNFLAG' : 'FLAG'}
             </Text>
           </ReanimatedAnimated.View>
         </ReanimatedAnimated.View>
 
-        {/* Main content with swipe gesture */}
+        {/* Main content */}
         <GestureDetector gesture={panGesture}>
           <ReanimatedAnimated.View style={animatedCardStyle}>
             <TouchableOpacity onPress={onPress}>
@@ -229,35 +171,27 @@ export const EventListItem: React.FC<Props> = ({
                 style={{
                   width,
                   transform: [{ skewX: '-20deg' }],
-                  borderLeftWidth: isFlagged ? 8 : 0,
-                  borderLeftColor: isFlagged ? themeColor : 'transparent',
+                  borderLeftWidth: isFlagged ? 6 : 0,
+                  borderLeftColor: isFlagged ? 'red' : 'transparent',
                 }}
               >
-                <View className="flex-row flex-1 h-full" style={{ transform: [{ skewX: '8deg' }] }}>
+                <View
+                  className="flex-row flex-1 h-full py-0"
+                  style={{ transform: [{ skewX: '8deg' }] }}
+                >
                   <View className="justify-center items-center w-12">
                     <Text className="text-white text-xl font-extrabold italic font-proRacingSlant">
                       {index + 1}
                     </Text>
                   </View>
                   <View className="flex-1 justify-center pl-2 pr-2">
-                    <View className="flex-row items-center">
-                      <ReanimatedAnimated.Text
-                        className="text-white text-base font-extrabold font-magistralMedium flex-1"
-                        numberOfLines={1}
-                        style={animatedTitleTextStyle}
-                      >
-                        {item.name}
-                      </ReanimatedAnimated.Text>
-                      {/* Star indicator for flagged events */}
-                      {isFlagged && (
-                        <MaterialCommunityIcons
-                          name="star"
-                          size={16}
-                          color={themeColor}
-                          style={{ marginLeft: 8 }}
-                        />
-                      )}
-                    </View>
+                    <ReanimatedAnimated.Text
+                      className="text-white text-base font-extrabold font-magistralMedium "
+                      numberOfLines={2}
+                      style={animatedTitleTextStyle}
+                    >
+                      {item.name}
+                    </ReanimatedAnimated.Text>
                     <ReanimatedAnimated.Text
                       className="text-white/80 text-xs font-magistral"
                       numberOfLines={1}
@@ -270,10 +204,7 @@ export const EventListItem: React.FC<Props> = ({
                     <Text className="text-white text-lg font-bold font-magistralMedium">
                       {startStr}
                     </Text>
-                    <Text
-                      className="text-white text-sm opacity-80 font-magistralMedium"
-                      style={{ marginTop: -2 }}
-                    >
+                    <Text className="text-white text-sm opacity-80 font-magistralMedium">
                       {endStr}
                     </Text>
                   </View>

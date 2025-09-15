@@ -17,7 +17,7 @@ export const useFirebaseNotifications = () => {
         if (permissionResult.token) {
           setFcmToken(permissionResult.token);
         }
-        
+
         if (!permissionResult.success) {
           console.log('Notification permission not granted:', permissionResult.error);
         }

@@ -35,9 +35,7 @@ const LeaderboardGuestScreen = () => {
     ]);
 
     animationSequence.start();
-
   }, []);
-
 
   return (
     <View className="flex-1">
@@ -110,7 +108,6 @@ const LeaderboardGuestScreen = () => {
           >
             Sign in to view the leaderboard and see your standing!
           </Text>
-
 
           {/* Action buttons */}
           <View className="w-full max-w-[280px] mt-8 space-y-4">

@@ -110,7 +110,7 @@ const BaseToast = ({
               }}
             >
               <LinearGradient
-                colors={["transparent", "#fff", "transparent"]}
+                colors={['transparent', '#fff', 'transparent']}
                 start={{ x: 0, y: 0.5 }}
                 end={{ x: 1, y: 0.5 }}
                 style={{ flex: 1 }}
@@ -186,5 +186,3 @@ export const toastConfig = {
 };
 
 export default toastConfig;
-
-
