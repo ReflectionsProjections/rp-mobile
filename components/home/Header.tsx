@@ -1,12 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-  Platform,
-  Dimensions,
-} from 'react-native';
+import { View, TouchableOpacity, Animated, StyleSheet, Platform, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -104,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   });
 
   return (
-    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}> 
+    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}>
       <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning}>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <LOGO width={32} height={32} />

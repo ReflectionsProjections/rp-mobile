@@ -175,7 +175,10 @@ export const EventListItem: React.FC<Props> = ({
                   borderLeftColor: isFlagged ? 'red' : 'transparent',
                 }}
               >
-                <View className="flex-row flex-1 h-full py-0" style={{ transform: [{ skewX: '8deg' }] }}>
+                <View
+                  className="flex-row flex-1 h-full py-0"
+                  style={{ transform: [{ skewX: '8deg' }] }}
+                >
                   <View className="justify-center items-center w-12">
                     <Text className="text-white text-xl font-extrabold italic font-proRacingSlant">
                       {index + 1}

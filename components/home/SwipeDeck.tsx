@@ -1,6 +1,14 @@
 // --- SwipeDeck.tsx ---
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder, ImageBackground } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
+  PanResponder,
+  ImageBackground,
+} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
@@ -101,7 +109,6 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
         style={styles.card}
         imageStyle={styles.cardImage}
       >
-        
         <View style={styles.cardHeader}>
           <ThemedText
             variant="body-bold"

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useAppSelector, useAppDispatch } from '@/lib/store';
-import { updateAttendeeIcon, setOptimisticThemeColor, fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
+import {
+  updateAttendeeIcon,
+  setOptimisticThemeColor,
+  fetchAttendeeProfile,
+} from '@/lib/slices/attendeeSlice';
 import { IconColorType } from '@/api/types';
 import { api } from '@/api/api';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';

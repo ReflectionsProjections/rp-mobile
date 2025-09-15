@@ -129,7 +129,6 @@ const ProfileScreen = () => {
     );
   };
 
-
   const handleBackPress = () => {
     router.back();
   };
@@ -166,7 +165,6 @@ const ProfileScreen = () => {
     ]);
 
     animationSequence.start();
-
   }, [user, dispatch]);
 
   useFocusEffect(
@@ -262,7 +260,6 @@ const ProfileScreen = () => {
             >
               Sign in to track your points and unlock exclusive rewards!
             </Text>
-
 
             {/* Action buttons */}
             <View className="w-full max-w-[280px] mt-8 space-y-4">
@@ -560,11 +557,13 @@ const ProfileScreen = () => {
                     onValueChange={() => dispatch(toggleHaptics())}
                     width={60}
                     height={36}
-                    onColor="#EDE053" 
+                    onColor="#EDE053"
                     offColor="rgba(255, 255, 255, 0.4)"
                     thumbColor="#fff"
                     thumbOnIcon={<MaterialCommunityIcons name="vibrate" size={20} color="black" />}
-                    thumbOffIcon={<MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />}
+                    thumbOffIcon={
+                      <MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />
+                    }
                     iconAnimationType="rotate"
                     style={{}}
                   />
