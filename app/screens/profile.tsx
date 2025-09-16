@@ -503,10 +503,13 @@ const ProfileScreen = () => {
         preserveAspectRatio="none"
       />
 
-      <SafeAreaView style={{ position: 'absolute', top: 90, left: 20, zIndex: 10 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <Animated.View
           style={{
             opacity: backButtonAnim,
+            top: '10%',
+            left: 20,
+            zIndex: 99,
             transform: [
               {
                 scale: backButtonAnim.interpolate({
@@ -537,9 +540,7 @@ const ProfileScreen = () => {
             <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
         </Animated.View>
-      </SafeAreaView>
 
-      <SafeAreaView className="flex-1">
         <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
           <View className="p-5" style={{ position: 'relative' }}>
             <LSeparator zIndex={-1} />

@@ -6,6 +6,19 @@ import { getColorFromIcon } from '@/lib/colorUtils';
 
 const CARD_WIDTH = Math.round(Dimensions.get('window').width * 0.92);
 
+// Helper function to get rank styling based on number of digits
+const getRankStyling = (rank: number) => {
+  const digitCount = rank.toString().length;
+  
+  if (digitCount <= 2) {
+    return { width: 60, fontSize: 24 }; // 1-99
+  } else if (digitCount === 3) {
+    return { width: 80, fontSize: 20 }; // 100-999
+  } else {
+    return { width: 100, fontSize: 16 }; // 1000+
+  }
+};
+
 interface LeaderboardItemProps {
   rank: number;
   name: string;
@@ -25,6 +38,7 @@ export const LeaderboardItem = ({
 }: LeaderboardItemProps) => {
   const hexColor = getColorFromIcon(iconColor);
   const Avatar = getAvatarComponent(hexColor);
+  const rankStyling = getRankStyling(rank);
   return (
     <View
       style={{
@@ -48,7 +62,7 @@ export const LeaderboardItem = ({
       {/* Left: Rank */}
       <View
         style={{
-          width: 60,
+          width: rankStyling.width,
           height: '100%',
           justifyContent: 'center',
           alignItems: 'center',
@@ -56,7 +70,7 @@ export const LeaderboardItem = ({
       >
         <Text
           style={{
-            fontSize: 32,
+            fontSize: rankStyling.fontSize,
             fontWeight: 'bold',
             color: 'white',
             fontFamily: 'proRacingSlant',

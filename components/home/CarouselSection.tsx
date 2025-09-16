@@ -95,7 +95,7 @@ export const CarouselSection = <T extends CardType | ShiftCard>({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: height < 700 ? 0 : 12,
+    marginBottom: height < 700 ? 0 : 8
   },
   titleContainer: {
     paddingHorizontal: 20,

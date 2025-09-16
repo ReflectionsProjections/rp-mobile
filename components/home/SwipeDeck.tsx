@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: height < 700 ? 12 : 16, // Smaller padding for iPhone SE
+    padding: height < 700 ? 8 : 12, // Smaller padding for iPhone SE
     shadowColor: '#000',
     shadowOpacity: 0.4,
     shadowRadius: 8,

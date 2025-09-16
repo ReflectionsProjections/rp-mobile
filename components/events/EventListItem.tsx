@@ -127,7 +127,7 @@ export const EventListItem: React.FC<Props> = ({
               left: 0,
               top: 0,
               bottom: 0,
-              backgroundColor: 'red',
+              backgroundColor: themeColor,
               borderRadius: 8,
               justifyContent: 'center',
               alignItems: 'center',
@@ -187,7 +187,7 @@ export const EventListItem: React.FC<Props> = ({
                   width,
                   transform: [{ skewX: '-20deg' }],
                   borderLeftWidth: isFlagged ? 6 : 0,
-                  borderLeftColor: isFlagged ? 'red' : 'transparent',
+                  borderLeftColor: isFlagged ? themeColor : 'transparent',
                   // Gold glow effect for special event
                   ...(item.eventId === SPECIAL_EVENT_ID && {
                     borderWidth: 1,

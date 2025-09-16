@@ -26,7 +26,8 @@ export default function ScannerScreen() {
 
   useEffect(() => {
     const date = new Date();
-    const key = `hasPriority${getWeekday(date.toISOString()).substring(0, 3)}`;
+    const weekday = getWeekday(date.toISOString());
+    const key = `hasPriority${weekday.charAt(0)}${weekday.slice(1, 3).toLowerCase()}`;
     setWeekdayShort(key as keyof Attendee);
   }, []);
 
