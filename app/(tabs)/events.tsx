@@ -27,7 +27,7 @@ import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
-import { parseEventLink, stripEventLinks } from '@/lib/linkUtils';
+import { parseEventLink, stripEventFood, stripEventLinks } from '@/lib/linkUtils';
 
 const dayTabs = [
   { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
@@ -49,6 +49,8 @@ const typeColors = {
   DEFAULT: '#388e3cff',
 };
 
+const { height } = Dimensions.get('window');
+
 const EventsScreen = () => {
   // Get data from Redux
   const events = useAppSelector((state: RootState) => state.favorites.events) || [];
@@ -60,7 +62,7 @@ const EventsScreen = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFoodMenu, setShowFoodMenu] = useState(false);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
-
+  
   const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
   const itemAnimations = useRef<Record<string, Animated.Value>>({});
   // ADD
@@ -357,23 +359,23 @@ const EventsScreen = () => {
                   color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
                 />
 
-                <View className="absolute top-[35%] left-0 right-0 bottom-0 items-center justify-center px-4">
+                <View className={`absolute top-[30%] left-0 right-0 bottom-0 items-center justify-center px-4`}>
                   <Text
-                    className="text-xl font-bold text-[#B60000] text-center mb-2"
+                    className={`text-${height < 700 ? 'lg' : 'xl'} font-bold text-[#B60000] text-center mb-4 px-${height < 700 ? 6 : 0}`}
                     style={{ fontFamily: 'ProRacingSlant' }}
-                    numberOfLines={4}
+                    numberOfLines={2}
                     ellipsizeMode="tail"
                   >
                     {selectedEvent?.name}
                   </Text>
                   <Text
-                    className="text-sm text-[#B60000] text-center mb-2"
+                    className={`text-${height < 700 ? 'xs' : 'sm'} text-[#B60000] text-center mb-2 px-${height < 700 ? 6 : 0}`}
                     numberOfLines={20}
                     ellipsizeMode="tail"
                   >
                     {selectedEvent?.description === 'none'
                       ? 'No description available'
-                      : stripEventLinks(selectedEvent?.description || '')}
+                      : stripEventFood(stripEventLinks(selectedEvent?.description || ''))}
                   </Text>
                 </View>
                 <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">

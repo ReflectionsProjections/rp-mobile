@@ -115,9 +115,9 @@ const ColorPicker = () => {
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'space-evenly',
           alignItems: 'center',
-          paddingHorizontal: 8,
+          gap: 6
         }}
       >
         {colors.map((color, index) => (

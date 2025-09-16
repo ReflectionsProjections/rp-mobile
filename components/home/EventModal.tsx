@@ -13,6 +13,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
 import { BlurView } from 'expo-blur';
 import { useThemeColor } from '@/lib/theme';
+import { stripEventLinks, stripEventFood } from '@/lib/linkUtils';
 
 interface EventModalProps {
   visible: boolean;
@@ -118,7 +119,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                       DESCRIPTION
                     </ThemedText>
                     <ThemedText variant="body" style={styles.descriptionText}>
-                      {event.description}
+                      {stripEventFood(stripEventLinks(event.description || ''))}
                     </ThemedText>
                   </View>
 

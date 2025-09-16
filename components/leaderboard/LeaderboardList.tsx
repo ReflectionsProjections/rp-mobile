@@ -3,6 +3,7 @@ import { FlatList, Platform, View, Text, ActivityIndicator } from 'react-native'
 import { LeaderboardItem } from './LeaderboardItem';
 import { StaggeredAnimation } from './LeaderboardAnimations';
 import { IconColorType, TierType } from '@/api/types';
+import Svg, { Circle } from 'react-native-svg';
 
 interface LeaderboardData {
   rank: number;
@@ -30,6 +31,14 @@ interface LeaderboardListProps {
 export type LeaderboardListHandle = {
   scrollToUser: () => void;
 };
+
+const SeparatorGlyph = () => (
+  <Svg width={24} height={6} viewBox="0 0 24 6">
+    <Circle cx="3" cy="3" r="2" fill="rgba(255,255,255,0.7)" />
+    <Circle cx="12" cy="3" r="2" fill="rgba(255,255,255,0.7)" />
+    <Circle cx="21" cy="3" r="2" fill="rgba(255,255,255,0.7)" />
+  </Svg>
+);
 
 export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardListProps>(
   function LeaderboardList(
@@ -115,16 +124,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                       marginBottom: 10,
                     }}
                   />
-                  <Text
-                    style={{
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      fontSize: 14,
-                      fontFamily: 'magistral-medium',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {peopleAboveCount > 0 ? `...` : 'Your Position'}
-                  </Text>
+                  <SeparatorGlyph />
                   <View
                     style={{
                       height: 1,
@@ -180,16 +180,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                   marginBottom: 10,
                 }}
               />
-              <Text
-                style={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: 14,
-                  fontFamily: 'magistral-medium',
-                  textAlign: 'center',
-                }}
-              >
-                {`...`}
-              </Text>
+              <SeparatorGlyph />
               <View
                 style={{
                   height: 1,

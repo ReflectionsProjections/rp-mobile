@@ -363,13 +363,10 @@ export default function HomeScreen() {
       >
         <Header title={'R|P 2025'} bigText={true} />
 
-        <ScrollView
+        <View
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 80 }}
-          scrollEnabled={scrollEnabled}
-          showsVerticalScrollIndicator={false}
         >
-          <View style={{ marginTop: height < 700 ? 8 : 20 }}>
+          <View style={{ marginTop: height < 700 ? 4 : 8 }}>
             {/* NEXT LAP */}
             <Animated.View
               style={[
@@ -525,7 +522,7 @@ export default function HomeScreen() {
               </>
             )}
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <EventModal
@@ -568,7 +565,6 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginTop: 0,
-    marginBottom: height < 700 ? 0 : 12, // Tighter spacing for iPhone SE
   },
   errorContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',

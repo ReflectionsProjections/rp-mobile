@@ -56,3 +56,16 @@ export function stripEventLinks(description: string): string {
     .join('\n')
     .trim();
 }
+
+export function stripEventFood(description: string): string {
+  if (!description) return '';
+
+  const lines = description.split('\n');
+  const foodIndex = lines.findIndex((line) => line.trim() === ':food:');
+  
+  if (foodIndex === -1) {
+    return description;
+  }
+  
+  return lines.slice(0, foodIndex).join('\n').trim();
+}
