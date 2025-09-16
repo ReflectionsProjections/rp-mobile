@@ -61,8 +61,6 @@ export function useToggleFavorite() {
         throw new Error('Not authenticated');
       }
 
-      dispatch(toggleFavoriteRedux({ eventId, userId }));
-
       const isCurrentlyFavorite = currentFavorites.includes(eventId);
 
       if (isCurrentlyFavorite) {
@@ -77,11 +75,18 @@ export function useToggleFavorite() {
 
       return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
     },
+    onSuccess: (data) => {
+      // Update Redux state directly after successful API call
+      const { eventId, action } = data;
+      if (action === 'add') {
+        dispatch(setFavorites([...currentFavorites, eventId]));
+      } else {
+        dispatch(setFavorites(currentFavorites.filter(id => id !== eventId)));
+      }
+      queryClient.invalidateQueries({ queryKey: USER_FAVORITES_QK });
+    },
     onError: (error, _) => {
       console.error('Failed to toggle favorite:', error);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: USER_FAVORITES_QK });
     },
   });
 }
