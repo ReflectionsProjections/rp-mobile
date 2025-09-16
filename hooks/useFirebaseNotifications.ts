@@ -12,13 +12,26 @@ export const useFirebaseNotifications = () => {
         setIsLoading(true);
         const firebaseService = FirebaseService.getInstance();
 
+        // Request notification permission on app startup
+        const permissionResult = await firebaseService.requestUserPermission();
+        if (permissionResult.token) {
+          setFcmToken(permissionResult.token);
+        }
+
+        if (!permissionResult.success) {
+          console.log('Notification permission not granted:', permissionResult.error);
+        }
+
         const startupStatus = await firebaseService.checkNotificationStatusOnStartup();
         if (startupStatus.needsAttention && startupStatus.showGuidance) {
           firebaseService.showNotificationGuidance();
         }
 
-        const token = await firebaseService.getFCMToken();
-        setFcmToken(token);
+        // Get token if we don't have one from permission request
+        if (!permissionResult.success) {
+          const token = await firebaseService.getFCMToken();
+          setFcmToken(token);
+        }
 
         const unsubscribeMessage = await firebaseService.onMessageReceived((message) => {
           console.log('Foreground message received:', message);

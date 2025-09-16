@@ -48,7 +48,7 @@ export const LeaderboardItem = ({
       {/* Left: Rank */}
       <View
         style={{
-          width: 70,
+          width: 60,
           height: '100%',
           justifyContent: 'center',
           alignItems: 'center',
@@ -71,7 +71,7 @@ export const LeaderboardItem = ({
           flexDirection: 'row',
           alignItems: 'center',
           flex: 1,
-          paddingLeft: 18,
+          paddingLeft: 10,
           backgroundColor: 'rgba(0,0,0,0.15)',
           height: '100%',
         }}

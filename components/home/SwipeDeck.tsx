@@ -1,6 +1,14 @@
 // --- SwipeDeck.tsx ---
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Dimensions, StyleProp, ViewStyle, PanResponder, ImageBackground } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
+  PanResponder,
+  ImageBackground,
+} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { ThemedText } from '../themed/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
@@ -12,6 +20,9 @@ import { triggerIfEnabled } from '@/lib/haptics';
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = height < 700 ? 95 : 110; // Smaller cards for iPhone SE
+
+// Keynote Speaker
+const SPECIAL_EVENT_ID = '8852aff5-015a-40b2-a32b-f1f738db34c8';
 
 export interface CardType {
   id: string;
@@ -95,13 +106,26 @@ export default function SwipeDeck<T extends CardType | ShiftCard>({
       return backgroundImages[idxSafe];
     };
 
+    const isSpecialEvent = (item as CardType|ShiftCard).id === SPECIAL_EVENT_ID;
+    
     return (
       <ImageBackground
         source={getImageForId((item as any).id)}
-        style={styles.card}
+        style={[
+          styles.card,
+          // Gold glow effect for special event
+          isSpecialEvent && {
+            shadowColor: '#FFD700',
+            shadowOpacity: 0.6,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 0 },
+            elevation: 15,
+            borderWidth: 1,
+            borderColor: '#FFD700',
+          },
+        ]}
         imageStyle={styles.cardImage}
       >
-        
         <View style={styles.cardHeader}>
           <ThemedText
             variant="body-bold"

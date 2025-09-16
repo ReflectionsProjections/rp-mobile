@@ -129,7 +129,6 @@ const ProfileScreen = () => {
     );
   };
 
-
   const handleBackPress = () => {
     router.back();
   };
@@ -166,7 +165,6 @@ const ProfileScreen = () => {
     ]);
 
     animationSequence.start();
-
   }, [user, dispatch]);
 
   useFocusEffect(
@@ -263,7 +261,6 @@ const ProfileScreen = () => {
               Sign in to track your points and unlock exclusive rewards!
             </Text>
 
-
             {/* Action buttons */}
             <View className="w-full max-w-[280px] mt-8 space-y-4">
               {/* Continue as Guest button */}
@@ -344,6 +341,158 @@ const ProfileScreen = () => {
     const R = (r || '').toUpperCase();
     return R === 'STAFF' || R === 'ADMIN';
   });
+  const hasUserRole = (user?.roles || []).some((r: string) => (r || '').toUpperCase() === 'USER');
+  const staffWithoutUser = isStaffOrAdmin && !hasUserRole;
+
+  {
+    /* Staff without user role - show registration prompt */
+  }
+  if (staffWithoutUser) {
+    return (
+      <View className="flex-1">
+        <Background
+          width={width}
+          height={height}
+          style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          preserveAspectRatio="none"
+        />
+
+        <SafeAreaView className="flex-1 justify-center items-center px-6">
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
+            }}
+            className="items-center"
+          >
+            <View
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                backgroundColor: 'rgba(202, 37, 35, 0.2)',
+                borderWidth: 3,
+                borderColor: '#CA2523',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 30,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Ionicons name="information-circle-outline" size={60} color="#CA2523" />
+            </View>
+
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: '700',
+                fontFamily: 'ProRacing',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: 12,
+                textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 4,
+              }}
+            >
+              REGISTER TO CUSTOMIZE
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: 'Inter',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textAlign: 'center',
+                marginBottom: 20,
+                lineHeight: 24,
+                textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}
+            >
+              You’re signed in as staff, but you haven’t registered as an attendee. Register for the
+              event to unlock profile customization. If you already registered, try logging out and
+              back in. If issues persist, reinstall the app and sign in again.
+            </Text>
+
+            <View className="w-full max-w-[320px] mt-2 space-y-4">
+              <TouchableOpacity
+                onPress={handleBackPress}
+                activeOpacity={0.8}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  paddingVertical: 16,
+                  paddingHorizontal: 32,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                  marginBottom: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: 'Inter',
+                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  Go Back
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleLogout}
+                activeOpacity={0.8}
+                style={{
+                  backgroundColor: 'rgba(202, 37, 35, 0.8)',
+                  paddingVertical: 16,
+                  paddingHorizontal: 32,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: 'Inter',
+                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  Log Out
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1">
@@ -560,11 +709,13 @@ const ProfileScreen = () => {
                     onValueChange={() => dispatch(toggleHaptics())}
                     width={60}
                     height={36}
-                    onColor="#EDE053" 
+                    onColor="#EDE053"
                     offColor="rgba(255, 255, 255, 0.4)"
                     thumbColor="#fff"
                     thumbOnIcon={<MaterialCommunityIcons name="vibrate" size={20} color="black" />}
-                    thumbOffIcon={<MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />}
+                    thumbOffIcon={
+                      <MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />
+                    }
                     iconAnimationType="rotate"
                     style={{}}
                   />

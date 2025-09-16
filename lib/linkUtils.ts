@@ -18,32 +18,32 @@ export function parseEventLink(description: string): ParsedLink | null {
   }
 
   const lines = description.split('\n');
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
+
     // Look for the link pattern: :link: URL | Title
     if (trimmedLine.startsWith(':link:')) {
       const linkContent = trimmedLine.replace(':link:', '').trim();
-      
+
       // Split by pipe to separate URL and title
-      const parts = linkContent.split('|').map(part => part.trim());
-      
+      const parts = linkContent.split('|').map((part) => part.trim());
+
       if (parts.length >= 2) {
         const url = parts[0];
         const title = parts[1];
-        
+
         // Basic URL validation
         if (url && title && (url.startsWith('http://') || url.startsWith('https://'))) {
           return {
             url,
-            title
+            title,
           };
         }
       }
     }
   }
-  
+
   return null;
 }
 
@@ -52,7 +52,14 @@ export function stripEventLinks(description: string): string {
 
   const lines = description.split('\n');
   return lines
+<<<<<<< HEAD
     .filter(line => !line.trim().startsWith(':link:')) // drop link lines
     .join('\n')
     .trim();
 }
+=======
+    .filter((line) => !line.trim().startsWith(':link:')) // drop link lines
+    .join('\n')
+    .trim();
+}
+>>>>>>> 0d67df498176be230967832360c11e08f3f9a498
