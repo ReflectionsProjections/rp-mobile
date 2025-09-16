@@ -142,29 +142,18 @@ const favoritesSlice = createSlice({
         state.events = action.payload;
         state.eventsLastFetched = Date.now();
       })
-      .addCase(toggleFavorite.pending, (state, action) => {
-        if (!state.favoriteEventIds) {
-          state.favoriteEventIds = [];
-        }
-        const { eventId } = action.meta.arg;
-        if (state.favoriteEventIds.includes(eventId)) {
-          state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== eventId);
-        } else {
-          state.favoriteEventIds.push(eventId);
-        }
-      })
-      .addCase(toggleFavorite.rejected, (state, action) => {
-        if (!state.favoriteEventIds) {
-          state.favoriteEventIds = [];
-        }
-        const { eventId } = action.meta.arg;
-        if (action.payload) {
-          if (state.favoriteEventIds.includes(eventId)) {
-            state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== eventId);
-          } else {
+      .addCase(toggleFavorite.fulfilled, (state, action) => {
+        const { eventId, action: toggleAction } = action.payload;
+        if (toggleAction === 'add') {
+          if (!state.favoriteEventIds.includes(eventId)) {
             state.favoriteEventIds.push(eventId);
           }
+        } else if (toggleAction === 'remove') {
+          state.favoriteEventIds = state.favoriteEventIds.filter((id) => id !== eventId);
         }
+        state.error = null;
+      })
+      .addCase(toggleFavorite.rejected, (state, action) => {
         state.error = action.payload as string;
       });
   },
