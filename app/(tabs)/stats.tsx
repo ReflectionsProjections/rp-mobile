@@ -179,33 +179,6 @@ export default function StatsScreen() {
             </View>
           )}
 
-          {/* Recent Attendance */}
-          {attendance.data && attendance.data.length > 0 && (
-            <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
-              <Text
-                className="text-xl font-semibold text-gray-800 mb-4"
-                style={{ fontFamily: 'ProRacing-Regular' }}
-              >
-                Attendance (Last 7 Days)
-              </Text>
-              <View className="space-y-2">
-                {attendance.data.map((count, index) => (
-                  <View key={index} className="flex-row justify-between">
-                    <Text className="text-gray-600" style={{ fontFamily: 'ProRacing-Regular' }}>
-                      Day {index + 1}:
-                    </Text>
-                    <Text
-                      className="font-semibold"
-                      style={{ fontFamily: 'ProRacing-Regular', color: themeColor }}
-                    >
-                      {count}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
           {/* Tier Distribution */}
           {tierCounts.data && (
             <View className="bg-white rounded-lg p-6 mb-6 shadow-sm">
