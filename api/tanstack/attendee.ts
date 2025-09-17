@@ -38,9 +38,9 @@ export function useAttendeeProfile(isAuthenticated?: boolean | null) {
     queryFn: fetchAttendeeProfile,
     enabled:
       isAuthenticated === true &&
-      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 5 * 60 * 1000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 1 * 60 * 1000),
+    staleTime: 1 * 60 * 1000, // 1 minute (reduced from 5)
+    gcTime: 5 * 60 * 1000, // 5 minutes (reduced from 30)
   });
 
   useEffect(() => {
@@ -67,9 +67,9 @@ export function useAttendeePoints(isAuthenticated?: boolean | null) {
     queryFn: fetchAttendeePoints,
     enabled:
       isAuthenticated === true &&
-      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 2 * 60 * 1000),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+      (!reduxAttendee || !reduxLastFetched || Date.now() - reduxLastFetched > 1 * 60 * 1000),
+    staleTime: 1 * 60 * 1000, // 1 minute (reduced from 2)
+    gcTime: 3 * 60 * 1000, // 3 minutes (reduced from 10)
   });
 
   useEffect(() => {

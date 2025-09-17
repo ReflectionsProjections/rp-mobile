@@ -57,7 +57,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
       <View className="items-center">
         <View
           className="transform rotate-[12.5deg] justify-center items-center rounded-[12px] p-5"
-          style={{ width: qrSize + 0, height: qrSize - 60 }}
+          style={{ width: qrSize + 0, height: qrSize }}
         >
           <QRCode value={qrValue} size={qrSize} backgroundColor="transparent" color="#000" />
         </View>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Speedometer from '../../assets/pointshop/speedometer.svg';
+import { useThemeColor } from '@/lib/theme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const ASPECT = 144.63 / 280.07;
@@ -17,6 +18,7 @@ export type PointsGaugeProps = {
 
 export function PointsGauge({ tier, width = DEFAULT_WIDTH }: PointsGaugeProps) {
   const height = width * ASPECT;
+  const themeColor = useThemeColor();
 
   return (
     <View className="relative" style={{ width: width * 1.2, height: height }}>
@@ -28,7 +30,7 @@ export function PointsGauge({ tier, width = DEFAULT_WIDTH }: PointsGaugeProps) {
       />
 
       <Text className="absolute inset-x-0 bottom-10 text-white text-[17px] font-proRacing text-center">
-        CURRENT TIER: {tier}
+        CURRENT TIER: <Text style={{ color: themeColor, fontSize: 20 }}>{tier}</Text>
       </Text>
     </View>
   );

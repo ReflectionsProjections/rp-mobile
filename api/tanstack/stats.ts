@@ -60,7 +60,7 @@ export function useCheckInCount() {
   return useQuery({
     queryKey: STATS_QK.checkIn,
     queryFn: fetchCheckInCount,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
@@ -69,7 +69,7 @@ export function usePriorityAttendeeCount() {
   return useQuery({
     queryKey: STATS_QK.priorityAttendee,
     queryFn: fetchPriorityAttendeeCount,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
@@ -78,7 +78,7 @@ export function useDietaryStats() {
   return useQuery({
     queryKey: STATS_QK.dietaryRestrictions,
     queryFn: fetchDietaryStats,
-    staleTime: 5 * 60 * 1000, // 5 minutes (dietary stats change less frequently)
+    staleTime: 1 * 60 * 1000, // 5 minutes (dietary stats change less frequently)
     gcTime: 15 * 60 * 1000, // 15 minutes
   });
 }
@@ -87,7 +87,7 @@ export function useAttendanceCounts(n: number = 7) {
   return useQuery({
     queryKey: STATS_QK.attendance(n),
     queryFn: () => fetchAttendanceCounts(n),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
@@ -96,7 +96,7 @@ export function useRegistrationCount() {
   return useQuery({
     queryKey: STATS_QK.registrations,
     queryFn: fetchRegistrationCount,
-    staleTime: 5 * 60 * 1000, // 5 minutes (registrations change less frequently)
+    staleTime: 1 * 60 * 1000, // 5 minutes (registrations change less frequently)
     gcTime: 15 * 60 * 1000, // 15 minutes
   });
 }
@@ -105,7 +105,7 @@ export function useTierCounts() {
   return useQuery({
     queryKey: STATS_QK.tierCounts,
     queryFn: fetchTierCounts,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
   });
 }
@@ -114,7 +114,7 @@ export function useTagCounts() {
   return useQuery({
     queryKey: STATS_QK.tagCounts,
     queryFn: fetchTagCounts,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
   });
 }

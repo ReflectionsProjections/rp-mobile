@@ -11,12 +11,14 @@ type StaffState = {
   me: Staff | null;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 };
 
 const initialState: StaffState = {
   me: null,
   loading: false,
   error: null,
+  lastFetched: null,
 };
 
 const staffSlice = createSlice({
@@ -27,6 +29,7 @@ const staffSlice = createSlice({
       state.me = null;
       state.loading = false;
       state.error = null;
+      state.lastFetched = null;
     },
   },
   extraReducers: (builder) => {
@@ -38,10 +41,12 @@ const staffSlice = createSlice({
       .addCase(fetchStaff.fulfilled, (state, action: PayloadAction<Staff>) => {
         state.loading = false;
         state.me = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchStaff.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to load staff';
+        state.lastFetched = null;
       });
   },
 });

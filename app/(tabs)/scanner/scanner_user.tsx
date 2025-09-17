@@ -120,7 +120,7 @@ export default function ScannerScreen() {
         </Text>
       </View>
 
-      <View className="flex-1 items-center pt-[160px] px-5">
+      <View className="flex-1 items-center pt-[35%] px-5">
         <QRDisplay
           qrValue={qrValue}
           loading={loading}
