@@ -10,6 +10,7 @@ import {
   Pressable,
   Dimensions,
   TouchableWithoutFeedback,
+  AppState,
 } from 'react-native';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,6 +33,7 @@ import TshirtRedemptionModal from '@/components/scanner/TshirtRedemptionModal';
 import EventPickerModal from '@/components/scanner/EventPickerModal';
 import ErrorModal from '@/components/scanner/ErrorModal';
 import SuccessModal from '@/components/scanner/SuccessModal';
+import { EventConfirmationModal } from '@/components/scanner/EventConfirmationModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SCAN_BOX_SIZE = SCREEN_WIDTH * 0.7;
@@ -113,6 +115,9 @@ export default function ScannerScreen() {
   const [redemptionInfo, setRedemptionInfo] = useState<RedemptionInfo | null>(null);
   const [merchandiseItems, setMerchandiseItems] = useState<MerchandiseItem[]>([]);
   const [isGeneralCheckinMode, setIsGeneralCheckinMode] = useState(true); // Default to General Check-in
+  const [eventConfirmationVisible, setEventConfirmationVisible] = useState(false);
+  const [pendingEvent, setPendingEvent] = useState<{ eventId: string; name: string } | null>(null);
+  const [hasShownInitialConfirmation, setHasShownInitialConfirmation] = useState(false);
 
   const cameraRef = useRef<CameraView>(null);
   const isProcessingRef = useRef(false);
@@ -168,10 +173,41 @@ export default function ScannerScreen() {
       }
       
       if (chosen) {
-        setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
+        const newEvent = { eventId: chosen.eventId, name: chosen.name };
+        setSelectedEvent(newEvent);
+        
+        // Show confirmation modal when event changes (but not on initial load)
+        if (hasShownInitialConfirmation) {
+          console.log('Auto event change - showing confirmation modal for:', newEvent.name);
+          setPendingEvent(newEvent);
+          setEventConfirmationVisible(true);
+        }
       }
     }
-  }, [filteredEvents, selectedEvent.eventId, isGeneralCheckinMode]);
+  }, [filteredEvents, selectedEvent.eventId, isGeneralCheckinMode, hasShownInitialConfirmation]);
+
+  // Handle app focus to show confirmation modal
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active' && !isGeneralCheckinMode && selectedEvent.eventId && hasShownInitialConfirmation) {
+        console.log('App focus - showing confirmation modal for:', selectedEvent.name);
+        setPendingEvent({ eventId: selectedEvent.eventId, name: selectedEvent.name });
+        setEventConfirmationVisible(true);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [isGeneralCheckinMode, selectedEvent.eventId, hasShownInitialConfirmation]);
+
+  // Show initial confirmation modal when first event is selected
+  useEffect(() => {
+    if (!isGeneralCheckinMode && selectedEvent.eventId && !hasShownInitialConfirmation) {
+      console.log('Initial event selection - showing confirmation modal for:', selectedEvent.name);
+      setPendingEvent({ eventId: selectedEvent.eventId, name: selectedEvent.name });
+      setEventConfirmationVisible(true);
+    }
+  }, [isGeneralCheckinMode, selectedEvent.eventId, hasShownInitialConfirmation]);
 
   useEffect(() => {
     return () => {
@@ -192,17 +228,14 @@ export default function ScannerScreen() {
   }, []);
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
-    // Prevent multiple simultaneous scans
     if (errorOccurred || isProcessingRef.current || loading || scanned || !scanReady || scanDisabled) {
       return;
     }
 
-    // Prevent duplicate scans of the same code
     if (data === lastScannedCodeRef.current) {
       return;
     }
 
-    // Set processing state immediately to prevent race conditions
     isProcessingRef.current = true;
     lastScannedCodeRef.current = data;
     setLastScannedCode(data);
@@ -328,6 +361,19 @@ export default function ScannerScreen() {
     if (isGeneralCheckin) {
       setSelectedEvent({ eventId: '', name: '' });
     }
+  };
+
+  const handleEventConfirmation = () => {
+    console.log('Event confirmed:', pendingEvent?.name);
+    setEventConfirmationVisible(false);
+    setPendingEvent(null);
+    setHasShownInitialConfirmation(true);
+  };
+
+  const handleEventConfirmationCancel = () => {
+    console.log('Event confirmation cancelled');
+    setEventConfirmationVisible(false);
+    setPendingEvent(null);
   };
 
   const handleGeneralCheckinFlow = async (userId: string): Promise<void> => {
@@ -645,13 +691,28 @@ export default function ScannerScreen() {
             const d = new Date(evt.startTime);
             setSelectedDay(d.getDay());
           }
-          setSelectedEvent({
+          const newEvent = {
             eventId: val,
             name: events.find((e) => e.eventId === val)?.name || '',
-          });
+          };
+          setSelectedEvent(newEvent);
           setPickerVisible(false);
+          
+        // Show confirmation modal when manually selecting an event
+        console.log('Manual event selection - showing confirmation modal for:', newEvent.name);
+        setPendingEvent(newEvent);
+        setEventConfirmationVisible(true);
         }}
         onClose={() => setPickerVisible(false)}
+      />
+
+      <EventConfirmationModal
+        visible={eventConfirmationVisible}
+        eventName={pendingEvent?.name || ''}
+        eventTime={pendingEvent ? events.find(e => e.eventId === pendingEvent.eventId)?.startTime : undefined}
+        eventLocation={pendingEvent ? events.find(e => e.eventId === pendingEvent.eventId)?.location : undefined}
+        onConfirm={handleEventConfirmation}
+        onClose={handleEventConfirmationCancel}
       />
     </SafeAreaView>
   );
