@@ -13,9 +13,11 @@ import toastConfig from '@/components/toast/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppProvider from '@/app-provider';
 import { checkVersion } from 'react-native-check-version';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+import { AutoRefreshProvider } from '@/components/AutoRefreshProvider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 SplashScreen.preventAutoHideAsync();
@@ -45,11 +47,24 @@ export default function RootLayout() {
     MagistralMedium: require('../assets/fonts/magistral-medium.ttf'),
   });
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (Platform.OS === 'ios') {
       Linking.openURL('https://apps.apple.com/us/app/r-p-2025/id6744465190');
     } else {
       Linking.openURL('https://play.google.com/store/apps/details?id=com.reflectionsprojections');
+    }
+    
+    // Don't save timestamp here - let the user come back and see the prompt again
+    // until they actually update the app
+  };
+
+  // Helper function to clear update prompt history (for testing)
+  const clearUpdatePromptHistory = async () => {
+    try {
+      await AsyncStorage.removeItem('update_prompt_shown');
+      console.log('Update prompt history cleared');
+    } catch (error) {
+      console.error('Error clearing update prompt history:', error);
     }
   };
 
@@ -63,15 +78,37 @@ export default function RootLayout() {
         try {
           const version = await checkVersion();
           console.log('Version check result:', version);
+          
           if (version.needsUpdate) {
-            Alert.alert(
-              'Update Available', 
-              'Please update to the latest version of the app.',
-              [
-                { text: 'Later', style: 'cancel' },
-                { text: 'Update', onPress: () => handleUpdate() }
-              ]
-            );
+            const lastShown = await AsyncStorage.getItem('update_prompt_shown');
+            const now = Date.now();
+            const oneDayMs = 24 * 60 * 60 * 1000; // 24 hours
+            const isMajorUpdate = version.updateType === 'major';
+            const shouldShowPrompt = isMajorUpdate || 
+                                   !lastShown || 
+                                   (now - parseInt(lastShown, 10)) > oneDayMs;
+            
+            if (shouldShowPrompt) {
+              const isForced = isMajorUpdate;
+              
+              Alert.alert(
+                isForced ? 'Update Required' : 'Update Available',
+                isForced 
+                  ? 'This update is required to continue using the app. Please update now.'
+                  : 'Please update to the latest version of the app.',
+                isForced 
+                  ? [
+                      { text: 'Update Now', onPress: () => handleUpdate() }
+                    ]
+                    : [
+                        { text: 'Later', style: 'cancel', onPress: () => {
+                          // Only save timestamp when user dismisses (not when they click Update)
+                          AsyncStorage.setItem('update_prompt_shown', now.toString());
+                        }},
+                        { text: 'Update', onPress: () => handleUpdate() }
+                      ]
+              );
+            }
           }
         } catch (error) {
           console.error('Failed to check app version:', error);
@@ -89,23 +126,25 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <BottomSheetModalProvider>
-            <Stack>
-              <Stack.Screen
-                name="(auth)"
-                options={{
-                  headerShown: false,
-                  animation: 'ios_from_left',
-                }}
-              />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
-            </Stack>
-          </BottomSheetModalProvider>
-          <StatusBar style="light" />
-          <Toast config={toastConfig as any} />
-        </ThemeProvider>
+        <AutoRefreshProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <BottomSheetModalProvider>
+              <Stack>
+                <Stack.Screen
+                  name="(auth)"
+                  options={{
+                    headerShown: false,
+                    animation: 'ios_from_left',
+                  }}
+                />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
+              </Stack>
+            </BottomSheetModalProvider>
+            <StatusBar style="light" />
+            <Toast config={toastConfig as any} />
+          </ThemeProvider>
+        </AutoRefreshProvider>
       </AppProvider>
     </GestureHandlerRootView>
   );

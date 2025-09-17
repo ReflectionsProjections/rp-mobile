@@ -15,12 +15,14 @@ type DailyState = {
   leaderboard: LeaderboardEntry[];
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 };
 
 type GlobalState = {
   leaderboard: LeaderboardEntry[];
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 };
 
 export const fetchDailyLeaderboard = createAsyncThunk(
@@ -45,8 +47,8 @@ type LeaderboardState = {
 };
 
 const initialState: LeaderboardState = {
-  daily: { day: null, leaderboard: [], loading: false, error: null },
-  global: { leaderboard: [], loading: false, error: null },
+  daily: { day: null, leaderboard: [], loading: false, error: null, lastFetched: null },
+  global: { leaderboard: [], loading: false, error: null, lastFetched: null },
 };
 
 const leaderboardSlice = createSlice({
@@ -54,8 +56,8 @@ const leaderboardSlice = createSlice({
   initialState,
   reducers: {
     clearLeaderboard(state) {
-      state.daily = { day: null, leaderboard: [], loading: false, error: null };
-      state.global = { leaderboard: [], loading: false, error: null };
+      state.daily = { day: null, leaderboard: [], loading: false, error: null, lastFetched: null };
+      state.global = { leaderboard: [], loading: false, error: null, lastFetched: null };
     },
   },
   extraReducers: (builder) => {
@@ -82,6 +84,7 @@ const leaderboardSlice = createSlice({
           } else {
             state.daily.leaderboard = action.payload.leaderboard;
           }
+          state.daily.lastFetched = Date.now();
         },
       )
       .addCase(fetchDailyLeaderboard.rejected, (state, action) => {
@@ -106,6 +109,7 @@ const leaderboardSlice = createSlice({
           } else {
             state.global.leaderboard = action.payload.leaderboard;
           }
+          state.global.lastFetched = Date.now();
         },
       )
       .addCase(fetchGlobalLeaderboard.rejected, (state, action) => {

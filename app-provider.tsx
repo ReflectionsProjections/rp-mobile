@@ -11,8 +11,8 @@ import { setStore } from './api/api';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 60 * 1000, // data considered fresh for 1 hour
-      gcTime: 360 * 60 * 1000, // garbage collect after 6 hours of inactivity
+      staleTime: 5 * 60 * 1000, // data considered fresh for 1 hour
+      gcTime: 30 * 60 * 1000, // garbage collect after 6 hours of inactivity
       retry: 2,
       refetchOnWindowFocus: true,
       refetchOnReconnect: false,
@@ -25,7 +25,7 @@ const persister = createAsyncStoragePersister({ storage: AsyncStorage });
 persistQueryClient({
   queryClient,
   persister,
-  maxAge: 24 * 60 * 60 * 1000, // keep cache up to 1 day between launches
+  maxAge: 12 * 60 * 60 * 1000, // keep cache up to 12 hours between launches
 });
 
 export default function AppProvider({ children }: { children: React.ReactNode }) {

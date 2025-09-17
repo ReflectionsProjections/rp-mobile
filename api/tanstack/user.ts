@@ -29,9 +29,9 @@ export function useUserProfile(isAuthenticated?: boolean | null) {
     queryFn: fetchUserProfile,
     enabled:
       isAuthenticated === true &&
-      (!reduxProfile || !reduxLastFetched || Date.now() - reduxLastFetched > 5 * 60 * 1000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+        (!reduxProfile || !reduxLastFetched || Date.now() - reduxLastFetched > 1 * 60 * 1000),
+    staleTime: 1 * 60 * 1000, // 1 minute (reduced from 5)
+    gcTime: 5 * 60 * 1000, // 5 minutes (reduced from 30)
   });
 
   useEffect(() => {
