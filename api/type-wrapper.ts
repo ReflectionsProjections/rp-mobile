@@ -29,19 +29,25 @@ export interface TypedAxiosInstance {
 
   post<Path extends PostablePaths>(
     url: Path,
-    data: APIRoutes[Path]['POST']['request'],
+    data: 'request' extends keyof APIRoutes[Path]['POST']
+      ? APIRoutes[Path]['POST']['request']
+      : never,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<APIRoutes[Path]['POST']['response']>>;
 
   put<Path extends PuttablePaths>(
     url: Path,
-    data: APIRoutes[Path]['PUT']['request'],
+    data: 'request' extends keyof APIRoutes[Path]['PUT']
+      ? APIRoutes[Path]['PUT']['request']
+      : never,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<APIRoutes[Path]['PUT']['response']>>;
 
   patch<Path extends PatchablePaths>(
     url: Path,
-    data: APIRoutes[Path]['PATCH']['request'],
+    data: 'request' extends keyof APIRoutes[Path]['PATCH']
+      ? APIRoutes[Path]['PATCH']['request']
+      : never,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<APIRoutes[Path]['PATCH']['response']>>;
 

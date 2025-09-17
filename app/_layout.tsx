@@ -9,9 +9,13 @@ import 'react-native-reanimated';
 import React, { useLayoutEffect } from 'react';
 import { Text } from 'react-native';
 import Toast from 'react-native-toast-message';
+import toastConfig from '@/components/toast/ToastConfig';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppProvider from '@/app-provider';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-// import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,11 +32,7 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  // const {
-  //   fcmToken,
-  //   isLoading: notificationsLoading,
-  //   error: notificationsError,
-  // } = useFirebaseNotifications();
+  useFirebaseNotifications();
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -53,19 +53,26 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen
-          name="(auth)"
-          options={{
-            headerShown: false,
-            animation: 'ios_from_left',
-          }}
-        />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-      <Toast />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <BottomSheetModalProvider>
+            <Stack>
+              <Stack.Screen
+                name="(auth)"
+                options={{
+                  headerShown: false,
+                  animation: 'ios_from_left',
+                }}
+              />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
+            </Stack>
+          </BottomSheetModalProvider>
+          <StatusBar style="light" />
+          <Toast config={toastConfig as any} />
+        </ThemeProvider>
+      </AppProvider>
+    </GestureHandlerRootView>
   );
 }

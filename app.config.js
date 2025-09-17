@@ -33,26 +33,38 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
-        backgroundColor: '#ffffff',
+        foregroundImage: './assets/images/rp-logo.png',
+        backgroundColor: '#000000',
       },
       package: 'com.reflectionsprojections',
       googleServicesFile: './googleServices/google-services.json',
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            {
+              scheme: 'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
+            },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
     },
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/favicon.png',
+      favicon: './assets/images/rp-logo.png',
     },
     plugins: [
       'expo-router',
       [
         'expo-splash-screen',
         {
-          image: './assets/images/splash-icon.png',
+          image: './assets/images/rp-logo.png',
           imageWidth: 200,
           resizeMode: 'contain',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#000000',
         },
       ],
       'expo-font',
@@ -63,7 +75,8 @@ export default {
       typedRoutes: true,
     },
     extra: {
-      googleClientId: process.env.OAUTH_GOOGLE_CLIENT_ID,
+      iosGoogleClientId: process.env.IOS_OAUTH_GOOGLE_CLIENT_ID,
+      androidGoogleClientId: process.env.ANDROID_OAUTH_GOOGLE_CLIENT_ID,
       apiUrl: process.env.API_URL || 'https://api.reflectionsprojections.org',
     },
   },

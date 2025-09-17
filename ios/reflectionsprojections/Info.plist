@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.7</string>
+	<string>1.2.7</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -48,7 +48,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your camera to scan QR codes</string>
+	<string>Allow $(PRODUCT_NAME) to access your camera to scan in attendees</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow $(PRODUCT_NAME) to access your microphone</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
@@ -64,6 +70,10 @@
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDefault</string>
 	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>

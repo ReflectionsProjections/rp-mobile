@@ -1,5 +1,5 @@
 // THIS IS THE STAFF SCANNER SCREN
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,26 +13,45 @@ import {
 } from 'react-native';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Picker } from '@react-native-picker/picker';
-import { api } from '../../../api/api';
-import { Event } from '../../../api/types';
+import { api } from '@/api/api';
+import { useEvents } from '@/api/tanstack/events';
+import Toast from 'react-native-toast-message';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  fetchRedemptionInfo,
+  redeemTier,
+  getMerchandiseItems,
+  hasRedeemedTshirt,
+  type RedemptionInfo,
+  type MerchandiseItem,
+} from '@/lib/redemptionUtils';
+import ModeSwitch from '@/components/scanner/ModeSwitch';
+import EventSelector from '@/components/scanner/EventSelector';
+import GeneralCheckinModal from '@/components/scanner/GeneralCheckinModal';
+import TshirtRedemptionModal from '@/components/scanner/TshirtRedemptionModal';
+import EventPickerModal from '@/components/scanner/EventPickerModal';
+import ErrorModal from '@/components/scanner/ErrorModal';
+import SuccessModal from '@/components/scanner/SuccessModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SCAN_BOX_SIZE = SCREEN_WIDTH * 0.7;
-const SCAN_BOX_TOP_OFFSET = SCREEN_HEIGHT * 0.15; // Position box in upper-middle area
+const SCAN_BOX_TOP_OFFSET = SCREEN_HEIGHT * 0.05; // Position box in upper-middle area
 
 const DEMO_ACCOUNT_ID = 'demoacct-bd2c-6535-89b7-reflect12334';
+const GENERAL_CHECKIN_EVENT_ID = 'af789f27-0792-49b0-9db8-65fc5ffff1d9';
 
-const parseQrCode = (qrData: string): { userId: string; expTime: number; isValid: boolean; error?: string } => {
+const parseQrCode = (
+  qrData: string,
+): { userId: string; expTime: number; isValid: boolean; error?: string } => {
   try {
     const parts = qrData.split('#');
-    
+
     if (parts.length !== 3) {
       return {
         userId: '',
         expTime: 0,
         isValid: false,
-        error: 'Invalid QR code format. Expected: hash#expTime#userId'
+        error: 'Invalid QR code format. Expected: hash#expTime#userId',
       };
     }
 
@@ -44,7 +63,7 @@ const parseQrCode = (qrData: string): { userId: string; expTime: number; isValid
         userId: '',
         expTime: 0,
         isValid: false,
-        error: 'Invalid expiration time in QR code'
+        error: 'Invalid expiration time in QR code',
       };
     }
 
@@ -53,56 +72,85 @@ const parseQrCode = (qrData: string): { userId: string; expTime: number; isValid
         userId,
         expTime,
         isValid: false,
-        error: 'QR code has expired'
+        error: 'QR code has expired',
       };
     }
 
     return {
       userId,
       expTime,
-      isValid: true
+      isValid: true,
     };
   } catch (error) {
     return {
       userId: '',
       expTime: 0,
       isValid: false,
-      error: 'Failed to parse QR code'
+      error: 'Failed to parse QR code',
     };
   }
 };
 
 export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [events, setEvents] = useState<Event[]>([]);
+  const { data: events = [], isLoading: eventsLoading } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<Record<string, any>>({});
+  const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [scanned, setScanned] = useState(false);
-  const [scanReady, setScanReady] = useState(false);
+  const [scanReady, setScanReady] = useState(true);
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [lastScannedCode, setLastScannedCode] = useState<string>('');
+  const [_, setLastScannedCode] = useState<string>('');
   const [scanDisabled, setScanDisabled] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [merchModalVisible, setMerchModalVisible] = useState(false);
+  const [merchProcessing, setMerchProcessing] = useState(false);
+  const merchUserIdRef = useRef<string>('');
+  const [generalCheckinModalVisible, setGeneralCheckinModalVisible] = useState(false);
+  const [redemptionInfo, setRedemptionInfo] = useState<RedemptionInfo | null>(null);
+  const [merchandiseItems, setMerchandiseItems] = useState<MerchandiseItem[]>([]);
+  const [isGeneralCheckinMode, setIsGeneralCheckinMode] = useState(true); // Default to General Check-in
 
   const cameraRef = useRef<CameraView>(null);
   const isProcessingRef = useRef(false);
   const lastScannedCodeRef = useRef<string>('');
 
+  // Filter events by selected day
+  const filteredEvents = useMemo(() => {
+    return events
+      .filter((e) => {
+        if (!e.startTime) return false;
+        if (e.eventType === 'CHECKIN') return false;
+        const d = new Date(e.startTime);
+        return d.getDay() === selectedDay;
+      })
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [events, selectedDay]);
+
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get('/events');
-        setEvents(res.data);
-        if (res.data.length) setSelectedEvent({eventId: res.data[0].eventId, name: res.data[0].name});
-      } catch (e) {
-        console.error(e);
-        Alert.alert('Error', 'Failed to load events');
+    if (!isGeneralCheckinMode && filteredEvents.length && !selectedEvent.eventId) {
+      const now = new Date();
+      // Prefer nearest upcoming; fallback to closest by absolute time difference
+      const upcomingSorted = [...filteredEvents]
+        .filter((e) => new Date(e.startTime) >= now)
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+      let chosen = upcomingSorted[0];
+      if (!chosen) {
+        chosen = [...filteredEvents].sort(
+          (a, b) =>
+            Math.abs(new Date(a.startTime).getTime() - now.getTime()) -
+            Math.abs(new Date(b.startTime).getTime() - now.getTime()),
+        )[0];
       }
-    })();
-  }, []);
+      if (chosen) {
+        setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
+      }
+    }
+  }, [filteredEvents, selectedEvent.eventId, isGeneralCheckinMode]);
 
   useEffect(() => {
     return () => {
@@ -114,6 +162,9 @@ export default function ScannerScreen() {
       setScanDisabled(false);
       setErrorOccurred(false);
       setErrorMessage('');
+      setGeneralCheckinModalVisible(false);
+      setRedemptionInfo(null);
+      setMerchandiseItems([]);
       isProcessingRef.current = false;
       lastScannedCodeRef.current = '';
     };
@@ -123,11 +174,11 @@ export default function ScannerScreen() {
     if (errorOccurred || isProcessingRef.current) {
       return;
     }
-    
+
     if (data === lastScannedCodeRef.current) {
       return;
     }
-    
+
     if (loading || scanned || !scanReady || scanDisabled) {
       return;
     }
@@ -137,7 +188,7 @@ export default function ScannerScreen() {
     setLastScannedCode(data);
     setScanned(true);
     setLoading(true);
-    
+
     try {
       if (!selectedEvent) {
         setErrorMessage('Please select an event first');
@@ -147,7 +198,7 @@ export default function ScannerScreen() {
       }
 
       const parsedQr = parseQrCode(data);
-      
+
       if (!parsedQr.isValid) {
         setErrorMessage(parsedQr.error || 'QR code is invalid');
         setErrorOccurred(true);
@@ -155,42 +206,184 @@ export default function ScannerScreen() {
         return;
       }
 
+      const handlePostCheckInFlow = async (userId: string) => {
+        if (isGeneralCheckinMode) {
+          await handleGeneralCheckinFlow(userId);
+        } else {
+          const openedModal = await promptTshirtRedemption(userId);
+          if (!openedModal) {
+            setTimeout(resetScan, 2000);
+          }
+        }
+      };
+
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
-        setSuccessMessage(`Successfully checked in demo user into ${selectedEvent.name}!`);
+        const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+        setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
         setShowSuccess(true);
-        setTimeout(resetScan, 2000);
+        await handlePostCheckInFlow(parsedQr.userId);
         return;
       }
 
-      await api.post('/checkin/scan/staff', {
-        eventId: selectedEvent.eventId,
-        qrCode: data,
-      });
-      
-      setSuccessMessage(`Successfully checked in user into ${selectedEvent.name}!`);
-      setShowSuccess(true);
-      setTimeout(resetScan, 2000);
-      
+      if (isGeneralCheckinMode) {
+        await api.post('/checkin/scan/staff', {
+          eventId: GENERAL_CHECKIN_EVENT_ID,
+          qrCode: data,
+        });
+      } else {
+        if (!selectedEvent.eventId) {
+          setErrorMessage('Please select an event first');
+          setErrorOccurred(true);
+          setScanDisabled(true);
+          return;
+        }
+        await api.post('/checkin/scan/staff', {
+          eventId: selectedEvent.eventId,
+          qrCode: data,
+        });
+      }
+
+      const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+      if (!isGeneralCheckinMode) {
+        setSuccessMessage(`Successfully checked in user into ${eventName}!`);
+        setShowSuccess(true);
+      }
+      await handlePostCheckInFlow(parsedQr.userId);
     } catch (err: any) {
       console.error('Scan error:', err);
-      
+
       let errorMsg = 'Scan failed';
-      
+
       if (err.response?.status === 401) {
+        // Treat as expired but auto-reset quickly
         errorMsg = 'QR code has expired';
       } else if (err.response?.status === 403 && err.response?.data?.error === 'IsDuplicate') {
+        // For duplicates: if general check-in, still open modal; otherwise, show info toast
+        if (isGeneralCheckinMode) {
+          try {
+            const parsed = parseQrCode(lastScannedCodeRef.current);
+            if (parsed.userId) {
+              await handleGeneralCheckinFlow(parsed.userId);
+              setShowSuccess(false);
+              return;
+            }
+          } catch {}
+        }
         errorMsg = 'User has already been checked in to this event';
       } else if (err.response?.data?.error) {
         errorMsg = err.response.data.error;
       } else if (err.message) {
         errorMsg = err.message;
       }
-      
-      setErrorMessage(errorMsg);
-      setErrorOccurred(true);
-      setScanDisabled(true);
+
+      if (
+        isGeneralCheckinMode &&
+        err.response?.status === 403 &&
+        err.response?.data?.error === 'IsDuplicate'
+      ) {
+        // do not block scanning UI; modal flow handled above
+        setLoading(false);
+      } else {
+        setErrorMessage(errorMsg);
+        setErrorOccurred(true);
+        setScanDisabled(true);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleModeChange = (isGeneralCheckin: boolean) => {
+    setIsGeneralCheckinMode(isGeneralCheckin);
+    if (isGeneralCheckin) {
+      setSelectedEvent({ eventId: '', name: '' });
+    }
+  };
+
+  const handleGeneralCheckinFlow = async (userId: string): Promise<void> => {
+    try {
+      const redemptionData = await fetchRedemptionInfo(userId);
+      setRedemptionInfo(redemptionData);
+      setMerchandiseItems(getMerchandiseItems(redemptionData));
+      merchUserIdRef.current = userId;
+      setGeneralCheckinModalVisible(true);
+    } catch (e: any) {
+      console.error('Failed to fetch redemption info:', e);
+      // Don't show error toast for demo account
+      if (userId !== DEMO_ACCOUNT_ID) {
+        Toast.show({
+          type: 'error',
+          text1: 'Unable to load redemption info',
+          text2: e?.message || 'Please try again',
+          position: 'top',
+          topOffset: 50,
+        });
+      }
+      setTimeout(resetScan, 2000);
+    }
+  };
+
+  const promptTshirtRedemption = async (userId: string): Promise<boolean> => {
+    try {
+      const redemptionData = await fetchRedemptionInfo(userId);
+      const hasRedeemed = hasRedeemedTshirt(redemptionData);
+      if (hasRedeemed) {
+        Toast.show({
+          type: 'info',
+          text1: 'Already redeemed',
+          text2: 'User already received t-shirt',
+          position: 'top',
+        });
+        return false;
+      }
+      merchUserIdRef.current = userId;
+      setMerchModalVisible(true);
+      return true;
+    } catch (e: any) {
+      return false;
+    }
+  };
+
+  const redeemMerchandise = async (tier: string) => {
+    try {
+      setMerchProcessing(true);
+      const userId = merchUserIdRef.current;
+      await redeemTier(userId, tier as any);
+      Toast.show({ type: 'success', text1: `${tier} redeemed`, position: 'top' });
+
+      const updatedRedemptionData = await fetchRedemptionInfo(userId);
+      setRedemptionInfo(updatedRedemptionData);
+      setMerchandiseItems(getMerchandiseItems(updatedRedemptionData));
+    } catch (e: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to redeem merchandise',
+        text2: e?.message,
+        position: 'top',
+        topOffset: 50,
+      });
+    } finally {
+      setMerchProcessing(false);
+    }
+  };
+
+  const redeemTshirt = async () => {
+    try {
+      setMerchProcessing(true);
+      const userId = merchUserIdRef.current;
+      await redeemTier(userId, 'TIER1');
+      Toast.show({ type: 'success', text1: 'T-shirt redeemed', position: 'top' });
+      setMerchModalVisible(false);
+      resetScan();
+    } catch (e: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to redeem t-shirt',
+        text2: e?.message,
+        position: 'top',
+      });
+    } finally {
+      setMerchProcessing(false);
     }
   };
 
@@ -203,7 +396,9 @@ export default function ScannerScreen() {
     setScanDisabled(false);
     setErrorOccurred(false);
     setErrorMessage('');
-    // Reset refs
+    setGeneralCheckinModalVisible(false);
+    setRedemptionInfo(null);
+    setMerchandiseItems([]);
     isProcessingRef.current = false;
     lastScannedCodeRef.current = '';
   };
@@ -230,17 +425,20 @@ export default function ScannerScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
-      <View className="px-4 py-2">
-        <Text className="text-white font-bold text-lg mt-10 mb-2">Selected Event:</Text>
-        <TouchableOpacity
-          className="bg-[#333] rounded-lg p-3"
-          onPress={() => setPickerVisible(true)}
-        >
-          <Text className="text-white">
-            {selectedEvent.name || 'Select an event'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModeSwitch isGeneralCheckinMode={isGeneralCheckinMode} onModeChange={handleModeChange} />
+
+      {!isGeneralCheckinMode && (
+        <EventSelector
+          events={filteredEvents}
+          selectedEvent={
+            selectedEvent.eventId
+              ? ({ eventId: selectedEvent.eventId, name: selectedEvent.name } as any)
+              : null
+          }
+          isLoading={eventsLoading}
+          onEventSelect={() => setPickerVisible(true)}
+        />
+      )}
 
       <View className="flex-1 relative">
         {!errorOccurred ? (
@@ -248,7 +446,9 @@ export default function ScannerScreen() {
             ref={cameraRef}
             style={{ flex: 1 }}
             facing="back"
-            onBarcodeScanned={scanReady && !scanned && !loading && !scanDisabled ? handleBarCodeScanned : undefined}
+            onBarcodeScanned={
+              scanReady && !scanned && !loading && !scanDisabled ? handleBarCodeScanned : undefined
+            }
             barcodeScannerSettings={{
               barcodeTypes: ['qr'],
             }}
@@ -258,139 +458,162 @@ export default function ScannerScreen() {
             <Text className="text-white text-lg text-center">Scanner disabled due to error</Text>
           </View>
         )}
-        
-        {/* Status overlay */}
-        {!loading && !scanned && (
-          <View className="absolute top-20 left-0 right-0 items-center z-10 px-4">
-            {scanReady && (
-              <View className="bg-black/50 rounded-lg px-4 py-2">
-                <Text className="text-white text-lg font-bold text-center">
-                  Ready to scan
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
 
         {loading && (
-          <View className="absolute inset-0 justify-center items-center bg-black/60 z-20">
+          <View className="absolute inset-0 justify-center items-center bg-black/70 z-20">
             <ActivityIndicator size="large" color="#00adb5" />
-            <Text className="text-white mt-4 text-center">Processing...</Text>
+            <Text className="text-white/90 mt-4 text-center">Processing...</Text>
           </View>
         )}
 
-        {/* Scan box overlay */}
-        <View 
+        <View
           className="absolute items-center justify-center"
-          style={{ 
+          style={{
             top: SCAN_BOX_TOP_OFFSET,
             left: 0,
             right: 0,
-            width: '100%'
+            width: '100%',
           }}
         >
           <TouchableWithoutFeedback onPress={() => setScanReady(true)}>
             <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
-              {/* Corner indicators */}
-              <View className="absolute top-0 left-0 w-12 h-12">
-                <View className="absolute top-0 left-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute top-0 left-0 w-1 h-8 bg-[#00adb5]" />
+              {/* Corner indicators - green when ready to scan, teal when not ready */}
+              <View className="absolute top-0 left-0 w-16 h-16">
+                <View
+                  className={`absolute top-0 left-0 w-10 h-1 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
+                <View
+                  className={`absolute top-0 left-0 w-1 h-10 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
               </View>
-              <View className="absolute top-0 right-0 w-12 h-12">
-                <View className="absolute top-0 right-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute top-0 right-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute top-0 right-0 w-16 h-16">
+                <View
+                  className={`absolute top-0 right-0 w-10 h-1 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
+                <View
+                  className={`absolute top-0 right-0 w-1 h-10 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
               </View>
-              <View className="absolute bottom-0 left-0 w-12 h-12">
-                <View className="absolute bottom-0 left-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute bottom-0 left-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute bottom-0 left-0 w-16 h-16">
+                <View
+                  className={`absolute bottom-0 left-0 w-10 h-1 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
+                <View
+                  className={`absolute bottom-0 left-0 w-1 h-10 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
               </View>
-              <View className="absolute bottom-0 right-0 w-12 h-12">
-                <View className="absolute bottom-0 right-0 w-8 h-1 bg-[#00adb5]" />
-                <View className="absolute bottom-0 right-0 w-1 h-8 bg-[#00adb5]" />
+              <View className="absolute bottom-0 right-0 w-16 h-16">
+                <View
+                  className={`absolute bottom-0 right-0 w-10 h-1 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
+                <View
+                  className={`absolute bottom-0 right-0 w-1 h-10 shadow-lg ${
+                    scanReady
+                      ? 'bg-green-500 shadow-green-500/50'
+                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                  }`}
+                />
               </View>
-              
-              {/* Scan status indicator */}
-              {scanReady && (
-                <View className="absolute inset-0 items-center justify-center">
-                  <View className="bg-[#00adb5]/20 rounded-full p-2">
-                    <View className="w-4 h-4 bg-[#00adb5] rounded-full" />
-                  </View>
-                </View>
-              )}
+
+              {/* Center dot indicator - also changes color */}
+              <View
+                className={`absolute top-1/2 left-1/2 w-2 h-2 rounded-full -translate-x-1 -translate-y-1 shadow-lg ${
+                  scanReady
+                    ? 'bg-green-500 shadow-green-500/50'
+                    : 'bg-[#00adb5] shadow-[#00adb5]/50'
+                }`}
+              />
             </View>
           </TouchableWithoutFeedback>
         </View>
 
         {/* Instructions */}
-        <View className="absolute bottom-40 left-0 right-0 px-6">
-          <View className="bg-black/50 rounded-lg p-4">
-            <Text className="text-white text-center text-base font-semibold mb-2">
-              Attendee Check-in Scanner
-            </Text>
-            <Text className="text-white text-center text-sm opacity-80">
-              {scanReady ? 'Align QR code within the box' : 'Tap the scan box to begin'}
-            </Text>
-          </View>
+        <View className="absolute bottom-20 left-0 right-0 px-6 mb-10">
+          <LinearGradient colors={['#00adb520', '#00adb510']} className="rounded-lg p-[1px]">
+            <View className="bg-[#121212] rounded-lg p-4 border border-[#00adb5]/20">
+              <Text className="text-[#00adb5] text-center text-lg font-semibold mb-1">
+                {isGeneralCheckinMode ? 'General Check-in Scanner' : 'Event Check-in Scanner'}
+              </Text>
+              <Text className="text-white/80 text-center text-sm">
+                {scanReady ? 'Green corners = Ready to scan!' : 'Tap the scan box to begin'}
+              </Text>
+            </View>
+          </LinearGradient>
         </View>
-
       </View>
 
-      <Modal visible={showSuccess} transparent animationType="fade">
-        <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={resetScan}>
-          <View className="bg-[#333] p-6 rounded-lg mx-6 max-w-sm">
-            <Text className="text-[#00adb5] text-xl font-bold text-center mb-2">✓ Success!</Text>
-            <Text className="text-white text-center">{successMessage}</Text>
-            <TouchableOpacity className="bg-[#00adb5] mt-4 py-2 rounded-lg" onPress={resetScan}>
-              <Text className="text-white text-center font-semibold">OK</Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+      <SuccessModal visible={showSuccess} message={successMessage} onClose={resetScan} />
 
-      <Modal visible={errorOccurred} transparent animationType="fade">
-        <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>
-          <View className="bg-red-900/90 p-6 rounded-lg mx-6 max-w-sm min-w-[200px]">
-            <Text className="text-red-200 text-xl font-bold text-center mb-4">Oops!</Text>
-            <Text className="text-white text-center mb-6">{errorMessage}</Text>
-            <TouchableOpacity 
-              className="bg-red-600 px-6 py-3 rounded-lg" 
-              onPress={resetScan}
-            >
-              <Text className="text-white text-center font-semibold">OK</Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+      <GeneralCheckinModal
+        visible={generalCheckinModalVisible}
+        redemptionInfo={redemptionInfo}
+        merchandiseItems={merchandiseItems}
+        merchProcessing={merchProcessing}
+        onRedeem={redeemMerchandise}
+        onClose={() => {
+          setGeneralCheckinModalVisible(false);
+          resetScan();
+        }}
+      />
 
-      <Modal
+      <TshirtRedemptionModal
+        visible={merchModalVisible}
+        processing={merchProcessing}
+        onRedeem={redeemTshirt}
+        onClose={() => {
+          setMerchModalVisible(false);
+          resetScan();
+        }}
+      />
+
+      <ErrorModal visible={errorOccurred} message={errorMessage} onClose={resetScan} />
+
+      <EventPickerModal
         visible={pickerVisible}
-        transparent
-        animationType="fade"
-        presentationStyle="overFullScreen"
-        onRequestClose={() => setPickerVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setPickerVisible(false)}>
-          <View className="flex-1 bg-black/50 justify-center">
-            <TouchableWithoutFeedback>
-              <View className="mx-8 bg-[#222] rounded-lg p-4">
-                <Picker
-                  selectedValue={selectedEvent.eventId}
-                  onValueChange={(val) => {
-                    setSelectedEvent({eventId: val, name: events.find((e) => e.eventId === val)?.name || ''});
-                    setPickerVisible(false);
-                  }}
-                  style={{ color: 'white' }}
-                  dropdownIconColor="white"
-                >
-                  {events.map((e) => (
-                    <Picker.Item key={e.eventId} label={e.name} value={e.eventId} color="white" />
-                  ))}
-                </Picker>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+        events={filteredEvents}
+        selectedEventId={selectedEvent.eventId}
+        onEventSelect={(val) => {
+          const evt = events.find((e) => e.eventId === val);
+          if (evt?.startTime) {
+            const d = new Date(evt.startTime);
+            setSelectedDay(d.getDay());
+          }
+          setSelectedEvent({
+            eventId: val,
+            name: events.find((e) => e.eventId === val)?.name || '',
+          });
+          setPickerVisible(false);
+        }}
+        onClose={() => setPickerVisible(false)}
+      />
     </SafeAreaView>
   );
 }
