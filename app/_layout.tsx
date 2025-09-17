@@ -6,12 +6,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import React, { useLayoutEffect } from 'react';
-import { Text } from 'react-native';
+import React, { useLayoutEffect, useRef } from 'react';
+import { Alert, Linking, Platform, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@/components/toast/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppProvider from '@/app-provider';
+import { checkVersion } from 'react-native-check-version';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
@@ -33,6 +34,8 @@ RNText.defaultProps = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   useFirebaseNotifications();
+  const versionCheckedRef = useRef(false);
+  
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -42,9 +45,40 @@ export default function RootLayout() {
     MagistralMedium: require('../assets/fonts/magistral-medium.ttf'),
   });
 
+  const handleUpdate = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('https://apps.apple.com/us/app/r-p-2025/id6744465190');
+    } else {
+      Linking.openURL('https://play.google.com/store/apps/details?id=com.reflectionsprojections');
+    }
+  };
+
   useEffect(() => {
-    if (loaded) {
+    if (loaded && !versionCheckedRef.current) {
       SplashScreen.hideAsync();
+      versionCheckedRef.current = true;
+      
+      // Check for app updates only once after fonts are loaded
+      const checkAppVersion = async () => {
+        try {
+          const version = await checkVersion();
+          console.log('Version check result:', version);
+          if (version.needsUpdate) {
+            Alert.alert(
+              'Update Available', 
+              'Please update to the latest version of the app.',
+              [
+                { text: 'Later', style: 'cancel' },
+                { text: 'Update', onPress: () => handleUpdate() }
+              ]
+            );
+          }
+        } catch (error) {
+          console.error('Failed to check app version:', error);
+        }
+      };
+      
+      setTimeout(checkAppVersion, 1000);
     }
   }, [loaded]);
 

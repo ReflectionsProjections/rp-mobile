@@ -6746,12 +6746,22 @@ react-is@^19.0.0, react-is@^19.1.0:
   resolved "https://registry.npmjs.org/react-is/-/react-is-19.1.1.tgz"
   integrity sha512-tr41fA15Vn8p4X9ntI+yCyeGSf1TlYaY5vlTZfQmeLBrFo3psOPX6HhTDnFNL9uj3EhP0KAQ80cugCl4b4BERA==
 
+react-native-check-version@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-check-version/-/react-native-check-version-1.4.0.tgz#9650e94c33090c22c1d245f14f75fc40c6b7cfdc"
+  integrity sha512-5Ar/LN0/wFSBEOY9TjtIApTrDu1/i4OYN9u0xW/DG2edlCyyfo/BfQkT15muKrKoDpolaoQfGjkDK8/nx9fT0A==
+
 react-native-deck-swiper@^2.0.18:
   version "2.0.18"
   resolved "https://registry.npmjs.org/react-native-deck-swiper/-/react-native-deck-swiper-2.0.18.tgz"
   integrity sha512-siisiRO5o9CzQwUc3sEBZKZNrRvwaHI4S++R9Z/wL/P/ZMdwlk8N5c20XCn1xoFtfRxFM9ovpN0Rp5COgzUWYQ==
   dependencies:
     prop-types "15.5.10"
+
+react-native-device-info@^14.0.4:
+  version "14.0.4"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-14.0.4.tgz#56b24ace9ff29a66bdfc667209086421ed6cfdce"
+  integrity sha512-NX0wMAknSDBeFnEnSFQ8kkAcQrFHrG4Cl0mVjoD+0++iaKrOupiGpBXqs8xR0SeJyPC5zpdPl4h/SaBGly6UxA==
 
 react-native-edge-to-edge@1.6.0:
   version "1.6.0"
