@@ -12,7 +12,7 @@ import Toast from 'react-native-toast-message';
 import toastConfig from '@/components/toast/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppProvider from '@/app-provider';
-import { checkVersion } from 'react-native-check-version';
+import { checkVersion, CheckVersionOptions } from 'react-native-check-version';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -37,6 +37,10 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   useFirebaseNotifications();
   const versionCheckedRef = useRef(false);
+  // const options: CheckVersionOptions = {
+  //   bundleId: 'com.reflectionsprojections',
+  //   currentVersion: '2025.0.8', // keep this up to date with the app version
+  // };
   
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
@@ -53,69 +57,56 @@ export default function RootLayout() {
     } else {
       Linking.openURL('https://play.google.com/store/apps/details?id=com.reflectionsprojections');
     }
-    
-    // Don't save timestamp here - let the user come back and see the prompt again
-    // until they actually update the app
-  };
-
-  // Helper function to clear update prompt history (for testing)
-  const clearUpdatePromptHistory = async () => {
-    try {
-      await AsyncStorage.removeItem('update_prompt_shown');
-      console.log('Update prompt history cleared');
-    } catch (error) {
-      console.error('Error clearing update prompt history:', error);
-    }
   };
 
   useEffect(() => {
     if (loaded && !versionCheckedRef.current) {
       SplashScreen.hideAsync();
-      versionCheckedRef.current = true;
+      // versionCheckedRef.current = true;
       
-      // Check for app updates only once after fonts are loaded
-      const checkAppVersion = async () => {
-        try {
-          const version = await checkVersion();
-          console.log('Version check result:', version);
+      // // Check for app updates only once after fonts are loaded
+      // const checkAppVersion = async () => {
+      //   try {
+      //     const version = await checkVersion(options);
+      //     console.log('Version check result:', version);
           
-          if (version.needsUpdate) {
-            const lastShown = await AsyncStorage.getItem('update_prompt_shown');
-            const now = Date.now();
-            const oneDayMs = 24 * 60 * 60 * 1000; // 24 hours
-            const isMajorUpdate = version.updateType === 'major';
-            const shouldShowPrompt = isMajorUpdate || 
-                                   !lastShown || 
-                                   (now - parseInt(lastShown, 10)) > oneDayMs;
+      //     if (version.needsUpdate) {
+      //       const lastShown = await AsyncStorage.getItem('update_prompt_shown');
+      //       const now = Date.now();
+      //       const oneDayMs = 24 * 60 * 60 * 1000; // 24 hours
+      //       const isMajorUpdate = version.updateType === 'major';
+      //       const shouldShowPrompt = isMajorUpdate || 
+      //                              !lastShown || 
+      //                              (now - parseInt(lastShown, 10)) > oneDayMs;
             
-            if (shouldShowPrompt) {
-              const isForced = isMajorUpdate;
+      //       if (shouldShowPrompt) {
+      //         const isForced = isMajorUpdate;
               
-              Alert.alert(
-                isForced ? 'Update Required' : 'Update Available',
-                isForced 
-                  ? 'This update is required to continue using the app. Please update now.'
-                  : 'Please update to the latest version of the app.',
-                isForced 
-                  ? [
-                      { text: 'Update Now', onPress: () => handleUpdate() }
-                    ]
-                    : [
-                        { text: 'Later', style: 'cancel', onPress: () => {
-                          // Only save timestamp when user dismisses (not when they click Update)
-                          AsyncStorage.setItem('update_prompt_shown', now.toString());
-                        }},
-                        { text: 'Update', onPress: () => handleUpdate() }
-                      ]
-              );
-            }
-          }
-        } catch (error) {
-          console.error('Failed to check app version:', error);
-        }
-      };
+      //         Alert.alert(
+      //           isForced ? 'Update Required' : 'Update Available',
+      //           isForced 
+      //             ? 'This update is required to continue using the app. Please update now.'
+      //             : 'Please update to the latest version of the app.',
+      //           isForced 
+      //             ? [
+      //                 { text: 'Update Now', onPress: () => handleUpdate() }
+      //               ]
+      //               : [
+      //                   { text: 'Later', style: 'cancel', onPress: () => {
+      //                     // Only save timestamp when user dismisses (not when they click Update)
+      //                     AsyncStorage.setItem('update_prompt_shown', now.toString());
+      //                   }},
+      //                   { text: 'Update', onPress: () => handleUpdate() }
+      //                 ]
+      //         );
+      //       }
+      //     }
+      //   } catch (error) {
+      //     console.error('Failed to check app version:', error);
+      //   }
+      // };
       
-      setTimeout(checkAppVersion, 1000);
+      // setTimeout(checkAppVersion, 1000);
     }
   }, [loaded]);
 
