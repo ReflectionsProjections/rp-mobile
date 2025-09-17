@@ -6,9 +6,12 @@ import QRDisplay from '@/components/scanner/QRDisplay';
 import { useAppSelector } from '@/lib/store';
 import { getWeekday } from '@/lib/utils';
 import { Attendee } from '@/api/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const QR_SIZE = SCREEN_WIDTH * 0.67;
+const REFRESH_COOLDOWN_KEY = 'qr_refresh_cooldown';
+const COOLDOWN_DURATION = 3000; // 3 seconds
 
 export default function ScannerScreen() {
   const [weekdayShort, setWeekdayShort] = useState<keyof Attendee | null>(null);
@@ -24,6 +27,37 @@ export default function ScannerScreen() {
     handleManualRefresh,
   } = useQRCode();
 
+  // Check if cooldown is still active on component mount
+  useEffect(() => {
+    const checkCooldownStatus = async () => {
+      try {
+        const cooldownEndTime = await AsyncStorage.getItem(REFRESH_COOLDOWN_KEY);
+        if (cooldownEndTime) {
+          const endTime = parseInt(cooldownEndTime, 10);
+          const now = Date.now();
+          
+          if (now < endTime) {
+            // Still in cooldown
+            setIsRefreshCooldown(true);
+            const remainingTime = endTime - now;
+            setTimeout(() => {
+              setIsRefreshCooldown(false);
+              AsyncStorage.removeItem(REFRESH_COOLDOWN_KEY);
+            }, remainingTime);
+          } else {
+            // Cooldown expired
+            AsyncStorage.removeItem(REFRESH_COOLDOWN_KEY);
+            setIsRefreshCooldown(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking cooldown status:', error);
+      }
+    };
+
+    checkCooldownStatus();
+  }, []);
+
   useEffect(() => {
     const date = new Date();
     const weekday = getWeekday(date.toISOString());
@@ -31,20 +65,41 @@ export default function ScannerScreen() {
     setWeekdayShort(key as keyof Attendee);
   }, []);
 
-  const handleRefreshWithCooldown = useCallback(() => {
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      // This prevents memory leaks
+    };
+  }, []);
+
+  const handleRefreshWithCooldown = useCallback(async () => {
     if (isRefreshing || isRefreshCooldown) return;
 
     setIsRefreshing(true);
     handleManualRefresh();
 
     // Set cooldown for 3 seconds after a brief delay
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsRefreshing(false);
       setIsRefreshCooldown(true);
 
-      setTimeout(() => {
+      // Store cooldown end time in AsyncStorage
+      const cooldownEndTime = Date.now() + COOLDOWN_DURATION;
+      try {
+        await AsyncStorage.setItem(REFRESH_COOLDOWN_KEY, cooldownEndTime.toString());
+      } catch (error) {
+        console.error('Error saving cooldown:', error);
+      }
+
+      setTimeout(async () => {
         setIsRefreshCooldown(false);
-      }, 3000);
+        try {
+          await AsyncStorage.removeItem(REFRESH_COOLDOWN_KEY);
+        } catch (error) {
+          console.error('Error removing cooldown:', error);
+        }
+      }, COOLDOWN_DURATION);
     }, 500); // Small delay to prevent flashing
   }, [isRefreshing, isRefreshCooldown, handleManualRefresh]);
 

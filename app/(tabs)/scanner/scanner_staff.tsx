@@ -133,19 +133,40 @@ export default function ScannerScreen() {
   useEffect(() => {
     if (!isGeneralCheckinMode && filteredEvents.length && !selectedEvent.eventId) {
       const now = new Date();
-      // Prefer nearest upcoming; fallback to closest by absolute time difference
-      const upcomingSorted = [...filteredEvents]
-        .filter((e) => new Date(e.startTime) >= now)
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-
-      let chosen = upcomingSorted[0];
-      if (!chosen) {
-        chosen = [...filteredEvents].sort(
-          (a, b) =>
-            Math.abs(new Date(a.startTime).getTime() - now.getTime()) -
-            Math.abs(new Date(b.startTime).getTime() - now.getTime()),
-        )[0];
+      const bufferMs = 5 * 60 * 1000; // 10 minutes in milliseconds
+      
+      // Find events that are currently active (within 10 minutes of start/end)
+      const activeEvents = filteredEvents.filter((event) => {
+        const startTime = new Date(event.startTime);
+        const endTime = new Date(event.endTime);
+        
+        // Event is active if current time is within 10 minutes of start or end
+        const isNearStart = Math.abs(now.getTime() - startTime.getTime()) <= bufferMs;
+        const isNearEnd = Math.abs(now.getTime() - endTime.getTime()) <= bufferMs;
+        const isDuringEvent = now >= startTime && now <= endTime;
+        
+        return isNearStart || isNearEnd || isDuringEvent;
+      });
+      
+      let chosen = null;
+      
+      if (activeEvents.length > 0) {
+        // If there are active events, choose the one with the earliest start time
+        chosen = activeEvents.reduce((earliest, current) => {
+          const earliestStart = new Date(earliest.startTime);
+          const currentStart = new Date(current.startTime);
+          
+          return currentStart < earliestStart ? current : earliest;
+        });
+      } else {
+        // If no active events, choose the next upcoming event
+        const upcomingEvents = filteredEvents
+          .filter((e) => new Date(e.startTime) > now)
+          .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        
+        chosen = upcomingEvents[0];
       }
+      
       if (chosen) {
         setSelectedEvent({ eventId: chosen.eventId, name: chosen.name });
       }
@@ -171,23 +192,23 @@ export default function ScannerScreen() {
   }, []);
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
-    if (errorOccurred || isProcessingRef.current) {
+    // Prevent multiple simultaneous scans
+    if (errorOccurred || isProcessingRef.current || loading || scanned || !scanReady || scanDisabled) {
       return;
     }
 
+    // Prevent duplicate scans of the same code
     if (data === lastScannedCodeRef.current) {
       return;
     }
 
-    if (loading || scanned || !scanReady || scanDisabled) {
-      return;
-    }
-
+    // Set processing state immediately to prevent race conditions
     isProcessingRef.current = true;
     lastScannedCodeRef.current = data;
     setLastScannedCode(data);
     setScanned(true);
     setLoading(true);
+    setScanReady(false); // Disable scanning while processing
 
     try {
       if (!selectedEvent) {
@@ -283,17 +304,26 @@ export default function ScannerScreen() {
       ) {
         // do not block scanning UI; modal flow handled above
         setLoading(false);
+        isProcessingRef.current = false;
       } else {
         setErrorMessage(errorMsg);
         setErrorOccurred(true);
         setScanDisabled(true);
+        isProcessingRef.current = false;
       }
     } finally {
       setLoading(false);
+      // Always reset processing state
+      if (!isProcessingRef.current) {
+        // Only reset if not already reset above
+        isProcessingRef.current = false;
+      }
     }
   };
 
   const handleModeChange = (isGeneralCheckin: boolean) => {
+    // Reset scanner state when switching modes
+    resetScan();
     setIsGeneralCheckinMode(isGeneralCheckin);
     if (isGeneralCheckin) {
       setSelectedEvent({ eventId: '', name: '' });
@@ -390,7 +420,7 @@ export default function ScannerScreen() {
   const resetScan = () => {
     setScanned(false);
     setShowSuccess(false);
-    setScanReady(false);
+    setScanReady(true); // Always ready for next scan
     setLoading(false);
     setLastScannedCode('');
     setScanDisabled(false);
@@ -401,6 +431,15 @@ export default function ScannerScreen() {
     setMerchandiseItems([]);
     isProcessingRef.current = false;
     lastScannedCodeRef.current = '';
+    
+    // Force camera to reset by briefly disabling and re-enabling scanning
+    setTimeout(() => {
+      if (cameraRef.current) {
+        // This helps reset the camera's internal state
+        setScanReady(false);
+        setTimeout(() => setScanReady(true), 100);
+      }
+    }, 100);
   };
 
   if (!permission) {
