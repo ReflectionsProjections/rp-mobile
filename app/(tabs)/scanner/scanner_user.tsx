@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { SafeAreaView, View, Dimensions, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, View, Dimensions, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import BackgroundSvg from '@/assets/images/qrbackground.svg';
 import { useQRCode } from '@/hooks/useQRCode';
 import QRDisplay from '@/components/scanner/QRDisplay';
@@ -8,7 +8,7 @@ import { getWeekday } from '@/lib/utils';
 import { Attendee } from '@/api/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const QR_SIZE = SCREEN_WIDTH * 0.67;
+const QR_SIZE = SCREEN_WIDTH * 0.6; // Slightly smaller to fit better
 
 export default function ScannerScreen() {
   const [weekdayShort, setWeekdayShort] = useState<keyof Attendee | null>(null);
@@ -36,15 +36,13 @@ export default function ScannerScreen() {
     setIsRefreshing(true);
     handleManualRefresh();
 
-    // Set cooldown for 3 seconds after a brief delay
     setTimeout(() => {
       setIsRefreshing(false);
       setIsRefreshCooldown(true);
-
       setTimeout(() => {
         setIsRefreshCooldown(false);
       }, 3000);
-    }, 500); // Small delay to prevent flashing
+    }, 500);
   }, [isRefreshing, isRefreshCooldown, handleManualRefresh]);
 
   const attendee = useAppSelector((state) => state.attendee.attendee);

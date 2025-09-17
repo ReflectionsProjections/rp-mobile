@@ -16,15 +16,12 @@ interface LeaderboardData {
 interface LeaderboardListProps {
   data: LeaderboardData[];
   userId: string;
-  // Top separator
   showTopSeparator?: boolean;
   topSeparatorIndex?: number;
   peopleAboveCount?: number;
-
-  // Bottom separator
   showBottomSeparator?: boolean;
-  bottomSeparatorIndex?: number;
   peopleBelowCount?: number;
+  isLoading: boolean;
 }
 
 export type LeaderboardListHandle = {
@@ -41,6 +38,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
       showBottomSeparator = true,
       peopleBelowCount = 0,
       peopleAboveCount = 0,
+      isLoading,
     },
     ref,
   ) {
@@ -57,7 +55,18 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
             animated: true,
             viewPosition: 0.5,
           });
-        } catch {}
+        } catch (error) {
+          // Fallback in case the initial scroll fails
+          setTimeout(() => {
+            if (listRef.current) {
+              listRef.current.scrollToIndex({
+                index: userIndex,
+                animated: true,
+                viewPosition: 0.5,
+              });
+            }
+          }, 100);
+        }
       }
     };
 
@@ -65,14 +74,30 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
       scrollToUser,
     }));
 
+    // Logic to handle loading state and empty data
+    if (isLoading && data.length === 0) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      );
+    }
+
+    if (!isLoading && data.length === 0) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#ffffff', fontSize: 16 }}>No leaderboard data available.</Text>
+        </View>
+      );
+    }
+
     return (
       <FlatList
         ref={listRef}
         data={data}
         keyExtractor={(item) => String(item.userId)}
-        // 👇 Android-only adjustments
-        scrollEnabled={Platform.OS === 'android' ? true : false}
-        removeClippedSubviews={Platform.OS === 'android' ? false : true}
+        scrollEnabled={true}
+        removeClippedSubviews={Platform.OS === 'android'}
         initialScrollIndex={
           Platform.OS === 'android'
             ? undefined
@@ -93,6 +118,17 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
         maintainVisibleContentPosition={{
           minIndexForVisible: 0,
           autoscrollToTopThreshold: 10,
+        }}
+        onScrollToIndexFailed={(info) => {
+          // This ensures a robust scroll, especially on Android
+          const wait = new Promise(resolve => setTimeout(resolve, 500));
+          wait.then(() => {
+            try {
+              listRef.current?.scrollToIndex({ index: info.index, animated: true });
+            } catch (e) {
+              console.log("Scroll to index failed again: ", e);
+            }
+          });
         }}
         renderItem={({ item, index }) => {
           const shouldShowTopSeparator = showTopSeparator && index === topSeparatorIndex;
@@ -123,7 +159,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                       textAlign: 'center',
                     }}
                   >
-                    {peopleAboveCount > 0 ? `...` : 'Your Position'}
+                    {peopleAboveCount > 0 ? `...${peopleAboveCount} People Above` : 'Your Position'}
                   </Text>
                   <View
                     style={{
@@ -135,7 +171,6 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                   />
                 </View>
               )}
-              {/* Bottom separator moved to ListFooterComponent */}
               {Platform.OS === 'android' ? (
                 <LeaderboardItem
                   rank={item.rank}
@@ -159,9 +194,6 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
               )}
             </>
           );
-        }}
-        onScrollToIndexFailed={() => {
-          setTimeout(scrollToUser, 100);
         }}
         ListFooterComponent={() =>
           showBottomSeparator ? (
@@ -188,7 +220,7 @@ export const LeaderboardList = forwardRef<LeaderboardListHandle, LeaderboardList
                   textAlign: 'center',
                 }}
               >
-                {`...`}
+                {`...${peopleBelowCount} People Below`}
               </Text>
               <View
                 style={{

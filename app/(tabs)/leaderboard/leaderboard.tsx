@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, PanResponder, Animated, Pressable, Text } from 'react-native';
+import { View, PanResponder, Animated, Pressable, Text, Dimensions, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Header } from '@/components/home/Header';
 import {
@@ -42,23 +42,28 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
     today.getDate(),
   ).padStart(2, '0')}`;
 
+  const dailyLoading = useAppSelector((state) => state.leaderboard.daily.status === 'loading');
+  const globalLoading = useAppSelector((state) => state.leaderboard.global.status === 'loading');
+
   React.useEffect(() => {
+    if (!attendee?.userId) return;
+
     if (!dailyLeaderboard.day || dailyLeaderboard.day !== dayStr) {
       dispatch(fetchDailyLeaderboard({ day: dayStr }));
     }
     if (globalLeaderboard.leaderboard.length === 0) {
       dispatch(fetchGlobalLeaderboard({}));
     }
-  }, [dayStr]);
+  }, [dayStr, attendee?.userId]);
 
   const dailyUserRank =
-    dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+    dailyLeaderboard?.leaderboard?.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
   const globalUserRank =
-    globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
+    globalLeaderboard?.leaderboard?.find((x) => x.userId === attendee?.userId)?.rank ?? 0;
   const dailyPoints =
-    dailyLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+    dailyLeaderboard?.leaderboard?.find((x) => x.userId === attendee?.userId)?.points ?? 0;
   const globalPoints =
-    globalLeaderboard.leaderboard.find((x) => x.userId === attendee?.userId)?.points ?? 0;
+    globalLeaderboard?.leaderboard?.find((x) => x.userId === attendee?.userId)?.points ?? 0;
 
   const pan = useRef(new Animated.ValueXY()).current;
   const listRef = useRef<LeaderboardListHandle>(null);
@@ -74,18 +79,12 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
   }, []);
 
   const handleRankPress = async () => {
-    await triggerIfEnabled(hapticsEnabled, 'medium');
-    listRef.current?.scrollToUser();
-
-    const userIndex = data.findIndex((p: any) => p.userId === attendee?.userId);
-
-    if (userIndex !== -1 && outerScrollRef.current) {
-      const ITEM_HEIGHT = 94;
-      const HEADER_APPROX = 0;
-      const scrollY = HEADER_APPROX + userIndex * ITEM_HEIGHT;
-      try {
-        outerScrollRef.current.scrollTo({ y: scrollY, animated: true });
-      } catch {}
+    try {
+      await triggerIfEnabled(hapticsEnabled, 'medium');
+      // Use the ref to call the method on the child component
+      listRef.current?.scrollToUser();
+    } catch (error) {
+      console.error('handleRankPress error:', error);
     }
   };
   const panResponder = useRef(
@@ -113,22 +112,27 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
     }),
   ).current;
 
-  // No load-more. We'll compute top/user/bottom sections with separators.
-
   const {
     data,
     showTopSeparator,
     topSeparatorIndex,
     peopleAboveCount,
     showBottomSeparator,
-    bottomSeparatorIndex,
     peopleBelowCount,
   } = React.useMemo(() => {
     const src =
       activeTab === 0
-        ? (dailyLeaderboard.leaderboard ?? dailyLeaderboard.leaderboard)
-        : (globalLeaderboard.leaderboard ?? globalLeaderboard.leaderboard);
-    if (!src) return { data: [], showSeparator: false, separatorIndex: -1, peopleBetweenCount: 0 };
+        ? (dailyLeaderboard?.leaderboard ?? [])
+        : (globalLeaderboard?.leaderboard ?? []);
+    if (!src || src.length === 0)
+      return {
+        data: [],
+        showTopSeparator: false,
+        topSeparatorIndex: -1,
+        peopleAboveCount: 0,
+        showBottomSeparator: false,
+        peopleBelowCount: 0,
+      };
 
     const mappedData = src.map((p) => ({
       rank: p.rank,
@@ -146,7 +150,6 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
     const CONTEXT_AFTER = 6;
     const BOTTOM_COUNT = 20;
 
-    // If no user found or list small, just show up to TOP_COUNT
     if (userIndex === -1 || mappedData.length <= TOP_COUNT) {
       return {
         data: mappedData.slice(0, Math.min(TOP_COUNT, mappedData.length)),
@@ -154,7 +157,6 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
         topSeparatorIndex: -1,
         peopleAboveCount: 0,
         showBottomSeparator: false,
-        bottomSeparatorIndex: -1,
         peopleBelowCount: 0,
       };
     }
@@ -164,7 +166,6 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
     const contextEnd = Math.min(mappedData.length, userIndex + CONTEXT_AFTER + 1);
     const userContext = mappedData.slice(contextStart, contextEnd);
 
-    // Deduplicate overlaps
     const seen = new Set<string>();
     const pushUnique = (arr: typeof mappedData, into: typeof mappedData) => {
       for (const item of arr) {
@@ -179,17 +180,13 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
     pushUnique(top, assembled);
     pushUnique(userContext, assembled);
 
-    // Count everyone before the user's context
-    const peopleAboveCount = Math.max(0, contextStart);
-    // Count everyone after the user's context
+    const peopleAboveCount = Math.max(0, contextStart - TOP_COUNT);
     const peopleBelowCount = Math.max(0, mappedData.length - contextEnd);
 
     const showTopSeparator = peopleAboveCount > 0;
     const topSeparatorIndex = showTopSeparator ? top.length : -1;
 
     const showBottomSeparator = peopleBelowCount > 0;
-    // Place the bottom separator after the user context (end of assembled array)
-    const bottomSeparatorIndex = showBottomSeparator ? assembled.length : -1;
 
     return {
       data: assembled,
@@ -197,7 +194,6 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
       topSeparatorIndex,
       peopleAboveCount,
       showBottomSeparator,
-      bottomSeparatorIndex,
       peopleBelowCount,
     };
   }, [activeTab, dailyLeaderboard, globalLeaderboard, attendee?.userId]);
@@ -208,7 +204,6 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
         ref={outerScrollRef}
         showsVerticalScrollIndicator={false}
         headerMaxHeight={330}
-        // No load-more scrolling
         renderHeaderNavBarComponent={() => (
           <HeaderNavBar isHeader={true} showTint={false}>
             <Header title={'STANDINGS'} bigText={false} />
@@ -348,8 +343,15 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
         </View>
 
         <FadeInWrapper delay={1000}>
-          {activeTab === 0 &&
-          (!dailyLeaderboard || (dailyLeaderboard.leaderboard?.length ?? 0) === 0) ? (
+          {activeTab === 0 && dailyLoading && !dailyLeaderboard.leaderboard.length ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#ffffff" />
+            </View>
+          ) : activeTab === 1 && globalLoading && !globalLeaderboard.leaderboard.length ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#ffffff" />
+            </View>
+          ) : activeTab === 0 && (!dailyLeaderboard || (dailyLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{
@@ -362,8 +364,7 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
                 No leaderboard for today — check back tomorrow!
               </Text>
             </View>
-          ) : activeTab === 1 &&
-            (!globalLeaderboard || (globalLeaderboard.leaderboard?.length ?? 0) === 0) ? (
+          ) : activeTab === 1 && (!globalLeaderboard || (globalLeaderboard.leaderboard?.length ?? 0) === 0) ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <Text
                 style={{
@@ -386,13 +387,12 @@ const LeaderboardScreen = ({ scrollRef }: { scrollRef?: React.RefObject<any> }) 
                 topSeparatorIndex={topSeparatorIndex}
                 peopleAboveCount={peopleAboveCount}
                 showBottomSeparator={showBottomSeparator}
-                bottomSeparatorIndex={bottomSeparatorIndex}
                 peopleBelowCount={peopleBelowCount}
+                isLoading={activeTab === 0 ? dailyLoading : globalLoading}
               />
             </View>
           )}
         </FadeInWrapper>
-
         <View style={{ height: 100 }} />
       </AnimatedScrollView>
     </View>

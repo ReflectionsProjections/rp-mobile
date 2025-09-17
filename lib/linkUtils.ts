@@ -52,14 +52,7 @@ export function stripEventLinks(description: string): string {
 
   const lines = description.split('\n');
   return lines
-<<<<<<< HEAD
-    .filter(line => !line.trim().startsWith(':link:')) // drop link lines
-    .join('\n')
-    .trim();
-}
-=======
     .filter((line) => !line.trim().startsWith(':link:')) // drop link lines
     .join('\n')
     .trim();
 }
->>>>>>> 0d67df498176be230967832360c11e08f3f9a498
