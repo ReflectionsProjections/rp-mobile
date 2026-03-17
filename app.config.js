@@ -63,8 +63,8 @@ export default {
       typedRoutes: true,
     },
     extra: {
+      appEnv: process.env.ENV,
       googleClientId: process.env.OAUTH_GOOGLE_CLIENT_ID,
-      apiUrl: process.env.API_URL || 'https://api.reflectionsprojections.org',
     },
   },
 };

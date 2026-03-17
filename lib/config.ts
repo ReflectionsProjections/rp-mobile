@@ -1,4 +1,13 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
+const PRODUCTION_API_URL = 'https://api.reflectionsprojections.org';
+
+const DEVELOPMENT_API_URL =
+  Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+
+const configuredApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.API_URL;
+const configuredAppEnv = Constants.expoConfig?.extra?.appEnv || process.env.ENV;
 
 export const OAUTH_CONFIG = {
   IOS_GOOGLE_CLIENT_ID:
@@ -11,8 +20,9 @@ export const OAUTH_CONFIG = {
 
 export const API_CONFIG = {
   BASE_URL:
-    //Constants.expoConfig?.extra?.apiUrl ||
-    process.env.API_URL || 'https://api.reflectionsprojections.org',
+    configuredAppEnv === 'PRODUCTION'
+      ? PRODUCTION_API_URL
+      : configuredApiUrl || DEVELOPMENT_API_URL,
   TIMEOUT: 10000,
 };
 

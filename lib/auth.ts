@@ -1,14 +1,14 @@
 import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import { OAUTH_CONFIG } from './config';
+import { API_CONFIG, OAUTH_CONFIG } from './config';
 
 // Complete the auth session
 WebBrowser.maybeCompleteAuthSession();
 
 export async function validateAuthToken(): Promise<boolean> {
   try {
-    const response = await fetch('https://api.reflectionsprojections.org/auth/info', {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/auth/info`, {
       method: 'GET',
       headers: {
         Authorization: (await SecureStore.getItemAsync('jwt')) || '',

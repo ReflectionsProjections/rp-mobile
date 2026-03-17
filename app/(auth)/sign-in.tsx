@@ -24,6 +24,7 @@ import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/rp_signin_logo.svg';
 import Background from '@/assets/background/rp_background.svg';
 import { googleAuth } from '@/lib/auth';
+import { OAUTH_CONFIG } from '@/lib/config';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -33,8 +34,8 @@ export default function SignInScreen() {
       setIsLoading(true);
 
       const redirectUri = AuthSession.makeRedirectUri({
-        scheme: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
-        path: '/(auth)/callback',
+        scheme: OAUTH_CONFIG.REDIRECT_SCHEME,
+        path: OAUTH_CONFIG.REDIRECT_PATH,
       });
 
       const authResult = await googleAuth();
