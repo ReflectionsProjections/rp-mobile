@@ -12,6 +12,14 @@
     npx expo start -c
    ```
 
+## API configuration
+
+Development builds default to the local API instead of production.
+
+- iOS simulator and Expo web use `http://localhost:3000`
+- Android emulator uses `http://10.0.2.2:3000`
+- Physical devices should set `API_URL=http://<your-machine-ip>:3000` in `dev/rp-mobile/.env`
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
