@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "693438449476",
+    "project_id": "reflections-projections",
+    "storage_bucket": "reflections-projections.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693438449476:android:d3c0720dfee853eaee7911",
+        "android_client_info": {
+          "package_name": "com.reflectionsprojections"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "693438449476-2jcqvieieqj5pqhqn9smp02f6vk86fsq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPuhMjb4pB6mbmESXaF8FxEE24Pk81bjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693438449476-2jcqvieieqj5pqhqn9smp02f6vk86fsq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reflectionsprojections"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

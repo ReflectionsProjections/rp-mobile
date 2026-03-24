@@ -1,6 +1,14 @@
 import '@/global.css';
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, Pressable, Text, Alert, Dimensions } from 'react-native';
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  Alert,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -20,7 +28,6 @@ import { googleAuth } from '@/lib/auth';
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { width, height } = Dimensions.get('window');
   const handleEmailLogin = async () => {
     try {
       setIsLoading(true);
@@ -43,8 +50,13 @@ export default function SignInScreen() {
       });
 
       await SecureStore.setItemAsync('jwt', response.data.token);
-
-      router.replace('/(tabs)/home');
+      const roles = await api.get('/auth/info').then((res) => res.data.roles);
+      if (roles.length > 0) {
+        router.replace('/(tabs)/home');
+      } else {
+        Alert.alert('Make sure to register for the event first!');
+        await SecureStore.deleteItemAsync('jwt');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert(
@@ -80,7 +92,7 @@ export default function SignInScreen() {
 
             <View className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]">
               <Text className="font-proRacing text-3xl text-center mt-5 mb-6 z-10">LOGIN</Text>
-              
+
               {/* <LottieView
                 source={require('@/assets/lottie/rp_animation.json')}
                 autoPlay
