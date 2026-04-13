@@ -118,6 +118,8 @@ export default function ScannerScreen() {
   const [eventConfirmationVisible, setEventConfirmationVisible] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<{ eventId: string; name: string } | null>(null);
   const [hasShownInitialConfirmation, setHasShownInitialConfirmation] = useState(false);
+  const [lastSuccessfulScan, setLastSuccessfulScan] = useState<{ eventId: string; qrCode: string } | null>(null);
+  const [undoing, setUndoing] = useState(false);
 
   const cameraRef = useRef<CameraView>(null);
   const isProcessingRef = useRef(false);
@@ -273,8 +275,14 @@ export default function ScannerScreen() {
 
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
         const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+        const targetEventId = isGeneralCheckinMode ? GENERAL_CHECKIN_EVENT_ID : selectedEvent.eventId;
+        
         setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
         setShowSuccess(true);
+        setLastSuccessfulScan({
+          eventId: targetEventId,
+          qrCode: data,
+        });
         await handlePostCheckInFlow(parsedQr.userId);
         return;
       }
@@ -298,6 +306,13 @@ export default function ScannerScreen() {
       }
 
       const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
+      const targetEventId = isGeneralCheckinMode ? GENERAL_CHECKIN_EVENT_ID : selectedEvent.eventId;
+      
+      setLastSuccessfulScan({
+        eventId: targetEventId,
+        qrCode: data,
+      });
+
       if (!isGeneralCheckinMode) {
         setSuccessMessage(`Successfully checked in user into ${eventName}!`);
         setShowSuccess(true);
@@ -488,6 +503,28 @@ export default function ScannerScreen() {
     }, 100);
   };
 
+  const handleUndoScan = async () => {
+    if (!lastSuccessfulScan || undoing) return;
+    setUndoing(true);
+    try {
+      await api.post('/checkin/scan/staff/undo', {
+        eventId: lastSuccessfulScan.eventId,
+        qrCode: lastSuccessfulScan.qrCode,
+      });
+      Alert.alert('Success', 'Successfully undone last scan!');
+      setLastSuccessfulScan(null);
+    } catch (err: any) {
+      console.error('Undo failed:', err);
+      let errorMsg = 'Undo failed';
+      if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      }
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setUndoing(false);
+    }
+  };
+
   if (!permission) {
     return (
       <SafeAreaView className="flex-1 bg-black justify-center items-center">
@@ -642,6 +679,15 @@ export default function ScannerScreen() {
 
         {/* Instructions */}
         <View className="absolute bottom-20 left-0 right-0 px-6 mb-10">
+          {lastSuccessfulScan && (
+            <TouchableOpacity
+              onPress={handleUndoScan}
+              disabled={undoing}
+              className={`mb-4 mx-auto px-6 py-3 rounded-full flex-row items-center border border-[#ff4444] bg-[#121212]/90 ${undoing ? 'opacity-50' : 'opacity-100'}`}
+            >
+              <Text className="text-white font-bold ml-2">Undo Last Scan</Text>
+            </TouchableOpacity>
+          )}
           <LinearGradient colors={['#00adb520', '#00adb510']} className="rounded-lg p-[1px]">
             <View className="bg-[#121212] rounded-lg p-4 border border-[#00adb5]/20">
               <Text className="text-[#00adb5] text-center text-lg font-semibold mb-1">

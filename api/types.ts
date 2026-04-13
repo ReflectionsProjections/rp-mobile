@@ -312,7 +312,19 @@ export interface APIRoutes {
       response: never;
     };
   };
+  '/checkin/event/undo': {
+    POST: {
+      request: { eventId: string; userId: string };
+      response: string;
+    };
+  };
   '/checkin/scan/staff': {
+    POST: {
+      request: { eventId: string; qrCode: string };
+      response: string;
+    };
+  };
+  '/checkin/scan/staff/undo': {
     POST: {
       request: { eventId: string; qrCode: string };
       response: string;
