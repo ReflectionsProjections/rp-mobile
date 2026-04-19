@@ -2,28 +2,35 @@
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Speedometer from '../../assets/pointshop/speedometer.svg';
+import { useThemeColor } from '@/lib/theme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const ASPECT = 144.63 / 280.07;
 {
   /* idk wtf this is chat decided this*/
 }
-const DEFAULT_WIDTH = SCREEN_W * 0.7;
+const DEFAULT_WIDTH = SCREEN_W;
 
 export type PointsGaugeProps = {
-  points: number | string;
+  tier: number | string;
   width?: number;
 };
 
-export function PointsGauge({ points, width = DEFAULT_WIDTH }: PointsGaugeProps) {
+export function PointsGauge({ tier, width = DEFAULT_WIDTH }: PointsGaugeProps) {
   const height = width * ASPECT;
+  const themeColor = useThemeColor();
 
   return (
-    <View className="relative" style={{ width, height }}>
-      <Speedometer width={width} height={height} className="absolute inset-0 z-0" />
+    <View className="relative" style={{ width: width * 1.2, height: height }}>
+      <Speedometer
+        width={width * 1.2}
+        height={height}
+        className="absolute inset-0 z-0"
+        preserveAspectRatio="none"
+      />
 
-      <Text className="absolute inset-x-0 bottom-10 text-white text-[18px] font-proRacing text-center">
-        YOUR POINTS: {points}
+      <Text className="absolute inset-x-0 bottom-10 text-white text-[17px] font-proRacing text-center">
+        CURRENT TIER: <Text style={{ color: themeColor, fontSize: 20 }}>{tier}</Text>
       </Text>
     </View>
   );
