@@ -1,5 +1,5 @@
 import '@/global.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -8,12 +8,12 @@ import {
   Text,
   Alert,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
-import LottieView from 'lottie-react-native';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
 import * as WebBrowser from 'expo-web-browser';
@@ -24,17 +24,29 @@ import ReflectionsProjections from '@/assets/images/rp_2025.svg';
 import LoginIcon from '@/assets/icons/logos/rp_signin_logo.svg';
 import Background from '@/assets/background/rp_background.svg';
 import { googleAuth } from '@/lib/auth';
+import { OAUTH_CONFIG } from '@/lib/config';
+
+const { width, height } = Dimensions.get('window');
 
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const logoScaleAnim = useRef(new Animated.Value(0.9)).current;
+  const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const handleEmailLogin = async () => {
     try {
       setIsLoading(true);
 
       const redirectUri = AuthSession.makeRedirectUri({
-        scheme: 'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
-        path: '/(auth)/callback',
+        scheme:
+          Platform.OS === 'android'
+            ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME
+            : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
+        path: OAUTH_CONFIG.REDIRECT_PATH,
       });
 
       const authResult = await googleAuth();
@@ -43,7 +55,7 @@ export default function SignInScreen() {
       }
       const { result, codeVerifier } = authResult;
 
-      const response = await api.post(path('/auth/login/:platform', { platform: 'ios' }), {
+      const response = await api.post(path('/auth/login/:platform', { platform: Platform.OS }), {
         code: result.params.code,
         redirectUri: redirectUri,
         codeVerifier: codeVerifier,
@@ -73,6 +85,36 @@ export default function SignInScreen() {
     router.replace('/(tabs)/home');
   };
 
+  useEffect(() => {
+    // Start animations on mount
+    const animationSequence = Animated.sequence([
+      Animated.timing(logoScaleAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardSlideAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]);
+
+    animationSequence.start();
+  }, []);
+
   return (
     <SafeAreaView className="flex-1">
       <Background className="absolute inset-0 justify-center z-0" />
@@ -81,17 +123,49 @@ export default function SignInScreen() {
         className="flex-1 items-center justify-center"
       >
         <View className="flex-1 items-center justify-center px-5 w-full">
-          <View className="relative bottom-10 items-center">
+          <Animated.View
+            className="relative bottom-10 items-center"
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
+            }}
+          >
             <ReflectionsProjections width={300} height={32} />
-          </View>
+          </Animated.View>
 
           <View className="w-full max-w-[340px] items-center">
-            <View className="items-center z-10">
+            <Animated.View
+              className="items-center z-10"
+              style={{
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              }}
+            >
               <LoginIcon width={250} height={140} />
-            </View>
+            </Animated.View>
 
-            <View className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]">
-              <Text className="font-proRacing text-3xl text-center mt-5 mb-6 z-10">LOGIN</Text>
+            <Animated.View
+              className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]"
+              style={{
+                opacity: fadeAnim,
+                transform: [{ translateY: cardSlideAnim }],
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.3,
+                shadowRadius: 16,
+                elevation: 12,
+              }}
+            >
+              <Text
+                className="font-proRacing text-3xl text-center mt-5 mb-6 z-10"
+                style={{
+                  textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                  textShadowOffset: { width: 0, height: 2 },
+                  textShadowRadius: 4,
+                }}
+              >
+                LOGIN
+              </Text>
 
               {/* <LottieView
                 source={require('@/assets/lottie/rp_animation.json')}
@@ -117,30 +191,7 @@ export default function SignInScreen() {
                   <SlantedButton onPress={handleGuestLogin}>Continue as Guest</SlantedButton>
                 </SlantedButtonGroup>
               </View>
-
-              <View className="flex-row items-center my-4 w-full">
-                <View className="flex-1 h-[4px] bg-gray-200" />
-                <ThemedText variant="h3" className="mx-2 text-black-600">
-                  OR
-                </ThemedText>
-                <View className="flex-1 h-[4px] bg-gray-200" />
-              </View>
-
-              <View className="flex-row items-center justify-center">
-                <ThemedText variant="body" className="text-black-600">
-                  Learn more{' '}
-                </ThemedText>
-                <Pressable
-                  onPress={() => {
-                    WebBrowser.openBrowserAsync('https://reflectionsprojections.org');
-                  }}
-                >
-                  <ThemedText variant="body-bold" className="underline text-black">
-                    here!
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
+            </Animated.View>
           </View>
         </View>
       </KeyboardAvoidingView>
