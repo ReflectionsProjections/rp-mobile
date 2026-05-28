@@ -28,7 +28,7 @@ export default function LoadingScreen() {
             if (roles.length > 0) {
               router.replace('/(tabs)/home');
             } else {
-              Alert.alert('Make sure to register for the event first!');
+              Alert.alert('Please sign in with a registered account!');
               router.replace('/(auth)/sign-in');
             }
           } else {
@@ -55,7 +55,7 @@ export default function LoadingScreen() {
 
   return (
     <View className="flex-1 justify-center items-center bg-white p-5">
-      <Text className="text-center font-proRacing mb-10">
+      <Text className="text-center font-proRacing mb-8">
         <Text className="text-[32px] font-bold text-black tracking-[2px]">reflections</Text>
         {'\n'}
         <Text className="text-[32px] font-bold text-[#F0363D] tracking-[2px]">projections</Text>

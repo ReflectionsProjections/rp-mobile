@@ -5,4 +5,5 @@ export interface CardType {
   location: string;
   pts: number;
   description?: string;
+  tags?: string[];
 }

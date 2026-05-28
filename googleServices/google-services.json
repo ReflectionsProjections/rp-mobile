@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.reflectionsprojections",
+            "certificate_hash": "baae97856925142e912f6ee19e8be20b7a22a9f3"
+          }
+        },
+        {
           "client_id": "693438449476-2jcqvieieqj5pqhqn9smp02f6vk86fsq.apps.googleusercontent.com",
           "client_type": 3
         }
