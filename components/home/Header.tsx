@@ -1,5 +1,13 @@
 import React, { useRef, useState } from 'react';
-import { View, TouchableOpacity, Animated, StyleSheet, Platform, Dimensions } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Animated,
+  StyleSheet,
+  Platform,
+  Dimensions,
+  Text,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -10,7 +18,6 @@ import { fetchMyShifts } from '@/lib/slices/shiftsSlice';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import { fetchStaff } from '@/lib/slices/staffSlice';
 import LOGO from '../../assets/images/logo.svg';
-import { ThemedText } from '../themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
 import { triggerIfEnabled } from '@/lib/haptics';
 import { RootState } from '@/lib/store';
@@ -104,11 +111,11 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
         </Animated.View>
       </TouchableOpacity>
       {title && (
-        <View style={styles.titleContainer}>
-          <ThemedText variant="bigName" style={[styles.mainTitle, { fontSize: bigText ? 30 : 28 }]}>
-            {title}
-          </ThemedText>
-          <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
+        <View style={[styles.titleContainer, title === 'EVENTS' && styles.eventsTitleContainer]}>
+          <Text style={[styles.mainTitle, { fontSize: bigText ? 32 : 28 }]}>{title}</Text>
+          {title !== 'EVENTS' && (
+            <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
+          )}
         </View>
       )}
       <TouchableOpacity onPress={handleProfilePress}>
@@ -128,15 +135,20 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
   },
+  eventsTitleContainer: {
+    marginTop: -2,
+  },
   mainTitle: {
-    fontSize: height < 700 ? 18 : 22, // Smaller title for iPhone SE
-    fontFamily: 'ProRacingSlant',
-    letterSpacing: height < 700 ? 0.5 : 1, // Tighter spacing for small screens
+    fontFamily: 'Ethnocentric',
+    color: '#fff',
+    lineHeight: height < 700 ? 32 : 40,
+    letterSpacing: 0,
+    textAlign: 'center',
   },
   titleUnderline: {
-    marginTop: height < 700 ? 6 : 8, // Tighter spacing for iPhone SE
-    width: height < 700 ? 100 : 120, // Smaller underline for small screens
-    height: 3,
-    borderRadius: 2,
+    marginTop: height < 700 ? 2 : 4,
+    width: 98,
+    height: 4,
+    borderRadius: 6,
   },
 });
