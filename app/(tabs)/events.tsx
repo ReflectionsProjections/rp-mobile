@@ -8,21 +8,22 @@ import {
   TouchableOpacity,
   Platform,
   Linking,
+  ScrollView,
 } from 'react-native';
 import { Modal, Pressable } from 'react-native';
-import BadgeSvg from '../../assets/images/badge.svg';
-import BadgeBackSvg from '../../assets/images/badgeback.svg';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
 import { Event } from '../../api/types';
-import { getWeekday } from '@/lib/utils';
+import { formatAMPM } from '@/lib/utils';
 import LottieView from 'lottie-react-native';
 import { Header } from '@/components/home/Header';
 import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 import FoodMenuBottomSheet from '@/components/events/FoodMenuBottomSheet';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import BackgroundSvg from '@/assets/background/backgroundEvents.svg';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
@@ -30,26 +31,15 @@ import Toast from 'react-native-toast-message';
 import { parseEventLink, stripEventFood, stripEventLinks } from '@/lib/linkUtils';
 
 const dayTabs = [
-  { label: 'TUE', dayNumber: 2, barColor: '#4F0202' },
-  { label: 'WED', dayNumber: 3, barColor: '#831C1C' },
-  { label: 'THU', dayNumber: 4, barColor: '#B60000' },
-  { label: 'FRI', dayNumber: 5, barColor: '#E20303' },
-  { label: 'SAT', dayNumber: 6, barColor: '#EF3F3F' },
+  { label: 'WED', dayNumber: 3 },
+  { label: 'THUR', dayNumber: 4 },
+  { label: 'FRI', dayNumber: 5 },
+  { label: 'SAT', dayNumber: 6 },
 ];
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const typeColors = {
-  SPECIAL: '#4caf50ff',
-  SPEAKER: '#4caf50ff',
-  CORPORATE: '#ff9800ff',
-  MEALS: '#f44336ff',
-  PARTNERS: '#9c27b0ff',
-  CHECKIN: '#607d8bff',
-  DEFAULT: '#388e3cff',
-};
-
-const { height } = Dimensions.get('window');
+const EXPANDED_CARD_WIDTH = 375;
+const EXPANDED_CARD_HEIGHT = 483;
 
 const EventsScreen = () => {
   // Get data from Redux
@@ -58,101 +48,47 @@ const EventsScreen = () => {
   const user = useAppSelector((state: RootState) => state.user.profile);
   const dispatch = useAppDispatch();
 
-  const [selectedDay, setSelectedDay] = useState(2);
+  const [selectedDay, setSelectedDay] = useState(3);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFoodMenu, setShowFoodMenu] = useState(false);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
-  
-  const slideY = useRef(new Animated.Value(-SCREEN_HEIGHT)).current;
+
+  const modalEntrance = useRef(new Animated.Value(0)).current;
   const itemAnimations = useRef<Record<string, Animated.Value>>({});
-  // ADD
-  const CARD_W = SCREEN_WIDTH * 0.85;
-  const CARD_H = SCREEN_HEIGHT * 0.75;
-
-  const flip = useRef(new Animated.Value(0)).current;
-  const [isFlipped, setIsFlipped] = useState(false);
   const foodMenuOpacity = useRef(new Animated.Value(1)).current;
-
-  const rotateY = flip.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const toggleFlip = () => {
-    const newFlippedState = !isFlipped;
-
-    if (newFlippedState) {
-      // Flipping to back - hide food menu button immediately
-      setIsFlipped(newFlippedState);
-      // Haptics on flip
-      triggerIfEnabled(hapticsEnabled, 'light');
-      Animated.timing(foodMenuOpacity, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      // Flipping to front - update state first, then fade in after flip
-      setIsFlipped(newFlippedState);
-      // Haptics on flip
-      triggerIfEnabled(hapticsEnabled, 'light');
-    }
-
-    Animated.spring(flip, {
-      toValue: newFlippedState ? 1 : 0,
-      useNativeDriver: true,
-      friction: 8,
-      tension: 40,
-    }).start(() => {
-      // After flip animation completes, fade in the food menu button
-      if (!newFlippedState) {
-        Animated.timing(foodMenuOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
-    });
-  };
-
-  const frontRotate = flip.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const backRotate = flip.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['180deg', '360deg'],
-  });
+  const expandedScale = Math.min(
+    (SCREEN_WIDTH - 26) / EXPANDED_CARD_WIDTH,
+    (SCREEN_HEIGHT - 220) / EXPANDED_CARD_HEIGHT,
+    1,
+  );
 
   useEffect(() => {
     if (selectedEvent) {
-      flip.setValue(0);
-      setIsFlipped(false);
       foodMenuOpacity.setValue(1);
     }
   }, [selectedEvent]);
 
   useEffect(() => {
     if (selectedEvent) {
-      Animated.timing(slideY, {
-        toValue: 0,
-        duration: 400,
-        easing: Easing.out(Easing.quad),
+      modalEntrance.setValue(0);
+      Animated.timing(modalEntrance, {
+        toValue: 1,
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
     } else {
-      slideY.setValue(-SCREEN_HEIGHT);
+      modalEntrance.setValue(0);
     }
   }, [selectedEvent]);
 
   useEffect(() => {
-    // Initialize selected tab to today's weekday (Tue-Sat), default Tuesday
+    // Initialize selected tab to today's weekday (Wed-Sat), default Wednesday
     const today = new Date().getDay();
-    if (today >= 2 && today <= 6) {
+    if (today >= 3 && today <= 6) {
       setSelectedDay(today);
     } else {
-      setSelectedDay(2);
+      setSelectedDay(3);
     }
   }, []);
 
@@ -163,13 +99,9 @@ const EventsScreen = () => {
   });
 
   const handleCloseModal = () => {
-    flip.stopAnimation();
-    flip.setValue(0);
-    setIsFlipped(false);
-
-    Animated.timing(slideY, {
-      toValue: -SCREEN_HEIGHT,
-      duration: 400,
+    Animated.timing(modalEntrance, {
+      toValue: 0,
+      duration: 130,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start(() => {
@@ -265,11 +197,11 @@ const EventsScreen = () => {
 
   return (
     <View className="flex-1">
-      <BackgroundSvg
+      <LinearGradient
+        colors={['#130630', '#72138A']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFillObject}
-        width={SCREEN_WIDTH}
-        height={SCREEN_HEIGHT}
-        preserveAspectRatio="none"
       />
       <SafeAreaView
         style={{
@@ -284,19 +216,15 @@ const EventsScreen = () => {
 
         {filteredEvents.length === 0 ? (
           <View className="flex-1 justify-center items-center">
-            <Text className="text-white text-lg">No events for this day.</Text>
+            <Text style={styles.emptyText}>No events for this day.</Text>
           </View>
         ) : (
           <FlatList
             data={filteredEvents}
             keyExtractor={(item) => item.eventId}
-            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 100, gap: 8 }}
+            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 120 }}
             scrollEnabled={!selectedEvent}
-            ListFooterComponent={
-              <Text className="text-white/60 text-center pt-2 text-sm italic font-magistralMedium">
-                End of Events
-              </Text>
-            }
+            ListFooterComponent={<Text style={styles.footerText}>End of Events</Text>}
             renderItem={({ item, index }) => {
               if (!itemAnimations.current[item.eventId]) {
                 itemAnimations.current[item.eventId] = new Animated.Value(0);
@@ -324,204 +252,219 @@ const EventsScreen = () => {
         )}
 
         <Modal visible={!!selectedEvent && !showFoodMenu} transparent animationType="fade">
-          <Pressable
-            className="flex-1 bg-black/60 justify-center items-center"
-            onPress={handleCloseModal}
-          >
+          <View style={styles.modalOverlay}>
+            <BlurView intensity={55} tint="dark" style={StyleSheet.absoluteFillObject} />
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={handleCloseModal} />
             <Animated.View
               style={{
-                position: 'absolute',
-                top: SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT * 0.75) / 1.3,
-                left: SCREEN_WIDTH / 2 - (SCREEN_WIDTH * 0.85) / 1.7,
-                width: '100%',
-                height: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                transform: [{ perspective: 1000 }, { translateY: slideY }],
+                transform: [
+                  {
+                    translateY: modalEntrance.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [10, 0],
+                    }),
+                  },
+                  {
+                    scale: modalEntrance.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.98, 1],
+                    }),
+                  },
+                ],
+                opacity: modalEntrance,
               }}
             >
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backfaceVisibility: 'hidden',
-                  transform: [{ perspective: 1000 }, { rotateY: frontRotate }],
-                }}
-              >
-                <BadgeSvg
-                  width="100%"
-                  height="100%"
-                  preserveAspectRatio="xMidYMid meet"
-                  style={{ position: 'absolute', top: 0, left: 0 }}
-                  color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
-                />
-
-                <View className={`absolute top-[30%] left-0 right-0 bottom-0 items-center justify-center px-4`}>
-                  <Text
-                    className={`text-${height < 700 ? 'lg' : 'xl'} font-bold text-[#B60000] text-center mb-4 px-${height < 700 ? 6 : 0}`}
-                    style={{ fontFamily: 'ProRacingSlant' }}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {selectedEvent?.name}
-                  </Text>
-                  <Text
-                    className={`text-${height < 700 ? 'xs' : 'sm'} text-[#B60000] text-center mb-2 px-${height < 700 ? 6 : 0}`}
-                    numberOfLines={20}
-                    ellipsizeMode="tail"
-                  >
-                    {selectedEvent?.description === 'none'
-                      ? 'No description available'
-                      : stripEventFood(stripEventLinks(selectedEvent?.description || ''))}
-                  </Text>
-                </View>
-                <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
-                  <Text className="text-xl text-[#B60000] text-center">
-                    {getWeekday(selectedEvent?.startTime)}
-                  </Text>
-                </View>
-              </Animated.View>
-
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backfaceVisibility: 'hidden',
-                  transform: [{ perspective: 1000 }, { rotateY: backRotate }],
-                }}
-              >
-                <BadgeBackSvg
-                  width="100%"
-                  height="100%"
-                  preserveAspectRatio="xMidYMid meet"
-                  style={{ position: 'absolute', top: 0, left: 0 }}
-                  color={typeColors[selectedEvent?.eventType as keyof typeof typeColors]}
-                />
-                <View className="absolute bottom-[2%] left-0 right-[10%] items-end justify-center px-6">
-                  <Text className="text-xl text-[#B60000] text-center">
-                    {getWeekday(selectedEvent?.startTime)}
-                  </Text>
-                </View>
-              </Animated.View>
-
-              <Pressable
-                onPress={(e) => {
-                  e.stopPropagation();
-                  toggleFlip();
-                }}
-                onPressIn={(e) => {
-                  e.stopPropagation();
-                }}
-                pointerEvents="box-only"
-                style={{
-                  position: 'absolute',
-                  zIndex: 2,
-                  width: CARD_W * 1.12,
-                  height: CARD_H * 0.833,
-                  top: SCREEN_HEIGHT / 2 - (CARD_H * 0.333) / 2,
-                  left: SCREEN_WIDTH / 2 - (CARD_W * 1.12) / 2,
-                  borderRadius: 20,
-                }}
-              />
-
-              {/* Food Menu Button - Fixed overlay outside flipable area */}
-              {selectedEvent && selectedEvent.eventType === 'MEALS' && (
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    top: '80%',
-                    opacity: foodMenuOpacity,
-                    zIndex: 10000,
-                  }}
+              {selectedEvent && (
+                <View
+                  style={[
+                    styles.expandedScaleFrame,
+                    {
+                      width: EXPANDED_CARD_WIDTH * expandedScale,
+                      height: EXPANDED_CARD_HEIGHT * expandedScale,
+                    },
+                  ]}
                 >
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      handleFoodMenuPress();
-                    }}
-                    style={{
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      borderRadius: 20,
-                      borderWidth: 1,
-                      borderColor: 'rgba(182, 0, 0, 0.3)',
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 4,
-                      elevation: 5,
-                    }}
+                  <View
+                    style={[
+                      styles.expandedScaledContents,
+                      {
+                        transform: [{ scale: expandedScale }],
+                      },
+                    ]}
                   >
-                    <Text
-                      style={{
-                        color: '#B60000',
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: '600',
-                      }}
-                    >
-                      View Food Menu
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
+                    <View style={styles.expandedTabs}>
+                      <View style={styles.expandedTab} />
+                      <View style={styles.expandedTab} />
+                    </View>
+                    <View style={styles.expandedCard}>
+                      <View pointerEvents="none" style={styles.expandedBottomInset} />
+                      <View style={styles.expandedScrollBar} />
 
-              {/* Link Button - For all events with links */}
-              {selectedEvent && parseEventLink(selectedEvent.description) && (
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    top: selectedEvent.eventType === 'MEALS' ? '85%' : '82%',
-                    opacity: foodMenuOpacity,
-                    zIndex: 10000,
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      const link = parseEventLink(selectedEvent.description);
-                      if (link) {
-                        handleLinkPress(link.url);
-                      }
-                    }}
-                    style={{
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(59, 130, 246, 0.9)',
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      borderRadius: 20,
-                      borderWidth: 1,
-                      borderColor: 'rgba(59, 130, 246, 0.3)',
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 4,
-                      elevation: 5,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#ffffff',
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: '600',
-                      }}
-                    >
-                      {parseEventLink(selectedEvent.description)?.title || 'Open Link'}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                      <View style={styles.expandedPaperWrap}>
+                        <View style={styles.expandedPaper}>
+                          <LinearGradient
+                            pointerEvents="none"
+                            colors={['rgba(0,0,0,0.22)', 'rgba(0,0,0,0)']}
+                            start={{ x: 0, y: 0.5 }}
+                            end={{ x: 1, y: 0.5 }}
+                            style={[styles.expandedPaperSideShade, styles.expandedPaperLeftShade]}
+                          />
+                          <LinearGradient
+                            pointerEvents="none"
+                            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
+                            start={{ x: 0, y: 0.5 }}
+                            end={{ x: 1, y: 0.5 }}
+                            style={[styles.expandedPaperSideShade, styles.expandedPaperRightShade]}
+                          />
+                          <LinearGradient
+                            colors={['#0F062D', '#7C1493']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={styles.expandedHeader}
+                          >
+                            <View style={styles.expandedTitleBox}>
+                              <Text
+                                style={styles.expandedTitle}
+                                numberOfLines={2}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.72}
+                              >
+                                {selectedEvent.name}
+                              </Text>
+                            </View>
+                            <View style={styles.pinkRule} />
+                          </LinearGradient>
+
+                          <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            style={styles.detailsScroll}
+                            contentContainerStyle={styles.detailsScrollContent}
+                            nestedScrollEnabled
+                          >
+                            <View style={styles.expandedMetaRow}>
+                              <View style={styles.expandedIconSlot}>
+                                <MaterialCommunityIcons name="alarm" size={25} color="#080808" />
+                              </View>
+                              <Text
+                                style={styles.expandedMetaText}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.72}
+                              >
+                                {formatAMPM(new Date(selectedEvent.startTime))
+                                  .replace('pm', ' PM')
+                                  .replace('am', ' AM')}
+                              </Text>
+                            </View>
+                            <View style={styles.expandedMetaRow}>
+                              <View style={styles.expandedIconSlot}>
+                                <MaterialCommunityIcons
+                                  name="map-marker-outline"
+                                  size={28}
+                                  color="#080808"
+                                />
+                              </View>
+                              <Text
+                                style={styles.expandedMetaText}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.72}
+                              >
+                                {selectedEvent.location}
+                              </Text>
+                            </View>
+
+                            <Text style={styles.descriptionTitle}>DESCRIPTION</Text>
+                            <Text style={styles.descriptionText}>
+                              {selectedEvent.description === 'none'
+                                ? 'No description available'
+                                : stripEventFood(stripEventLinks(selectedEvent.description || ''))}
+                            </Text>
+                          </ScrollView>
+                        </View>
+                      </View>
+
+                      <View style={styles.expandedFooter}>
+                        <LinearGradient
+                          colors={['#373792', '#F52DBC']}
+                          start={{ x: 0.5, y: 0 }}
+                          end={{ x: 0.5, y: 1 }}
+                          style={styles.expandedBadge}
+                        >
+                          <View style={styles.expandedBadgeInner}>
+                            <Text
+                              style={styles.expandedBadgeText}
+                              numberOfLines={1}
+                              adjustsFontSizeToFit
+                              minimumFontScale={0.68}
+                            >
+                              {selectedEvent.points || 0} POINTS
+                            </Text>
+                          </View>
+                        </LinearGradient>
+                        <LinearGradient
+                          colors={['#373792', '#F52DBC']}
+                          start={{ x: 0.5, y: 0 }}
+                          end={{ x: 0.5, y: 1 }}
+                          style={styles.expandedBadgeWide}
+                        >
+                          <View style={styles.expandedBadgeInner}>
+                            <Text
+                              style={styles.expandedBadgeText}
+                              numberOfLines={1}
+                              adjustsFontSizeToFit
+                              minimumFontScale={0.68}
+                            >
+                              {selectedEvent.eventType === 'SPECIAL'
+                                ? 'WORKSHOP'
+                                : selectedEvent.eventType}
+                            </Text>
+                          </View>
+                        </LinearGradient>
+                        <View style={styles.pauseBars}>
+                          <View style={styles.pauseBar} />
+                          <View style={styles.pauseBar} />
+                        </View>
+                      </View>
+
+                      <View style={styles.actionRow}>
+                        {selectedEvent.eventType === 'MEALS' && (
+                          <Animated.View style={{ opacity: foodMenuOpacity }}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                triggerIfEnabled(hapticsEnabled, 'light');
+                                handleFoodMenuPress();
+                              }}
+                              style={styles.modalActionButton}
+                            >
+                              <Text style={styles.modalActionText}>FOOD MENU</Text>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        )}
+                        {parseEventLink(selectedEvent.description) && (
+                          <Animated.View style={{ opacity: foodMenuOpacity }}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                const link = parseEventLink(selectedEvent.description);
+                                if (link) {
+                                  handleLinkPress(link.url);
+                                }
+                              }}
+                              style={styles.modalActionButton}
+                            >
+                              <Text style={styles.modalActionText}>
+                                {parseEventLink(selectedEvent.description)?.title || 'OPEN LINK'}
+                              </Text>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                </View>
               )}
             </Animated.View>
-          </Pressable>
+          </View>
         </Modal>
 
         {/* Food Menu Bottom Sheet - Outside modal, shown when badge is hidden */}
@@ -535,5 +478,256 @@ const EventsScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    paddingHorizontal: 13,
+  },
+  emptyText: {
+    color: '#fff',
+    fontFamily: 'Ethnocentric',
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  footerText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    paddingTop: 8,
+    fontFamily: 'Ethnocentric',
+    fontSize: 10,
+    lineHeight: 18,
+  },
+  expandedScaleFrame: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  expandedScaledContents: {
+    width: EXPANDED_CARD_WIDTH,
+    height: EXPANDED_CARD_HEIGHT,
+    overflow: 'visible',
+  },
+  expandedCard: {
+    width: EXPANDED_CARD_WIDTH,
+    height: EXPANDED_CARD_HEIGHT,
+    borderRadius: 12,
+    backgroundColor: '#373792',
+    borderTopWidth: 4,
+    borderTopColor: '#D7D7FF',
+    overflow: 'visible',
+    zIndex: 2,
+  },
+  expandedBottomInset: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 8,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    backgroundColor: '#27266D',
+  },
+  expandedTabs: {
+    position: 'absolute',
+    top: -36,
+    right: 11,
+    flexDirection: 'row',
+    gap: 8,
+    zIndex: 1,
+  },
+  expandedTab: {
+    width: 52,
+    height: 52,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    backgroundColor: '#D7D7D7',
+    borderWidth: 2,
+    borderColor: '#F2F2F2',
+  },
+  expandedScrollBar: {
+    position: 'absolute',
+    right: 11,
+    top: 55,
+    width: 9,
+    height: 73,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+  expandedPaperWrap: {
+    position: 'absolute',
+    left: 17,
+    top: 28,
+    width: 327,
+    height: 380,
+    borderRadius: 12,
+    backgroundColor: '#BBBBB7',
+    paddingTop: 18,
+    paddingHorizontal: 11,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.24,
+    shadowRadius: 6,
+  },
+  expandedPaper: {
+    width: 307,
+    height: 362,
+    borderRadius: 6,
+    backgroundColor: '#FDFDF9',
+    overflow: 'hidden',
+  },
+  expandedPaperSideShade: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 10,
+    zIndex: 4,
+  },
+  expandedPaperLeftShade: {
+    left: 0,
+  },
+  expandedPaperRightShade: {
+    right: 0,
+  },
+  expandedHeader: {
+    height: 76,
+    borderRadius: 4,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    zIndex: 1,
+  },
+  expandedTitle: {
+    color: '#fff',
+    fontFamily: 'Ethnocentric',
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  expandedTitleBox: {
+    height: 40,
+    justifyContent: 'flex-end',
+  },
+  pinkRule: {
+    marginTop: 5,
+    width: 98,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#F52DBC',
+  },
+  detailsScroll: {
+    flex: 1,
+  },
+  detailsScrollContent: {
+    paddingHorizontal: 11,
+    paddingTop: 19,
+    paddingBottom: 36,
+  },
+  expandedMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    minHeight: 22,
+    marginBottom: 10,
+  },
+  expandedIconSlot: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandedMetaText: {
+    color: '#050505',
+    fontFamily: 'Ethnocentric',
+    fontSize: 17,
+    lineHeight: 22,
+    flexShrink: 1,
+  },
+  descriptionTitle: {
+    marginTop: 7,
+    marginBottom: 9,
+    color: '#050505',
+    fontFamily: 'Ethnocentric',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  descriptionText: {
+    color: '#050505',
+    fontFamily: 'ShareTechMono',
+    fontSize: 14,
+    lineHeight: 16,
+  },
+  expandedFooter: {
+    position: 'absolute',
+    left: 28,
+    right: 31,
+    top: 429,
+    height: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  expandedBadge: {
+    width: 106,
+    height: 28,
+    borderRadius: 14,
+    padding: 4,
+  },
+  expandedBadgeWide: {
+    width: 106,
+    height: 28,
+    marginLeft: 25,
+    borderRadius: 14,
+    padding: 4,
+  },
+  expandedBadgeInner: {
+    flex: 1,
+    borderRadius: 10,
+    backgroundColor: '#150935',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandedBadgeText: {
+    color: '#fff',
+    fontFamily: 'Ethnocentric',
+    fontSize: 9,
+    lineHeight: 18,
+  },
+  pauseBars: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  pauseBar: {
+    width: 9,
+    height: 33,
+    borderRadius: 5,
+    backgroundColor: '#B9C8FF',
+  },
+  actionRow: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    bottom: -56,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  modalActionButton: {
+    minHeight: 36,
+    borderRadius: 18,
+    backgroundColor: '#150935',
+    borderBottomWidth: 4,
+    borderColor: '#F52DBC',
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalActionText: {
+    color: '#fff',
+    fontFamily: 'Ethnocentric',
+    fontSize: 10,
+  },
+});
 
 export default EventsScreen;
