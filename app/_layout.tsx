@@ -41,10 +41,12 @@ export default function RootLayout() {
   //   bundleId: 'com.reflectionsprojections',
   //   currentVersion: '2025.0.8', // keep this up to date with the app version
   // };
-  
+
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    ShareTechMono: require('../assets/fonts/ShareTechMono-Regular.ttf'),
+    Ethnocentric: require('../assets/fonts/Ethnocentric-Regular.otf'),
     ProRacing: require('../assets/fonts/ProRacing-Regular.otf'),
     ProRacingSlant: require('../assets/fonts/ProRacingSlant.otf'),
     Magistral: require('../assets/fonts/magistral-light.ttf'),
@@ -61,33 +63,33 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded && !versionCheckedRef.current) {
-      SplashScreen.hideAsync();
-      // versionCheckedRef.current = true;
-      
+      versionCheckedRef.current = true;
+      void SplashScreen.hideAsync().catch(() => {});
+
       // // Check for app updates only once after fonts are loaded
       // const checkAppVersion = async () => {
       //   try {
       //     const version = await checkVersion(options);
       //     console.log('Version check result:', version);
-          
+
       //     if (version.needsUpdate) {
       //       const lastShown = await AsyncStorage.getItem('update_prompt_shown');
       //       const now = Date.now();
       //       const oneDayMs = 24 * 60 * 60 * 1000; // 24 hours
       //       const isMajorUpdate = version.updateType === 'major';
-      //       const shouldShowPrompt = isMajorUpdate || 
-      //                              !lastShown || 
+      //       const shouldShowPrompt = isMajorUpdate ||
+      //                              !lastShown ||
       //                              (now - parseInt(lastShown, 10)) > oneDayMs;
-            
+
       //       if (shouldShowPrompt) {
       //         const isForced = isMajorUpdate;
-              
+
       //         Alert.alert(
       //           isForced ? 'Update Required' : 'Update Available',
-      //           isForced 
+      //           isForced
       //             ? 'This update is required to continue using the app. Please update now.'
       //             : 'Please update to the latest version of the app.',
-      //           isForced 
+      //           isForced
       //             ? [
       //                 { text: 'Update Now', onPress: () => handleUpdate() }
       //               ]
@@ -105,7 +107,7 @@ export default function RootLayout() {
       //     console.error('Failed to check app version:', error);
       //   }
       // };
-      
+
       // setTimeout(checkAppVersion, 1000);
     }
   }, [loaded]);
