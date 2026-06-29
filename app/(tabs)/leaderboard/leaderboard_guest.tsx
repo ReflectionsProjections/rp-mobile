@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import Background from '@/assets/background/dottedBackground2.svg';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,11 +39,11 @@ const LeaderboardGuestScreen = () => {
 
   return (
     <View className="flex-1">
-      <Background
-        width={width}
-        height={height}
-        style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-        preserveAspectRatio="none"
+      <LinearGradient
+        colors={['#130630', '#72138A']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
       />
 
       <SafeAreaView className="flex-1 justify-center items-center px-6">
@@ -60,9 +60,9 @@ const LeaderboardGuestScreen = () => {
               width: 120,
               height: 120,
               borderRadius: 60,
-              backgroundColor: 'rgba(202, 37, 35, 0.2)',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
               borderWidth: 3,
-              borderColor: '#CA2523',
+              borderColor: '#ffffff',
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 30,
@@ -73,7 +73,7 @@ const LeaderboardGuestScreen = () => {
               elevation: 8,
             }}
           >
-            <Ionicons name="podium-outline" size={60} color="#CA2523" />
+            <Ionicons name="podium-outline" size={60} color="#ffffff" />
           </View>
 
           {/* Main message */}
@@ -150,7 +150,7 @@ const LeaderboardGuestScreen = () => {
               onPress={() => router.replace('/(auth)/sign-in')}
               activeOpacity={0.8}
               style={{
-                backgroundColor: 'rgba(202, 37, 35, 0.8)',
+                backgroundColor: 'rgba(45, 45, 128, 0.8)',
                 paddingVertical: 16,
                 paddingHorizontal: 32,
                 borderRadius: 12,

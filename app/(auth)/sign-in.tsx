@@ -4,11 +4,11 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   Text,
   Alert,
-  Dimensions,
+  useWindowDimensions,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,25 +17,19 @@ import * as AuthSession from 'expo-auth-session';
 import { api } from '@/api/api';
 import { path } from '@/api/types';
 import * as WebBrowser from 'expo-web-browser';
-import { ThemedText } from '@/components/themed/ThemedText';
-import { SlantedButton } from '@/components/auth/SlantedButton';
-import { SlantedButtonGroup } from '@/components/auth/SlantedButtonGroup';
-import ReflectionsProjections from '@/assets/images/rp_2025.svg';
-import LoginIcon from '@/assets/icons/logos/rp_signin_logo.svg';
 import Background from '@/assets/background/rp_background.svg';
 import { googleAuth } from '@/lib/auth';
 import { OAUTH_CONFIG } from '@/lib/config';
 
-const { width, height } = Dimensions.get('window');
+const BUTTON_COLOR = '#72138A';
 
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { width, height } = useWindowDimensions();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const logoScaleAnim = useRef(new Animated.Value(0.9)).current;
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const handleEmailLogin = async () => {
     try {
@@ -87,114 +81,101 @@ export default function SignInScreen() {
 
   useEffect(() => {
     // Start animations on mount
-    const animationSequence = Animated.sequence([
-      Animated.timing(logoScaleAnim, {
+    const animationSequence = Animated.parallel([
+      Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 800,
         useNativeDriver: true,
       }),
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(cardSlideAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]),
+      Animated.timing(cardSlideAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
     ]);
 
     animationSequence.start();
   }, []);
 
   return (
-    <SafeAreaView className="flex-1">
-      <Background className="absolute inset-0 justify-center z-0" />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 items-center justify-center"
-      >
-        <View className="flex-1 items-center justify-center px-5 w-full">
+    <View className="flex-1">
+      <Background
+        width={width}
+        height={height}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        preserveAspectRatio="none"
+        pointerEvents="none"
+      />
+      <SafeAreaView className="flex-1">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1 items-center justify-center"
+        >
           <Animated.View
-            className="relative bottom-10 items-center"
+            className="w-full items-center px-6"
             style={{
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
+              transform: [{ translateY: cardSlideAnim }],
+              maxWidth: width * 0.8,
             }}
           >
-            <ReflectionsProjections width={300} height={32} />
-          </Animated.View>
-
-          <View className="w-full max-w-[340px] items-center">
-            <Animated.View
-              className="items-center z-10"
+            <TouchableOpacity
+              onPress={handleEmailLogin}
+              disabled={isLoading}
+              activeOpacity={0.85}
               style={{
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }],
-              }}
-            >
-              <LoginIcon width={250} height={140} />
-            </Animated.View>
-
-            <Animated.View
-              className="w-full bg-[#A3A3A3FF] rounded-2xl p-6 py-10 mt-[-30px]"
-              style={{
-                opacity: fadeAnim,
-                transform: [{ translateY: cardSlideAnim }],
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.3,
-                shadowRadius: 16,
-                elevation: 12,
+                width: '100%',
+                height: 52,
+                borderRadius: 16,
+                backgroundColor: BUTTON_COLOR,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 16,
+                opacity: isLoading ? 0.7 : 1,
               }}
             >
               <Text
-                className="font-proRacing text-3xl text-center mt-5 mb-6 z-10"
                 style={{
-                  textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                  textShadowOffset: { width: 0, height: 2 },
-                  textShadowRadius: 4,
+                  color: '#FFFFFF',
+                  fontFamily: 'ProRacing',
+                  fontSize: 16,
+                  letterSpacing: 1,
+                  shadowColor: BUTTON_COLOR,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.7,
+                shadowRadius: 10,
                 }}
               >
-                LOGIN
+                {isLoading ? 'SIGNING IN...' : 'LOGIN WITH GOOGLE'}
               </Text>
+            </TouchableOpacity>
 
-              {/* <LottieView
-                source={require('@/assets/lottie/rp_animation.json')}
-                autoPlay
-                loop
+            <TouchableOpacity
+              onPress={handleGuestLogin}
+              activeOpacity={0.85}
+              style={{
+                width: '100%',
+                height: 52,
+                borderRadius: 16,
+                backgroundColor: BUTTON_COLOR,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text
                 style={{
-                  position: 'absolute',
-                  width: width * 4.5,
-                  height: height * 1.12,
-                  zIndex: 0,
-                  alignSelf: 'center',
-                  top: -height * 0.36
+                  color: '#FFFFFF',
+                  fontFamily: 'ProRacing',
+                  fontSize: 16,
+                  letterSpacing: 1,
                 }}
-                speed={1.5}
-              /> */}
-
-              <View className="relative">
-                <SlantedButtonGroup>
-                  <SlantedButton onPress={handleEmailLogin} disabled={isLoading}>
-                    {isLoading ? 'Signing in...' : 'Login with Google'}
-                  </SlantedButton>
-                  <View className="h-px bg-white" />
-                  <SlantedButton onPress={handleGuestLogin}>Continue as Guest</SlantedButton>
-                </SlantedButtonGroup>
-              </View>
-            </Animated.View>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              >
+                CONTINUE AS GUEST
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }

@@ -30,7 +30,7 @@ const CurvedBottomBar = () => {
     <View style={styles.container}>
       {/* Bottom Bar SVG */}
       <Svg width={WIDTH} height={HEIGHT} style={styles.svg}>
-        <Path d={d} fill="#473737" />
+        <Path d={d} fill="#212121" />
       </Svg>
     </View>
   );

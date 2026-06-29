@@ -67,8 +67,8 @@
   }
   .tab-icon {
     @apply justify-center items-center rounded-full bg-gray-800;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
   .tab-icon-active {
     @apply bg-blue-600;
