@@ -16,7 +16,7 @@ import { checkVersion, CheckVersionOptions } from 'react-native-check-version';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+// import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
 import { AutoRefreshProvider } from '@/components/AutoRefreshProvider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
@@ -35,7 +35,7 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  useFirebaseNotifications();
+  // useFirebaseNotifications();
   const versionCheckedRef = useRef(false);
   // const options: CheckVersionOptions = {
   //   bundleId: 'com.reflectionsprojections',
@@ -45,6 +45,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    ShareTechMono: require('../assets/fonts/ShareTechMono-Regular.ttf'),
+    Ethnocentric: require('../assets/fonts/Ethnocentric-Regular.otf'),
     ProRacing: require('../assets/fonts/ProRacing-Regular.otf'),
     ProRacingSlant: require('../assets/fonts/ProRacingSlant.otf'),
     Magistral: require('../assets/fonts/magistral-light.ttf'),
