@@ -20,9 +20,11 @@ import * as WebBrowser from 'expo-web-browser';
 import Background from '@/assets/background/rp_background.svg';
 import { googleAuth } from '@/lib/auth';
 import { OAUTH_CONFIG } from '@/lib/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const BUTTON_COLOR = '#72138A';
-
+const BUTTON_COLOR = '#FF4CCC';
+const BORDER_WIDTH = 7;
+const BUTTON_HEIGHT = 66;
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -116,63 +118,135 @@ export default function SignInScreen() {
             style={{
               opacity: fadeAnim,
               transform: [{ translateY: cardSlideAnim }],
-              maxWidth: width * 0.8,
+              maxWidth: width * 0.85,
+              marginTop: 80,
             }}
           >
-            <TouchableOpacity
-              onPress={handleEmailLogin}
-              disabled={isLoading}
-              activeOpacity={0.85}
+            <View
               style={{
                 width: '100%',
-                height: 52,
-                borderRadius: 16,
-                backgroundColor: BUTTON_COLOR,
+                marginBottom: 28,
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: 16,
-                opacity: isLoading ? 0.7 : 1,
               }}
             >
-              <Text
+              <View
+                pointerEvents="none"
                 style={{
-                  color: '#FFFFFF',
-                  fontFamily: 'ProRacing',
-                  fontSize: 16,
-                  letterSpacing: 1,
-                  shadowColor: BUTTON_COLOR,
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.7,
-                shadowRadius: 10,
-                }}
-              >
-                {isLoading ? 'SIGNING IN...' : 'LOGIN WITH GOOGLE'}
-              </Text>
-            </TouchableOpacity>
+                  position: 'absolute',
+                  width: '92%',
+                  height: BUTTON_HEIGHT,
+                  borderRadius: 20,
+                  backgroundColor: '#FF4CCC',
+                  opacity: 0.95,
+                  shadowColor: '#FF4CCC',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.9,
+                  shadowRadius: 30,
 
-            <TouchableOpacity
-              onPress={handleGuestLogin}
-              activeOpacity={0.85}
+                  elevation: 20,
+                }}
+              />
+
+              <LinearGradient
+                colors={['#373792', '#F52DBC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{
+                  width: '100%',
+                  height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
+                  borderRadius: 20,
+                  padding: BORDER_WIDTH,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={handleEmailLogin}
+                  disabled={isLoading}
+                  activeOpacity={0.85}
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderRadius: 18,
+                    backgroundColor: BUTTON_COLOR,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: isLoading ? 0.7 : 1,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#FFF',
+                      fontFamily: 'Ethnocentric',
+                      fontSize: 18,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {isLoading ? 'SIGNING IN...' : 'LOGIN WITH GOOGLE'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+
+            <View
               style={{
                 width: '100%',
-                height: 52,
-                borderRadius: 16,
-                backgroundColor: BUTTON_COLOR,
+                marginTop: 8,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Text
+              <View
+                pointerEvents="none"
                 style={{
-                  color: '#FFFFFF',
-                  fontFamily: 'ProRacing',
-                  fontSize: 16,
-                  letterSpacing: 1,
+                  position: 'absolute',
+                  width: '92%',
+                  height: BUTTON_HEIGHT,
+                  borderRadius: 20,
+                  backgroundColor: '#FF4CCC',
+                  opacity: 0.95,
+                  shadowColor: '#FF4CCC',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.9,
+                  shadowRadius: 30,
+
+                  elevation: 20,
+                }}
+              />
+
+              <LinearGradient
+                colors={['#373792', '#F52DBC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{
+                  width: '100%',
+                  height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
+                  borderRadius: 20,
+                  padding: BORDER_WIDTH,
                 }}
               >
-                CONTINUE AS GUEST
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleGuestLogin}
+                  activeOpacity={0.85}
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderRadius: 18,
+                    backgroundColor: BUTTON_COLOR,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontFamily: 'Ethnocentric',
+                      fontSize: 18,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    CONTINUE AS GUEST
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
