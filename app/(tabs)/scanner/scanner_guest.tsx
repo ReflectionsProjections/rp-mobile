@@ -119,7 +119,7 @@ const ScannerGuestScreen = () => {
           <View className="w-full max-w-[280px] mt-8 space-y-4">
             {/* Continue as Guest button */}
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => router.replace('/(tabs)/home')}
               activeOpacity={0.8}
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.15)',
