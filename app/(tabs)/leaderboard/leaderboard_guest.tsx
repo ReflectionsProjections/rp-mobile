@@ -1,16 +1,3 @@
-/**
- * leaderboard_guest.tsx
- * Place at: app/(tabs)/leaderboard/leaderboard_guest.tsx
- *
- * Changes from previous version:
- *  - No Daily/Global tabs
- *  - Panel has horizontal margin (not edge-to-edge) and fixed height (not flex-1)
- *  - Scrollbar always visible on right
- *  - List starts at rank 1 (all entries in FlatList, podium is just the top visual)
- *  - Bottom-left: "RANK: 20" pill with pink border
- *  - Bottom-right: dark rounded pill button matching the uploaded rank_button asset
- */
-
 import React, { useRef, useCallback } from 'react';
 import {
   View,

@@ -1,20 +1,3 @@
-/**
- * leaderboard.tsx
- * ────────────────────────────────────────────────────────────────────────────
- * Place at: app/(tabs)/leaderboard/leaderboard.tsx
- *           (same path as before – LeaderboardRouter in _layout will import it)
- *
- * Crown assets – copy the 3 PNGs you uploaded into:
- *   assets/images/leaderboard/crown_gold.png
- *   assets/images/leaderboard/crown_silver.png
- *   assets/images/leaderboard/crown_bronze.png
- *   assets/images/leaderboard/placeholder.png   ← the blue-gradient circle
- *
- * Fonts already registered in your _layout.tsx ✓
- *   'Ethnocentric'   → Ethnocentric-Regular.otf
- *   'ShareTechMono'  → ShareTechMono-Regular.ttf
- */
-
 import React, { useRef, useCallback, useEffect } from 'react';
 import {
   View,
