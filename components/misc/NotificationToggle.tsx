@@ -11,7 +11,9 @@
 //   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'unknown'>(
 //     'unknown',
 //   );
+import React from 'react';
 
+export const NotificationToggle = () => null;
 //   useEffect(() => {
 //     checkPermissionStatus();
 
