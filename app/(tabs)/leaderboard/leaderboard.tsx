@@ -24,7 +24,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Dimensions,
-  Platform,
   Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -69,6 +68,8 @@ function avColor(uid: string, icon?: string) {
 }
 
 const ROW_H = 58; // fixed row height for getItemLayout
+const ROW_MARGIN_V = 2; // matches s.row's marginVertical below
+const ROW_STRIDE = ROW_H + ROW_MARGIN_V * 2; // total vertical space each row occupies
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Entry {
@@ -171,7 +172,7 @@ function PodiumCard({ entry, rank, isMe }: { entry?: Entry; rank: 1 | 2 | 3; isM
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-export default function LeaderboardScreen({ scrollRef }: { scrollRef?: React.RefObject<any> }) {
+export default function LeaderboardScreen() {
   const dispatch  = useAppDispatch();
   const listRef   = useRef<FlatList<Entry>>(null);
   const hapticsOn = useAppSelector((st: RootState) => st.settings?.hapticsEnabled ?? true);
@@ -258,7 +259,7 @@ export default function LeaderboardScreen({ scrollRef }: { scrollRef?: React.Ref
               indicatorStyle="white"
               persistentScrollbar={true}
               contentContainerStyle={{ paddingBottom: 12, paddingTop: 6 }}
-              getItemLayout={(_, index) => ({ length: ROW_H, offset: ROW_H * index, index })}
+              getItemLayout={(_, index) => ({ length: ROW_STRIDE, offset: ROW_STRIDE * index, index })}
               onScrollToIndexFailed={info => {
                 setTimeout(() => listRef.current?.scrollToIndex({ index: info.highestMeasuredFrameIndex, animated: true }), 100);
               }}
@@ -321,8 +322,6 @@ const s = StyleSheet.create({
   podName: { fontFamily: 'ShareTechMono', fontSize: 10, color: TEXT_W, marginTop: 6, textAlign: 'center' },
   // podPts removed — showing username only
 
-  // Tabs (removed — no longer used)
-
   // Panel — narrower margins, fixed height set inline
   panel: {
     marginHorizontal: 20,
@@ -344,7 +343,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     height: ROW_H,
     marginHorizontal: 8,
-    marginVertical: 2,
+    marginVertical: ROW_MARGIN_V,
     paddingHorizontal: 10,
     borderRadius: 10,
     backgroundColor: ROW_BG,

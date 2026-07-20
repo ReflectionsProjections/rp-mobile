@@ -20,7 +20,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Dimensions,
-  Platform,
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -54,6 +53,8 @@ const ACCENT          = '#CA2523';
 const TEXT_W          = '#FFFFFF';
 const TEXT_D          = 'rgba(255,255,255,0.50)';
 const ROW_H           = 56;
+const ROW_MARGIN_V    = 4; // matches s.row's marginVertical below
+const ROW_STRIDE      = ROW_H + ROW_MARGIN_V * 2; // total vertical space each row occupies
 
 interface Entry {
   rank: number;
@@ -89,18 +90,6 @@ const DUMMY: Entry[] = [
   { rank: 23, userId: 'u23',   displayName: 'Burnout King',     points:  640, delta:   18 },
 ];
 
-// Helpers
-const AV = ['#4455C8','#8844C0','#1E8878','#C04040','#B87020','#2E78BC','#48905A','#B03575'];
-function avColor(uid: string) {
-  if (uid === 'guest') return '#6E3FD4';
-  let h = 0;
-  for (let i = 0; i < uid.length; i++) h = uid.charCodeAt(i) + ((h << 5) - h);
-  return AV[Math.abs(h) % AV.length];
-}
-function initials(name: string) {
-  return name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
-}
-
 // Delta badge
 function DeltaBadge({ delta }: { delta?: number }) {
   if (delta == null) return null;
@@ -118,6 +107,10 @@ const db = StyleSheet.create({
   pill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 4 },
   txt:  { fontFamily: 'ShareTechMono', fontSize: 9, fontWeight: '700' },
 });
+
+function initials(name: string) {
+  return name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
+}
 
 // Avatar
 function Avatar({ name, uid, size = 36 }: { name: string; uid: string; size?: number }) {
@@ -257,7 +250,7 @@ export default function LeaderboardGuestScreen() {
             indicatorStyle="white"
             persistentScrollbar={true}
             contentContainerStyle={{ paddingBottom: 12, paddingTop: 6 }}
-            getItemLayout={(_, index) => ({ length: ROW_H, offset: ROW_H * index, index })}
+            getItemLayout={(_, index) => ({ length: ROW_STRIDE, offset: ROW_STRIDE * index, index })}
             onScrollToIndexFailed={info => {
               setTimeout(() => listRef.current?.scrollToIndex({ index: info.highestMeasuredFrameIndex, animated: true }), 100);
             }}
@@ -398,7 +391,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     height: ROW_H,
     marginHorizontal: 10,
-    marginVertical: 4,
+    marginVertical: ROW_MARGIN_V,
     paddingHorizontal: 12,
     borderRadius: 12,
     backgroundColor: 'rgba(155, 140, 200, 0.28)',   // silvery purple fill
