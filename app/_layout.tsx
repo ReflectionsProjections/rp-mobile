@@ -16,7 +16,7 @@ import { checkVersion, CheckVersionOptions } from 'react-native-check-version';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+// import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
 import { AutoRefreshProvider } from '@/components/AutoRefreshProvider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
@@ -35,7 +35,7 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  useFirebaseNotifications();
+  // useFirebaseNotifications();
   const versionCheckedRef = useRef(false);
   // const options: CheckVersionOptions = {
   //   bundleId: 'com.reflectionsprojections',
