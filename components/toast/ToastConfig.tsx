@@ -13,7 +13,7 @@ type ToastProps = {
 const BaseToast = ({
   text1 = '',
   text2 = '',
-  accent = '#CA2523',
+  accent = '#2d2d80',
   icon,
 }: {
   text1?: string;

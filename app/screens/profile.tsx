@@ -8,6 +8,7 @@ import {
   Alert,
   Animated,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
 import ProfileHeader from '@/components/profile/Header';
 import ImageCarousel from '@/components/profile/ImageCarousel';
@@ -20,6 +21,7 @@ import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import Background from '@/assets/background/dottedBackground2.svg';
 import LottieView from 'lottie-react-native';
@@ -193,11 +195,11 @@ const ProfileScreen = () => {
   if (!user || user.roles.length === 0) {
     return (
       <View className="flex-1">
-        <Background
-          width={width}
-          height={height}
-          style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          preserveAspectRatio="none"
+        <LinearGradient
+          colors={['#130630', '#72138A']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
         />
 
         <SafeAreaView className="flex-1 justify-center items-center px-6">
@@ -213,9 +215,9 @@ const ProfileScreen = () => {
                 width: 120,
                 height: 120,
                 borderRadius: 60,
-                backgroundColor: 'rgba(202, 37, 35, 0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
                 borderWidth: 3,
-                borderColor: '#CA2523',
+                borderColor: '#ffffff',
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginBottom: 30,
@@ -226,7 +228,7 @@ const ProfileScreen = () => {
                 elevation: 8,
               }}
             >
-              <Ionicons name="trophy-outline" size={60} color="#CA2523" />
+              <Ionicons name="business-outline" size={60} color="#ffffff" />
             </View>
 
             <Text
@@ -242,7 +244,7 @@ const ProfileScreen = () => {
                 textShadowRadius: 4,
               }}
             >
-              JOIN THE RACE!
+              SEE THE CITY!
             </Text>
 
             <Text
@@ -265,7 +267,7 @@ const ProfileScreen = () => {
             <View className="w-full max-w-[280px] mt-8 space-y-4">
               {/* Continue as Guest button */}
               <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => router.replace('/(tabs)/home')}
                 activeOpacity={0.8}
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -302,7 +304,7 @@ const ProfileScreen = () => {
                 onPress={() => router.replace('/(auth)/sign-in')}
                 activeOpacity={0.8}
                 style={{
-                  backgroundColor: 'rgba(202, 37, 35, 0.8)',
+                  backgroundColor: 'rgba(45, 45, 128, 0.8)',
                   paddingVertical: 16,
                   paddingHorizontal: 32,
                   borderRadius: 12,
