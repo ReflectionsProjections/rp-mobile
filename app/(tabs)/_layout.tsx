@@ -32,7 +32,7 @@ const { width, height } = Dimensions.get('window');
 const HEIGHT = 0.15 * height;
 const BUTTON_SIZE = Math.min(width, height) * 0.21;
 const ICON_SIZE = 36;
-const QR_COLOR = '#2d2d80';
+const QR_COLOR = '#373792';
 const TAB_ICON_SIZE = 44;
 const HOME_ICON_SIZE = 60;
 
@@ -305,7 +305,7 @@ function TabButton({
           <Icon 
             width={TAB_ICON_SIZE} 
             height={TAB_ICON_SIZE} 
-            color={isActive ? QR_COLOR : '#2d2d80'} 
+            color={isActive ? QR_COLOR : '#373792'} 
           />
         </View>
       </View>
