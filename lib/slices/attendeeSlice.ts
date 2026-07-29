@@ -17,7 +17,7 @@ const initialState: AttendeeState = {
   loading: false,
   error: null,
   lastFetched: null,
-  themeColor: '#E53F33', // Default red color
+  themeColor: '#2d2d80', // Default dark blue color
 };
 
 export const fetchAttendeeProfile = createAsyncThunk(
@@ -128,7 +128,7 @@ const attendeeSlice = createSlice({
       state.attendee = null;
       state.lastFetched = null;
       state.error = null;
-      state.themeColor = '#E53F33'; // Reset to default theme color for guests
+      state.themeColor = '#2d2d80'; // Reset to default theme color for guests
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -138,7 +138,7 @@ const attendeeSlice = createSlice({
       state.error = null;
     },
     resetThemeColor: (state) => {
-      state.themeColor = '#E53F33'; // Reset to default red color
+      state.themeColor = '#2d2d80'; // Reset to default dark blue color
     },
   },
   extraReducers: (builder) => {

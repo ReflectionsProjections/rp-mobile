@@ -32,6 +32,9 @@ const { width, height } = Dimensions.get('window');
 const HEIGHT = 0.15 * height;
 const BUTTON_SIZE = Math.min(width, height) * 0.21;
 const ICON_SIZE = 36;
+const QR_COLOR = '#373792';
+const TAB_ICON_SIZE = 44;
+const HOME_ICON_SIZE = 60;
 
 const TABS: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> }[] = [
   { key: 'home', icon: HomeIcon, filledIcon: FilledHomeIcon },
@@ -110,7 +113,7 @@ export default function TabLayout() {
           <CurvedBottomBar />
         </View>
 
-        <View className={`flex-1 flex-row ${height < 700 ? 'top-5' : ''}`}>
+        {/* <View className={`flex-1 flex-row ${height < 700 ? 'top-5' : ''}`}>
           {TABS.map((tab, idx) => {
             if (idx === 2) {
               return (
@@ -134,14 +137,43 @@ export default function TabLayout() {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 themeColor={themeColor}
-                width={tab.key === 'home' ? 50 : 40}
-                height={tab.key === 'home' ? 50 : 40}
                 leaderboardScrollRef={leaderboardScrollRef}
               />
             );
           })}
-        </View>
+        </View> */}
 
+
+<View className={`flex-1 flex-row items-center ${height < 700 ? 'top-5' : ''}`}>
+          
+          {/* Left Side Tabs */}
+          {TABS.slice(0, 2).map((tab) => (
+            <TabButton
+              key={tab.key}
+              tab={tab}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              themeColor={themeColor}
+              leaderboardScrollRef={leaderboardScrollRef}
+            />
+          ))}
+
+          {/* Symmetrical Center Spacer for the QR Button */}
+          <View style={{ width: BUTTON_SIZE }} />
+
+          {/* Right Side Tabs */}
+          {TABS.slice(2, 4).map((tab) => (
+            <TabButton
+              key={tab.key}
+              tab={tab}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              themeColor={themeColor}
+              leaderboardScrollRef={leaderboardScrollRef}
+            />
+          ))}
+
+        </View>
         <Pressable
           className="absolute justify-center items-center"
           style={{
@@ -160,9 +192,9 @@ export default function TabLayout() {
               width: BUTTON_SIZE,
               height: BUTTON_SIZE,
               borderRadius: BUTTON_SIZE / 2,
-              backgroundColor: activeTab === 'scanner' ? themeColor : '#E5E5E5',
+              backgroundColor: activeTab === 'scanner' ? QR_COLOR : '#E5E5E5',
               borderWidth: 5,
-              borderColor: themeColor,
+              borderColor: QR_COLOR,
               alignItems: 'center',
               justifyContent: 'center',
               shadowColor: '#000',
@@ -174,7 +206,7 @@ export default function TabLayout() {
             <QrCodeIcon
               width={ICON_SIZE}
               height={ICON_SIZE}
-              color={activeTab === 'scanner' ? '#FFF' : themeColor}
+              color={activeTab === 'scanner' ? '#FFF' : QR_COLOR}
             />
           </View>
         </Pressable>
@@ -183,30 +215,71 @@ export default function TabLayout() {
   );
 }
 
+// type TabButtonProps = {
+//   tab: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> };
+//   activeTab: string;
+//   setActiveTab: (key: string) => void;
+//   themeColor: string;
+//   leaderboardScrollRef?: React.RefObject<any>;
+// };
+// function TabButton({
+//   tab,
+//   activeTab,
+//   setActiveTab,
+//   themeColor,
+//   leaderboardScrollRef,
+// }: TabButtonProps) {
+//   const isActive = activeTab === tab.key;
+//   const Icon = isActive ? tab.filledIcon : tab.icon;
+//   const iconSize = tab.key === 'home' ? HOME_ICON_SIZE : TAB_ICON_SIZE;
+
+//   const handlePress = () => {
+//     if (tab.key === 'leaderboard' && isActive && leaderboardScrollRef?.current) {
+//       // If leaderboard tab is already active, scroll to top
+//       leaderboardScrollRef.current.scrollTo({ y: 0, animated: true });
+//     } else {
+//       setActiveTab(tab.key);
+//     }
+//   };
+
+//   return (
+//     <TouchableOpacity
+//       className="flex-1 justify-center items-center shadow-sm shadow-black shadow-opacity-50"
+//       onPress={handlePress}
+//     >
+//       <View
+//         className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}
+//         style={tab.key === 'home' ? { width: TAB_ICON_SIZE, height: TAB_ICON_SIZE, overflow: 'visible' } : undefined}
+//       >
+//         <Icon width={iconSize} height={iconSize} color={isActive ? QR_COLOR : '#2d2d80'} />
+//       </View>
+//     </TouchableOpacity>
+//   );
+// }
+
 type TabButtonProps = {
   tab: { key: string; icon: React.FC<SvgProps>; filledIcon: React.FC<SvgProps> };
   activeTab: string;
   setActiveTab: (key: string) => void;
   themeColor: string;
-  width?: number;
-  height?: number;
   leaderboardScrollRef?: React.RefObject<any>;
 };
+
 function TabButton({
   tab,
   activeTab,
   setActiveTab,
   themeColor,
-  width = 40,
-  height = 40,
   leaderboardScrollRef,
 }: TabButtonProps) {
   const isActive = activeTab === tab.key;
   const Icon = isActive ? tab.filledIcon : tab.icon;
+  
+  // Flag to apply specific visual tweaks without breaking the flex container
+  const isHome = tab.key === 'home';
 
   const handlePress = () => {
     if (tab.key === 'leaderboard' && isActive && leaderboardScrollRef?.current) {
-      // If leaderboard tab is already active, scroll to top
       leaderboardScrollRef.current.scrollTo({ y: 0, animated: true });
     } else {
       setActiveTab(tab.key);
@@ -215,11 +288,26 @@ function TabButton({
 
   return (
     <TouchableOpacity
-      className="flex-1 justify-center items-center shadow-sm shadow-black shadow-opacity-50"
+      className="flex-1 justify-center items-center"
       onPress={handlePress}
     >
-      <View className={`tab-icon ${isActive ? 'tab-icon-active' : ''}`}>
-        <Icon width={width} height={height} color={isActive ? themeColor : '#00ADB5'} />
+      {/* Centralized Wrapper: Forces every icon into the exact same center axis */}
+      <View
+        style={{
+          width: TAB_ICON_SIZE,
+          height: TAB_ICON_SIZE,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {/* If the home icon is naturally too small, scale it up here instead of changing dimensions */}
+        <View style={isHome ? { transform: [{ scale: 1.35 }] } : {}}>
+          <Icon 
+            width={TAB_ICON_SIZE} 
+            height={TAB_ICON_SIZE} 
+            color={isActive ? QR_COLOR : '#373792'} 
+          />
+        </View>
       </View>
     </TouchableOpacity>
   );
