@@ -1,17 +1,3 @@
-// components/home/FolderTabs.tsx
-//
-// Filing-cabinet accordion matching the mock:
-//  - Closed folders are flat, single-color bars with a white-bordered pill
-//    tab (+ lavender caret) — no rounding or overlap tricks on these, so
-//    there's never a second color peeking through at the seams.
-//  - The OPEN folder's pill fades away — its label re-appears in a
-//    pink-bordered, tag-styled title box at the top of its panel.
-//  - First layer hosts the purple profile button, which stays put even while
-//    its pill hides.
-//  - Opening a section keeps its own color (just rounds the top corners) and
-//    fills the rest of the screen so cards scroll all the way down — no
-//    separate "panel" backdrop swap.
-//
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -29,35 +15,22 @@ import TagButtonArt from '@/assets/home/tag_button.svg';
 
 const { height: SH } = Dimensions.get('window');
 
-// ─── Palette ──────────────────────────────────────────────────────────────
-// Two flat, solid colors — an open section's panel keeps the SAME color it
-// has when collapsed, so opening it never swaps in a different backdrop.
 const LAYER_COLORS = ['#150935', '#4B44CF'];
-const CARET_LAVENDER = '#E6E0FF';  // little triangles next to the closed pills
-const CARET_PINK = '#FF4CCC';      // dropdown caret on the open panel's title
-const PROFILE_BTN_BG = '#4A18C8';  // purple square profile button
+const CARET_LAVENDER = '#E6E0FF';
+const CARET_PINK = '#FF4CCC';
+const PROFILE_BTN_BG = '#4A18C8';
 
-const PILL_ROW_H = 40;   // height of the pill row (collapses when open)
-const LAYER_PAD_V = 10;  // vertical padding above/below the pill row
-// Full height of a closed layer. Non-first layers animate all the way down
-// to 0 when open, so nothing is left showing above the panel.
+const PILL_ROW_H = 40;
+const LAYER_PAD_V = 10;
 const FULL_LAYER_H = LAYER_PAD_V * 2 + PILL_ROW_H;
 
-// Clearance so the last card can scroll fully clear of the fixed nav bar
-// overlay (drawn on top of everything in _layout.tsx).
 const NAV_CLEARANCE = SH * 0.15 + 24;
 
-// Hard limit on the accordion's total height: a solid filler (colored to
-// match the last section) reserves this much space at the bottom so
-// collapsed folder pills and the open panel stack up and stop right above
-// the nav bar, instead of sliding under it or showing bare background.
 const NAV_BAR_RESERVE = SH * 0.1 + 16;
 
 export interface FolderSection<T> {
   id: string;
-  /** Shown in the closed pill AND in the open folder's panel title */
   label: string;
-  /** Optional override for the panel title; defaults to `label` */
   panelTitle?: string;
   data: T[];
   emptyMessage?: string;
@@ -69,14 +42,9 @@ interface FolderTabsProps<T> {
   onSelect: (id: string) => void;
   keyExtractor: (item: T) => string;
   renderItem: (item: T, index: number, sectionId: string) => React.ReactElement;
-  /** Renders the purple profile-card button at the right of the first row */
   onProfilePress?: () => void;
 }
 
-// ─── One folder layer with its pill tab ──────────────────────────────────────
-// `anim` is the section's open/close value (0 closed → 1 open). The pill
-// fades out as the folder opens; for non-first layers the whole pill row
-// also collapses so only a thin colored lip remains above the panel.
 function FolderHeader({
   label,
   anim,
@@ -105,8 +73,6 @@ function FolderHeader({
     outputRange: [PILL_ROW_H, isFirst ? PILL_ROW_H : 0],
   });
 
-  // Non-first layers collapse their ENTIRE box (padding included) when open, so
-  // no leftover colored band is left showing above the panel below them.
   const layerHeight = anim.interpolate({
     inputRange: [0, 1],
     outputRange: [FULL_LAYER_H, isFirst ? FULL_LAYER_H : 0],
@@ -182,8 +148,6 @@ const hs = StyleSheet.create({
   },
 });
 
-// Open panel's title — same tag-button art as the event tags, to emphasize
-// it as the currently-selected section.
 function PanelTitle({ label }: { label: string }) {
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
@@ -245,8 +209,6 @@ function FolderPanel<T>({
             contentContainerStyle={{
               paddingHorizontal: 18,
               paddingTop: 4,
-              // Clear the fixed nav bar overlay drawn on top of everything in
-              // _layout.tsx, so the last card can fully scroll into view.
               paddingBottom: NAV_CLEARANCE,
             }}
           />
@@ -258,10 +220,9 @@ function FolderPanel<T>({
 
 const ps = StyleSheet.create({
   panel: {
-    // backgroundColor set inline per-section (matches its own collapsed color)
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    overflow: 'hidden', // clips content while sliding open/closed
+    overflow: 'hidden',
   },
   panelHeaderRow: {
     flexDirection: 'row',
@@ -329,10 +290,6 @@ export function FolderTabs<T>({
       {sections.map((section, i) => {
         const color = LAYER_COLORS[i % LAYER_COLORS.length];
         return (
-          // This section's own solid backdrop: whatever the header/panel's
-          // rounded corners or collapse animation reveal underneath is
-          // always THIS color, never a mismatched color or the transparent
-          // app background peeking through.
           <Animated.View key={section.id} style={{ flex: getAnim(section.id) as unknown as number, backgroundColor: color }}>
             <FolderHeader
               label={section.label}
@@ -356,9 +313,6 @@ export function FolderTabs<T>({
         );
       })}
 
-      {/* Filler reserving the nav-bar strip, colored to match whatever the
-          last section's own color is — so it's a seamless continuation of
-          whatever's directly above it, not a distinct colored rectangle. */}
       <View
         style={{
           height: NAV_BAR_RESERVE,
