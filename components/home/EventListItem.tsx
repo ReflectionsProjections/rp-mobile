@@ -1,18 +1,27 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
+import TagButtonArt from '@/assets/home/tag_button.svg';
 
 const SPECIAL_EVENT_ID = '8852aff5-015a-40b2-a32b-f1f738db34c8';
-
-const CARD_BG = '#DEDEDE';       
-const TAG_BG = '#2A0E63';        
-const TAG_BORDER = '#FF3BD4';   
-const RADIUS = 22;               
+const CARD_BG = '#D9D9D9';
 
 function TagPill({ label }: { label: string }) {
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setSize({ width, height });
+  };
+
   return (
-    <View style={styles.tagPill}>
+    <View style={styles.tagPill} onLayout={onLayout}>
+      {size && (
+        <View style={StyleSheet.absoluteFillObject}>
+          <TagButtonArt width={size.width} height={size.height} preserveAspectRatio="none" />
+        </View>
+      )}
       <ThemedText style={styles.tagText} numberOfLines={1}>
         {label.toUpperCase()}
       </ThemedText>
@@ -33,12 +42,10 @@ export function EventListItem({
   const isSpecial = item.id === SPECIAL_EVENT_ID;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={() => onPress(item)}
-      style={[styles.wrapper, { zIndex: 999 - index }]}
-    >
-      <View style={[styles.body, isSpecial && styles.bodySpecial]}>
+    <TouchableOpacity activeOpacity={0.85} onPress={() => onPress(item)} style={styles.wrapper}>
+      <View style={styles.body}>
+        {isSpecial && <View style={styles.specialBorder} pointerEvents="none" />}
+
         <ThemedText variant="body-bold" style={styles.title} numberOfLines={2}>
           {item.title}
         </ThemedText>
@@ -49,9 +56,13 @@ export function EventListItem({
         <ThemedText variant="body" style={styles.meta} numberOfLines={1}>
           {item.time || 'Time'}
         </ThemedText>
-      </View>
 
-\      {tag ? <TagPill label={tag} /> : null}
+        {tag ? (
+          <View style={styles.tagRow}>
+            <TagPill label={tag} />
+          </View>
+        ) : null}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -59,17 +70,17 @@ export function EventListItem({
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: 20,
-    overflow: 'visible',
   },
   body: {
     backgroundColor: CARD_BG,
-    borderRadius: RADIUS,
+    borderRadius: 22,
     paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 26,
-    minHeight: 120,
+    paddingTop: 22,
+    paddingBottom: 20,
   },
-  bodySpecial: {
+  specialBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 22,
     borderWidth: 2,
     borderColor: '#FFD700',
     shadowColor: '#FFD700',
@@ -80,39 +91,31 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#0A0A0A',
-    fontSize: 17,
+    fontSize: 20,
     fontFamily: 'ProRacing',
-    letterSpacing: 0.5,
-    lineHeight: 24,
-    marginBottom: 14,
+    letterSpacing: 0.3,
+    lineHeight: 28,
+    marginBottom: 12,
     paddingRight: 8,
   },
   meta: {
     color: '#2B2B2B',
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'ShareTechMono',
-    lineHeight: 22,
+    lineHeight: 24,
+  },
+  tagRow: {
+    marginTop: 16,
+    alignItems: 'flex-end',
   },
   tagPill: {
-    position: 'absolute',
-    right: -6,     
-    bottom: -12,   
-    backgroundColor: TAG_BG,
-    borderWidth: 2.5,
-    borderColor: TAG_BORDER,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    shadowColor: TAG_BORDER,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    elevation: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   tagText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'ProRacing',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
 });
