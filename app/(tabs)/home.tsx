@@ -21,8 +21,8 @@ import { triggerIfEnabled } from '@/lib/haptics';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const BG_BASE = '#0E0912';
-const BG_GRADIENT = ['#31104F', '#16081F', BG_BASE] as const;
+const BG_BASE = '#150935';
+const BG_GRADIENT = [BG_BASE, BG_BASE, BG_BASE] as const;
 const BG_LOCATIONS = [0, 0.18, 0.38] as const;
 
 type HomeCard = CardType & { startTime: string };
