@@ -1,41 +1,17 @@
-import React, { useEffect, useRef } from 'react';
-import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import React, { useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
+  StyleSheet,
+  Dimensions,
+  Image,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width, height } = Dimensions.get('window');
-
-const LeaderboardGuestScreen = () => {
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
-
-  useEffect(() => {
-    // Start animations immediately
-    const animationSequence = Animated.sequence([
-      Animated.timing(logoScaleAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]);
-
-    animationSequence.start();
-  }, []);
+import { StatusBar } from 'expo-status-bar';
+import { router } from 'expo-router';
 
 const CROWN_GOLD   = require('@/assets/images/leaderboard/crown_gold.png');
 const CROWN_SILVER = require('@/assets/images/leaderboard/crown_silver.png');
@@ -109,12 +85,35 @@ function DeltaBadge({ delta }: { delta?: number }) {
   const col  = zero ? TEXT_D : up ? '#34E07A' : '#FF4C4C';
   const sym  = zero ? '–' : up ? '▲' : '▼';
   return (
-    <View className="flex-1">
-      <LinearGradient
-        colors={['#130630', '#72138A']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
+    <View style={[db.pill, { borderColor: col }]}>
+      <Text style={[db.txt, { color: col }]}>{sym}{zero ? '' : Math.abs(delta)}</Text>
+    </View>
+  );
+}
+const db = StyleSheet.create({
+  pill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 4 },
+  txt:  { fontFamily: 'ShareTechMono', fontSize: 9, fontWeight: '700' },
+});
+
+function initials(name: string) {
+  return name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
+}
+
+// Avatar
+function Avatar({ name, uid, size = 36 }: { name: string; uid: string; size?: number }) {
+  return (
+    <View style={{
+      width: size + 6,
+      height: size + 6,
+      borderRadius: (size + 6) / 2,
+      borderWidth: 2,
+      borderColor: 'rgba(200, 190, 255, 0.55)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <Image
+        source={PLACEHOLDER}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
       />
       <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
         <Text style={{ color: '#fff', fontSize: size * 0.33, fontFamily: 'ShareTechMono', fontWeight: '700' }}>
@@ -125,35 +124,20 @@ function DeltaBadge({ delta }: { delta?: number }) {
   );
 }
 
-      <SafeAreaView className="flex-1 justify-center items-center px-6">
-        <Animated.View
-          style={{
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }, { scale: logoScaleAnim }],
-          }}
-          className="items-center"
-        >
-          {/* Leaderboard themed icon */}
-          <View
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              borderWidth: 3,
-              borderColor: '#ffffff',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 30,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Ionicons name="podium-outline" size={60} color="#ffffff" />
-          </View>
+// Row — all ranks from 1 upward
+function Row({ item, isMe }: { item: Entry; isMe: boolean }) {
+  return (
+    <View style={[s.row, isMe && s.rowMe]}>
+      <Text style={[s.rowRank, isMe && { color: ROW_ME_BORDER }]}>{item.rank}</Text>
+      <Avatar name={item.displayName} uid={item.userId} size={36} />
+      <Text style={s.rowName} numberOfLines={1}>{item.displayName}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={[s.rowPts, isMe && { color: ROW_ME_BORDER }]}>{item.points} pts</Text>
+        <DeltaBadge delta={item.delta} />
+      </View>
+    </View>
+  );
+}
 
 // Podium card — avatar + glowing info box below with name & points
 function PodiumCard({ entry, rank, isMe }: { entry: Entry; rank: 1|2|3; isMe: boolean }) {
@@ -260,61 +244,18 @@ export default function LeaderboardGuestScreen() {
           />
         </View>
 
-          {/* Action buttons */}
-          <View className="w-full max-w-[280px] mt-8 space-y-4">
-            {/* Continue as Guest button */}
-            <TouchableOpacity
-              onPress={() => router.replace('/(tabs)/home')}
-              activeOpacity={0.8}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                paddingVertical: 16,
-                paddingHorizontal: 32,
-                borderRadius: 12,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 16,
-                  fontWeight: '600',
-                  fontFamily: 'Inter',
-                  textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 2,
-                }}
-              >
-                Continue as Guest
-              </Text>
-            </TouchableOpacity>
+        {/* Footer: rank pill left · go-to-ranking button right */}
+        <View style={s.footer}>
+          <View style={s.rankPill}>
+            <Text style={s.rankTxt}>RANK: {myRank}</Text>
+          </View>
 
           <View style={s.footerRight}>
             {/* Sign in button — compact, sits above hotbar */}
             <TouchableOpacity
               onPress={() => router.replace('/(auth)/sign-in')}
-              activeOpacity={0.8}
-              style={{
-                backgroundColor: 'rgba(45, 45, 128, 0.8)',
-                paddingVertical: 16,
-                paddingHorizontal: 32,
-                borderRadius: 12,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
+              activeOpacity={0.85}
+              style={s.signInBtn}
             >
               <Text style={s.signInTxt}>Sign In</Text>
             </TouchableOpacity>

@@ -1,16 +1,4 @@
-// components/home/FolderTabs.tsx
-//
-// Filing-cabinet accordion matching the mock:
-//  - Closed folders show a white-bordered pill tab (+ lavender caret).
-//  - The OPEN folder's pill fades/collapses away — its label is the pink
-//    glowing title box at the top of its panel, so the name never renders
-//    twice.
-//  - First layer is transparent (screen gradient shows through) and hosts
-//    the purple profile button, which stays put even while its pill hides.
-//  - A charcoal base sheet runs to the bottom of the screen so there's no
-//    background-colored bar; collapsed tabs rest on top of it.
-//
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -19,35 +7,30 @@ import {
   Easing,
   StyleSheet,
   Dimensions,
+  LayoutChangeEvent,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
+import TagButtonArt from '@/assets/home/tag_button.svg';
 
 const { height: SH } = Dimensions.get('window');
 
-// ─── Palette (matched to the mock) ───────────────────────────────────────────
-// First layer is transparent — the screen gradient is its background.
-const LAYER_COLORS = ['transparent', '#4B44CF', '#2C1B66', '#5A3FA0'];
-const PANEL_BG = '#232226';        // neutral charcoal content sheet
-const CARET_LAVENDER = '#E6E0FF';  // little triangles next to the pills
-const ACCENT_PINK = '#FF2FD0';     // panel title border / caret
-const TITLE_BOX_BG = '#2B1152';    // fill behind the open folder's title
-const PROFILE_BTN_BG = '#4A18C8';  // purple square profile button
+const LAYER_COLORS = ['#150935', '#4B44CF'];
+const CARET_LAVENDER = '#E6E0FF';
+const CARET_PINK = '#FF4CCC';
+const PROFILE_BTN_BG = '#4A18C8';
 
-const OVERLAP = 14;      // how much each layer's rounded top overlaps the previous
-const PILL_ROW_H = 40;   // height of the pill row (collapses when open)
+const PILL_ROW_H = 40;
+const LAYER_PAD_V = 10;
+const FULL_LAYER_H = LAYER_PAD_V * 2 + PILL_ROW_H;
 
-// Height of the base sheet at the bottom of the stack. Sized to cover the
-// curved bottom nav region (CurvedBottomBar = 0.1 * height + tab pb-8 = 32px
-// + small buffer) so the panel color runs to the bottom of the screen with
-// no background-colored bar, and collapsed folder tabs rest on top of it.
-const HOTBAR_H = SH * 0.1 + 32 + 8;
+const NAV_CLEARANCE = SH * 0.15 + 24;
+
+const NAV_BAR_RESERVE = SH * 0.1 + 16;
 
 export interface FolderSection<T> {
   id: string;
-  /** Shown in the closed pill AND in the open folder's pink title box */
   label: string;
-  /** Optional override for the pink title box; defaults to `label` */
   panelTitle?: string;
   data: T[];
   emptyMessage?: string;
@@ -59,14 +42,9 @@ interface FolderTabsProps<T> {
   onSelect: (id: string) => void;
   keyExtractor: (item: T) => string;
   renderItem: (item: T, index: number, sectionId: string) => React.ReactElement;
-  /** Renders the purple profile-card button at the right of the first row */
   onProfilePress?: () => void;
 }
 
-// ─── One folder layer with its pill tab ──────────────────────────────────────
-// `anim` is the section's open/close value (0 closed → 1 open). The pill
-// fades out as the folder opens; for non-first layers the whole pill row
-// also collapses so only a thin colored lip remains above the panel.
 function FolderHeader({
   label,
   anim,
@@ -95,8 +73,13 @@ function FolderHeader({
     outputRange: [PILL_ROW_H, isFirst ? PILL_ROW_H : 0],
   });
 
+  const layerHeight = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [FULL_LAYER_H, isFirst ? FULL_LAYER_H : 0],
+  });
+
   return (
-    <View style={[hs.layer, { backgroundColor: color }, !isFirst && hs.layerRaised]}>
+    <Animated.View style={[hs.layer, { backgroundColor: color, height: layerHeight }]}>
       <View style={hs.rowBetween}>
         <Animated.View style={{ height: rowHeight, opacity: pillOpacity, overflow: 'hidden' }}>
           <TouchableOpacity
@@ -120,26 +103,16 @@ function FolderHeader({
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
 const hs = StyleSheet.create({
   layer: {
-    paddingTop: 10,
-    paddingBottom: 10 + OVERLAP, // extra bottom padding hides under the next layer
+    paddingTop: LAYER_PAD_V,
+    paddingBottom: LAYER_PAD_V,
     paddingHorizontal: 16,
-  },
-  layerRaised: {
-    marginTop: -OVERLAP,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    // subtle lift between layers
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 6,
+    overflow: 'hidden',
   },
   rowBetween: {
     flexDirection: 'row',
@@ -167,39 +140,58 @@ const hs = StyleSheet.create({
   },
   profileBtn: {
     width: 44,
-    height: 40,
-    borderRadius: 10,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: PROFILE_BTN_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
 });
 
+function PanelTitle({ label }: { label: string }) {
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setSize({ width, height });
+  };
+
+  return (
+    <View style={ps.panelTitleBox} onLayout={onLayout}>
+      {size && (
+        <View style={StyleSheet.absoluteFillObject}>
+          <TagButtonArt width={size.width} height={size.height} preserveAspectRatio="none" />
+        </View>
+      )}
+      <ThemedText style={ps.panelTitleText}>{label}</ThemedText>
+    </View>
+  );
+}
+
 function FolderPanel<T>({
   section,
   anim,
+  color,
   keyExtractor,
   renderItem,
 }: {
   section: FolderSection<T>;
   anim: Animated.Value;
+  color: string;
   keyExtractor: (item: T) => string;
   renderItem: (item: T, index: number, sectionId: string) => React.ReactElement;
 }) {
 
-  const marginTop = anim.interpolate({ inputRange: [0, 1], outputRange: [0, -OVERLAP] });
   const opacity = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0, 1] });
 
   return (
-    <Animated.View style={[ps.panel, { flex: anim as unknown as number, marginTop }]}>
+    <Animated.View
+      style={[ps.panel, { backgroundColor: color, flex: anim as unknown as number }]}
+    >
       <Animated.View style={{ flex: 1, opacity }}>
         <View style={ps.panelHeaderRow}>
-          <View style={ps.panelTitleBox}>
-            <ThemedText style={ps.panelTitleText}>
-              {section.panelTitle ?? section.label}
-            </ThemedText>
-          </View>
-          <FontAwesome name="caret-down" size={22} color={ACCENT_PINK} />
+          <PanelTitle label={section.panelTitle ?? section.label} />
+          <FontAwesome name="caret-down" size={22} color={CARET_PINK} />
         </View>
 
         {section.data.length === 0 ? (
@@ -217,7 +209,7 @@ function FolderPanel<T>({
             contentContainerStyle={{
               paddingHorizontal: 18,
               paddingTop: 4,
-              paddingBottom: OVERLAP + 20,
+              paddingBottom: NAV_CLEARANCE,
             }}
           />
         )}
@@ -228,10 +220,9 @@ function FolderPanel<T>({
 
 const ps = StyleSheet.create({
   panel: {
-    backgroundColor: PANEL_BG,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    overflow: 'hidden', // clips content while sliding open/closed
+    overflow: 'hidden',
   },
   panelHeaderRow: {
     flexDirection: 'row',
@@ -242,23 +233,14 @@ const ps = StyleSheet.create({
     paddingBottom: 12,
   },
   panelTitleBox: {
-    borderWidth: 2.5,
-    borderColor: ACCENT_PINK,
-    borderRadius: 16,
-    backgroundColor: TITLE_BOX_BG,
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    shadowColor: ACCENT_PINK,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.75,
-    shadowRadius: 10,
-    elevation: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   panelTitleText: {
     color: '#fff',
-    fontSize: 19,
-    fontFamily: 'Ethnocentric',
-    letterSpacing: 1.5,
+    fontSize: 14,
+    fontFamily: 'ProRacing',
+    letterSpacing: 1,
   },
   emptyBox: {
     flex: 1,
@@ -305,39 +287,38 @@ export function FolderTabs<T>({
 
   return (
     <View style={{ flex: 1 }}>
-      {sections.map((section, i) => (
-        <React.Fragment key={section.id}>
-          <FolderHeader
-            label={section.label}
-            anim={getAnim(section.id)}
-            isOpen={section.id === openId}
-            isFirst={i === 0}
-            color={LAYER_COLORS[i % LAYER_COLORS.length]}
-            onPress={() => {
-              if (section.id !== openId) onSelect(section.id);
-            }}
-            onProfilePress={onProfilePress}
-          />
-          <FolderPanel
-            section={section}
-            anim={getAnim(section.id)}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-          />
-        </React.Fragment>
-      ))}
+      {sections.map((section, i) => {
+        const color = LAYER_COLORS[i % LAYER_COLORS.length];
+        return (
+          <Animated.View key={section.id} style={{ flex: getAnim(section.id) as unknown as number, backgroundColor: color }}>
+            <FolderHeader
+              label={section.label}
+              anim={getAnim(section.id)}
+              isOpen={section.id === openId}
+              isFirst={i === 0}
+              color={color}
+              onPress={() => {
+                if (section.id !== openId) onSelect(section.id);
+              }}
+              onProfilePress={onProfilePress}
+            />
+            <FolderPanel
+              section={section}
+              anim={getAnim(section.id)}
+              color={color}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+            />
+          </Animated.View>
+        );
+      })}
 
-      <View style={baseSheet.sheet} />
+      <View
+        style={{
+          height: NAV_BAR_RESERVE,
+          backgroundColor: LAYER_COLORS[(sections.length - 1) % LAYER_COLORS.length],
+        }}
+      />
     </View>
   );
 }
-
-const baseSheet = StyleSheet.create({
-  sheet: {
-    height: HOTBAR_H,
-    marginTop: -OVERLAP,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    backgroundColor: PANEL_BG,
-  },
-});
