@@ -19,6 +19,24 @@ async function fetchGlobalLeaderboard(n?: number): Promise<GlobalResponse> {
   return res.data as GlobalResponse;
 }
 
+export const MY_LEADERBOARD_RANK_QK = ['leaderboard', 'me'] as const;
+
+type MyRankResponse = ResponseType<'/leaderboard/me', 'GET'>;
+
+async function fetchMyLeaderboardRank(): Promise<MyRankResponse> {
+  const res = await api.get('/leaderboard/me');
+  return res.data as MyRankResponse;
+}
+
+export function useMyLeaderboardRank(isAuthenticated?: boolean | null) {
+  return useQuery<MyRankResponse>({
+    queryKey: MY_LEADERBOARD_RANK_QK,
+    queryFn: fetchMyLeaderboardRank,
+    enabled: isAuthenticated === true,
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useDailyLeaderboard(day: string, n?: number) {
   return useQuery<DailyResponse>({
     queryKey: DAILY_LEADERBOARD_QK(day, n),
