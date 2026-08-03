@@ -185,9 +185,28 @@ export interface APIRoutes {
       };
     };
   };
+  '/leaderboard/me': {
+    GET: {
+      response: {
+        rank: number;
+        points: number;
+        totalParticipants: number;
+        nextRank: number | null;
+        pointsToNextRank: number | null;
+      };
+    };
+  };
   '/attendee': {
     GET: {
       response: Attendee;
+    };
+  };
+  '/attendee/attendance': {
+    GET: {
+      response: {
+        eventsAttended: string[];
+        count: number;
+      };
     };
   };
   '/attendee/icon': {

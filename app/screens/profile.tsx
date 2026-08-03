@@ -9,18 +9,12 @@ import {
   Animated,
   ScrollView,
   StyleSheet,
+  Image,
 } from 'react-native';
-import ProfileHeader from '@/components/profile/Header';
-import ImageCarousel from '@/components/profile/ImageCarousel';
-import UserInfo from '@/components/profile/UserInfo';
-import ColorPicker from '@/components/profile/ColorPicker';
-import TagSelector from '@/components/profile/TagSelector';
-import StaffTeamBadge from '@/components/profile/StaffTeamBadge';
-import StaffRolesList from '@/components/profile/StaffRolesList';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
 import { router } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import Background from '@/assets/background/dottedBackground2.svg';
@@ -28,7 +22,6 @@ import LottieView from 'lottie-react-native';
 import { useAppSelector } from '@/lib/store';
 import { RootState, useAppDispatch, persistor } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
-import { NotificationToggle } from '@/components/misc/NotificationToggle';
 import { AnimatedSwitch } from '@/components/switch/AnimatedSwitch';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
@@ -39,42 +32,145 @@ import { clearFavorites, clearEvents } from '@/lib/slices/favoritesSlice';
 import { clearShifts } from '@/lib/slices/shiftsSlice';
 import { clearStaff } from '@/lib/slices/staffSlice';
 import { clearLeaderboard } from '@/lib/slices/leaderboardSlice';
-import { toggleHaptics } from '@/lib/slices/settingsSlice';
+import { toggleHaptics, toggleNotifications } from '@/lib/slices/settingsSlice';
+import { useAttendeeAttendance } from '@/api/tanstack/attendee';
+import { useMyLeaderboardRank } from '@/api/tanstack/leaderboard';
+
+import QrButtonOrnament from '@/assets/profile/updated/qr_button_ornament.svg';
+import LogoutButtonOrnament from '@/assets/profile/updated/logout_button_ornament.svg';
+import RolePanelBg from '@/assets/profile/updated/role_panel_bg.svg';
+import RankCardFrame from '@/assets/profile/updated/rank_card_frame.svg';
+import RankBannerPink from '@/assets/profile/updated/rank_banner_pink.svg';
+import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
+import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
+import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
 
 const { width, height } = Dimensions.get('window');
-const Separator = () => <View className="h-0.5 bg-white mb-2" />;
 
-const LSeparator = ({ size = width * 0.85, thickness = 2, color = '#fff', zIndex = 1 }) => (
+// Design frame is 402pt wide; content blocks use the design's fixed widths, centered.
+const COLORS = {
+  bgTop: '#0F062D',
+  bgBottom: '#24114C',
+  panel: '#310F78',
+  panelBorder: '#373792',
+  chipBg: '#373792',
+  dark: '#181818',
+  pink: '#FF4CCC',
+  rankNumberBg: '#140532',
+  progress: '#B9C8FF',
+  divider: '#B44FBF',
+  decoFrame: '#463E4F',
+  glow: '#A511B4',
+};
+
+const ordinal = (n: number) => {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
+};
+
+const titleCase = (s: string) =>
+  s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+// 0.8pt-wide decorative tick marks scattered around the panels
+const Tick = ({ top, left, right }: { top: number; left?: number; right?: number }) => (
   <View
+    pointerEvents="none"
     style={{
       position: 'absolute',
-      top: 10,
-      left: 0,
-      right: 0,
-      paddingHorizontal: 20,
+      top,
+      left,
+      right,
+      width: 1,
+      height: 6,
+      backgroundColor: COLORS.divider,
+    }}
+  />
+);
+
+const CornerDot = ({ top, left, right }: { top: number; left?: number; right?: number }) => (
+  <View
+    pointerEvents="none"
+    style={{
+      position: 'absolute',
+      top,
+      left,
+      right,
+      width: 5,
+      height: 5,
+      borderRadius: 2.5,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    }}
+  />
+);
+
+const ToggleRow = ({
+  label,
+  value,
+  onToggle,
+  icon,
+}: {
+  label: string;
+  value: boolean;
+  onToggle: () => void;
+  icon: React.ReactNode;
+}) => (
+  <View
+    style={{
+      width: 348,
+      height: 54,
+      backgroundColor: COLORS.panel,
+      borderWidth: 4,
+      borderColor: COLORS.panelBorder,
+      borderRadius: 10,
       flexDirection: 'row',
-      height: size,
-      justifyContent: 'flex-end',
-      zIndex: zIndex,
-      pointerEvents: 'none',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingLeft: 35,
+      paddingRight: 22,
     }}
   >
-    <View
+    <CornerDot top={7} left={7} />
+    <CornerDot top={33} left={7} />
+    <CornerDot top={7} right={7} />
+    <CornerDot top={33} right={7} />
+    <Text
       style={{
-        width: size,
-        height: thickness,
-        backgroundColor: color,
-        borderRadius: thickness / 2,
-        left: 1,
+        fontFamily: 'ShareTechMono',
+        fontSize: 18,
+        lineHeight: 22,
+        color: '#fff',
       }}
-    />
-    <View
-      style={{
-        width: thickness,
-        height: size,
-        backgroundColor: color,
-        borderRadius: thickness / 2,
-      }}
+    >
+      {label}
+    </Text>
+    <AnimatedSwitch
+      value={value}
+      onValueChange={onToggle}
+      width={75}
+      height={28}
+      onColor="#D9D9D9"
+      offColor="rgba(217, 217, 217, 0.35)"
+      thumbColor={COLORS.panel}
+      thumbSize={22}
+      thumbInset={3}
+      thumbOnIcon={icon}
+      thumbOffIcon={icon}
+      iconAnimationType="fade"
+      style={{}}
     />
   </View>
 );
@@ -83,18 +179,23 @@ const ProfileScreen = () => {
   const { isInitialized } = useDataInitialization();
   const user = useAppSelector((state: RootState) => state.user.profile);
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
-  const themeColor = useAppSelector((state: RootState) => state.attendee.themeColor);
   const logout = useLogout();
   const dispatch = useAppDispatch();
   const staffMe = useAppSelector((s: RootState) => s.staff.me);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
+  const notificationsEnabled = useAppSelector(
+    (s: RootState) => s.settings?.notificationsEnabled ?? true,
+  );
+
+  const hasUserRole = (user?.roles || []).some((r: string) => (r || '').toUpperCase() === 'USER');
+  const attendanceQuery = useAttendeeAttendance(hasUserRole);
+  const rankQuery = useMyLeaderboardRank(hasUserRole);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const backButtonAnim = useRef(new Animated.Value(0)).current;
-  const notificationAnim = useRef(new Animated.Value(0)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
+
   const handleLogout = () => {
     Alert.alert(
       'Log Out',
@@ -136,37 +237,25 @@ const ProfileScreen = () => {
   };
 
   useEffect(() => {
-    const animationSequence = Animated.sequence([
+    Animated.sequence([
       Animated.timing(logoScaleAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 800,
+          duration: 600,
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 800,
+          duration: 600,
           useNativeDriver: true,
         }),
       ]),
-      Animated.timing(backButtonAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(notificationAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    animationSequence.start();
+    ]).start();
   }, [user, dispatch]);
 
   useFocusEffect(
@@ -343,7 +432,6 @@ const ProfileScreen = () => {
     const R = (r || '').toUpperCase();
     return R === 'STAFF' || R === 'ADMIN';
   });
-  const hasUserRole = (user?.roles || []).some((r: string) => (r || '').toUpperCase() === 'USER');
   const staffWithoutUser = isStaffOrAdmin && !hasUserRole;
 
   {
@@ -496,286 +584,450 @@ const ProfileScreen = () => {
     );
   }
 
+  const points = attendee?.points ?? 0;
+  const eventsAttended = attendanceQuery.data?.count ?? 0;
+  const rank = rankQuery.data?.rank;
+  const nextRank = rankQuery.data?.nextRank ?? null;
+  const pointsToNextRank = rankQuery.data?.pointsToNextRank ?? null;
+
+  const rankCaption =
+    rank === undefined
+      ? 'Check in at events to climb the leaderboard!'
+      : nextRank === null || pointsToNextRank === null
+        ? "You're on top of the leaderboard!"
+        : `Only ${pointsToNextRank} pts left to catch up to ${ordinal(nextRank)}!`;
+
+  // Fraction of the way to the next rank, for the small progress bar
+  const progressFraction =
+    nextRank === null || pointsToNextRank === null
+      ? 1
+      : points + pointsToNextRank > 0
+        ? points / (points + pointsToNextRank)
+        : 0;
+
+  const roleChips: string[] = [];
+  if (isStaffOrAdmin && staffMe?.team) {
+    roleChips.push(titleCase(staffMe.team));
+  }
+  (user?.roles || []).forEach((r: string) => {
+    const R = (r || '').toUpperCase();
+    if (R === 'USER') return;
+    const label = titleCase(R);
+    if (!roleChips.includes(label)) roleChips.push(label);
+  });
+  if (roleChips.length === 0) {
+    roleChips.push('Attendee');
+  }
+
   return (
-    <View className="flex-1">
-      <Background
-        width={width}
-        height={height}
-        style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-        preserveAspectRatio="none"
+    <View className="flex-1" style={{ backgroundColor: COLORS.bgTop, overflow: 'hidden' }}>
+      <LinearGradient
+        colors={[COLORS.bgTop, COLORS.bgBottom]}
+        locations={[0.2, 0.56]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
-        <Animated.View
-          style={{
-            opacity: backButtonAnim,
-            top: '10%',
-            left: 20,
-            zIndex: 99,
-            transform: [
-              {
-                scale: backButtonAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-              },
-            ],
-          }}
+        <ScrollView
+          contentContainerStyle={{ alignItems: 'center', paddingBottom: 60, paddingTop: 10 }}
+          showsVerticalScrollIndicator={false}
         >
-          <TouchableOpacity
-            onPress={handleBackPress}
+          {/* Decorative frame hanging off the right edge */}
+          <View
+            pointerEvents="none"
             style={{
-              backgroundColor: themeColor,
-              borderRadius: 20,
-              padding: 8,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
+              position: 'absolute',
+              top: 0,
+              right: -52,
+              width: 107,
+              height: 148,
+              borderWidth: 10,
+              borderColor: COLORS.decoFrame,
+              borderRadius: 12,
             }}
+          />
+
+          {/* Scattered tick marks */}
+          <Tick top={169} right={24} />
+          <Tick top={322} right={22} />
+          <Tick top={365} left={34} />
+          <Tick top={365} right={22} />
+          <Tick top={470} left={30} />
+          <Tick top={496} left={30} />
+          <Tick top={509} right={22} />
+          <Tick top={534} left={30} />
+          <Tick top={568} left={31} />
+
+          <Animated.View
+            style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+            pointerEvents="box-none"
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
-          </TouchableOpacity>
-        </Animated.View>
-
-        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
-          <View className="p-5" style={{ position: 'relative' }}>
-            <LSeparator zIndex={-1} />
-            {isStaffOrAdmin ? (
-              <StaffTeamBadge team={staffMe?.team || 'FULL TEAM'} />
-            ) : (
-              <ProfileHeader points={attendee!.points} />
-            )}
-            <ImageCarousel />
-            <Separator />
-            <UserInfo
-              name={{
-                first: user?.displayName?.split(' ')[0] || '',
-                last: user?.displayName?.split(' ').slice(1).join(' ') || '',
-              }}
-              roles={user?.roles || []}
-            />
-
-            <Separator />
-
-            <Animated.View
-              style={{
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }],
-              }}
-              pointerEvents="box-none"
-            >
-              <ColorPicker />
-              {isStaffOrAdmin ? (
-                <StaffRolesList roles={user?.roles || []} />
-              ) : (
-                <>
-                  <TagSelector />
-                </>
-              )}
-              <Animated.View
+            {/* ---- Header: back, avatar, QR ---- */}
+            <View style={{ width: width, height: 150 }}>
+              <TouchableOpacity
+                onPress={handleBackPress}
                 style={{
-                  marginTop: 10,
-                  opacity: notificationAnim,
-                  transform: [
-                    {
-                      translateX: notificationAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-10, 0],
-                      }),
-                    },
-                  ],
+                  position: 'absolute',
+                  left: 20,
+                  top: 4,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(24, 24, 24, 0.7)',
+                  borderWidth: 1,
+                  borderColor: COLORS.panelBorder,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
                 }}
-                pointerEvents="box-none"
               >
+                <Ionicons name="chevron-back" size={22} color="#fff" />
+              </TouchableOpacity>
+
+              {/* Avatar tile with corner brackets (brackets drawn above the tile) */}
+              <View style={{ alignSelf: 'center', width: 116, height: 113 }}>
                 <View
                   style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    paddingVertical: 20,
-                    paddingHorizontal: 24,
-                    borderRadius: 12,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    position: 'absolute',
+                    top: 2.4,
+                    left: 4.3,
+                    width: 107.3,
+                    height: 107.3,
+                    borderRadius: 2.4,
+                    backgroundColor: COLORS.dark,
+                    overflow: 'hidden',
                     alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
                   }}
-                  pointerEvents="box-none"
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: 18,
-                        fontWeight: '700',
-                        fontFamily: 'ProRacing',
-                        marginBottom: 6,
-                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 2,
-                      }}
-                    >
-                      NOTIFICATIONS
-                    </Text>
-                    <Text
-                      style={{
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        fontSize: 12,
-                        fontFamily: 'Inter',
-                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 1,
-                      }}
-                    >
-                      Stay up to date at each turn!
-                    </Text>
-                  </View>
-                  <NotificationToggle />
-                </View>
-              </Animated.View>
-
-              {/* Haptics toggle */}
-              <Animated.View
-                style={{
-                  marginTop: 10,
-                  opacity: notificationAnim,
-                  transform: [
-                    {
-                      translateX: notificationAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-10, 0],
-                      }),
-                    },
-                  ],
-                }}
-                pointerEvents="box-none"
-              >
-                <View
-                  style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    paddingVertical: 20,
-                    paddingHorizontal: 24,
-                    borderRadius: 12,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
-                  }}
-                  pointerEvents="box-none"
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: 18,
-                        fontWeight: '700',
-                        fontFamily: 'ProRacing',
-                        marginBottom: 6,
-                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 2,
-                      }}
-                    >
-                      HAPTICS
-                    </Text>
-                    <Text
-                      style={{
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        fontSize: 12,
-                        fontFamily: 'Inter',
-                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 1,
-                      }}
-                    >
-                      Feel the roar of the engines!
-                    </Text>
-                  </View>
-                  <AnimatedSwitch
-                    value={hapticsEnabled}
-                    onValueChange={() => dispatch(toggleHaptics())}
-                    width={60}
-                    height={36}
-                    onColor="#EDE053"
-                    offColor="rgba(255, 255, 255, 0.4)"
-                    thumbColor="#fff"
-                    thumbOnIcon={<MaterialCommunityIcons name="vibrate" size={20} color="black" />}
-                    thumbOffIcon={
-                      <MaterialCommunityIcons name="vibrate-off" size={20} color="grey" />
-                    }
-                    iconAnimationType="rotate"
-                    style={{}}
+                  <Image
+                    source={require('@/assets/profile/updated/avatar_composite.png')}
+                    style={{ position: 'absolute', bottom: 0, width: 97, height: 107 }}
+                    resizeMode="cover"
                   />
                 </View>
-              </Animated.View>
+                <CornerBrackets
+                  width={116}
+                  height={20.2}
+                  style={{ position: 'absolute', top: 0, transform: [{ scaleY: -1 }] }}
+                />
+                <CornerBrackets
+                  width={116}
+                  height={20.2}
+                  style={{ position: 'absolute', bottom: 0 }}
+                />
+              </View>
 
-              {/* Logout button */}
-              <Animated.View
-                style={{
-                  marginTop: 10,
-                  paddingBottom: 20,
-                  opacity: notificationAnim,
-                  transform: [
-                    {
-                      translateX: notificationAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-10, 0],
-                      }),
-                    },
-                  ],
-                }}
+              {/* QR button */}
+              <TouchableOpacity
+                onPress={() => router.push('/screens/scanner')}
+                activeOpacity={0.8}
+                style={{ position: 'absolute', right: 31, top: 0 }}
               >
-                <TouchableOpacity
-                  onPress={handleLogout}
-                  activeOpacity={0.8}
+                <QrButtonOrnament width={68} height={64} />
+              </TouchableOpacity>
+            </View>
+
+            {/* ---- Name ---- */}
+            <Text
+              style={{
+                alignSelf: 'center',
+                marginTop: 14,
+                fontFamily: 'Ethnocentric',
+                fontSize: 20,
+                letterSpacing: 3,
+                color: '#fff',
+                textTransform: 'uppercase',
+                textAlign: 'center',
+                maxWidth: width - 40,
+                textShadowColor: COLORS.glow,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 18,
+              }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {user?.displayName || ''}
+            </Text>
+
+            {/* ---- Stats bar ---- */}
+            <View
+              style={{
+                alignSelf: 'center',
+                marginTop: 22,
+                width: 349,
+                height: 58,
+                backgroundColor: COLORS.panel,
+                borderWidth: 4,
+                borderColor: COLORS.panelBorder,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
+                  {points}
+                </Text>
+                <Text
                   style={{
-                    backgroundColor: 'rgba(220, 53, 69, 0.9)',
-                    paddingVertical: 18,
-                    paddingHorizontal: 24,
-                    borderRadius: 12,
-                    alignItems: 'center',
-                    borderWidth: 2,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
+                    fontFamily: 'ShareTechMono',
+                    fontSize: 14,
+                    color: '#fff',
+                    marginLeft: 6,
+                    marginBottom: 3,
                   }}
                 >
-                  <Text
+                  pts
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  width: 6,
+                  height: 34,
+                  borderRadius: 5,
+                  backgroundColor: COLORS.divider,
+                  marginHorizontal: 24,
+                }}
+              />
+
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
+                  {eventsAttended}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'ShareTechMono',
+                    fontSize: 14,
+                    color: '#fff',
+                    marginLeft: 6,
+                    marginBottom: 3,
+                  }}
+                >
+                  events
+                </Text>
+              </View>
+            </View>
+
+            {/* ---- ROLE panel ---- */}
+            <View style={{ alignSelf: 'center', marginTop: 25, width: 344, height: 148 }}>
+              <RolePanelBg width={344} height={148} style={StyleSheet.absoluteFillObject} />
+              {/* Dark pill inside the top notch */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  alignSelf: 'center',
+                  width: 80,
+                  height: 9,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.dark,
+                }}
+              />
+              <Text
+                style={{
+                  position: 'absolute',
+                  top: 30,
+                  left: 16,
+                  fontFamily: 'Ethnocentric',
+                  fontSize: 24,
+                  color: '#fff',
+                }}
+              >
+                ROLE
+              </Text>
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 62,
+                  left: 10,
+                  width: 316,
+                  height: 65,
+                  borderRadius: 10,
+                  backgroundColor: COLORS.dark,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 12,
+                }}
+              >
+                {roleChips.map((chip) => (
+                  <View
+                    key={chip}
                     style={{
-                      color: '#fff',
-                      fontSize: 18,
-                      fontWeight: '700',
-                      fontFamily: 'ProRacing',
-                      textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 2,
+                      height: 35,
+                      paddingHorizontal: 20,
+                      borderRadius: 6,
+                      backgroundColor: COLORS.chipBg,
+                      justifyContent: 'center',
+                      marginRight: 7,
                     }}
                   >
-                    LOG OUT
+                    <Text
+                      style={{
+                        fontFamily: 'ShareTechMono',
+                        fontSize: 18,
+                        lineHeight: 22,
+                        color: '#fff',
+                      }}
+                    >
+                      {chip}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* ---- RANK card ---- */}
+            <View style={{ alignSelf: 'center', marginTop: 24, width: 348, height: 122 }}>
+              <RankCardFrame
+                width={348}
+                height={114}
+                style={{ position: 'absolute', top: 4, transform: [{ scaleX: -1 }] }}
+              />
+
+              {/* Pink banner + RANK label */}
+              <RankBannerPink
+                width={230}
+                height={125}
+                style={{ position: 'absolute', left: 5, top: -4 }}
+              />
+              <Text
+                style={{
+                  position: 'absolute',
+                  left: 14,
+                  top: 30,
+                  width: 120,
+                  textAlign: 'center',
+                  fontFamily: 'Ethnocentric',
+                  fontSize: 24,
+                  color: '#fff',
+                  transform: [{ rotate: '-8deg' }],
+                }}
+              >
+                RANK
+              </Text>
+              <Text
+                style={{
+                  position: 'absolute',
+                  left: 26,
+                  top: 68,
+                  width: 160,
+                  fontFamily: 'ShareTechMono',
+                  fontSize: 14,
+                  color: '#fff',
+                }}
+              >
+                {rankCaption}
+              </Text>
+
+              {/* Rank number card (drawn above the banner, as in the design) */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 10,
+                  width: 153,
+                  height: 90,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.rankNumberBg,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Ethnocentric',
+                      fontSize: rank !== undefined && rank >= 1000 ? 40 : 56,
+                      color: COLORS.pink,
+                      lineHeight: rank !== undefined && rank >= 1000 ? 46 : 62,
+                    }}
+                  >
+                    {rank !== undefined ? rank : '--'}
                   </Text>
-                </TouchableOpacity>
-              </Animated.View>
-            </Animated.View>
-          </View>
+                  {rank !== undefined && (
+                    <Text
+                      style={{
+                        fontFamily: 'Ethnocentric',
+                        fontSize: 12,
+                        color: COLORS.pink,
+                        marginTop: 6,
+                        marginLeft: 2,
+                      }}
+                    >
+                      {ordinal(rank).replace(String(rank), '')}
+                    </Text>
+                  )}
+                </View>
+                {/* Progress toward next rank */}
+                <View
+                  style={{
+                    width: 131,
+                    height: 8,
+                    borderRadius: 12,
+                    backgroundColor: 'rgba(185, 200, 255, 0.25)',
+                    marginTop: 6,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 131 * Math.max(0.06, Math.min(1, progressFraction)),
+                      height: 8,
+                      borderRadius: 12,
+                      backgroundColor: COLORS.progress,
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* ---- Toggles ---- */}
+            <View style={{ alignSelf: 'center', marginTop: 26 }}>
+              <ToggleRow
+                label="Notification"
+                value={notificationsEnabled}
+                onToggle={() => dispatch(toggleNotifications())}
+                icon={<BellIcon width={16} height={16} />}
+              />
+            </View>
+            <View style={{ alignSelf: 'center', marginTop: 21 }}>
+              <ToggleRow
+                label="Haptics"
+                value={hapticsEnabled}
+                onToggle={() => dispatch(toggleHaptics())}
+                icon={<VibrationIcon width={16} height={16} />}
+              />
+            </View>
+
+            {/* ---- Logout ---- */}
+            <TouchableOpacity
+              onPress={handleLogout}
+              activeOpacity={0.8}
+              style={{ alignSelf: 'center', marginTop: 21 }}
+            >
+              <LogoutButtonOrnament width={68} height={64} />
+            </TouchableOpacity>
+
+            {/* Decorative frame below the logout button, clipped by the screen edge */}
+            <View
+              pointerEvents="none"
+              style={{
+                alignSelf: 'center',
+                marginTop: 18,
+                marginLeft: -76,
+                width: 82,
+                height: 140,
+                borderWidth: 10,
+                borderColor: COLORS.decoFrame,
+                borderRadius: 12,
+                marginBottom: -95,
+              }}
+            />
+          </Animated.View>
         </ScrollView>
       </SafeAreaView>
     </View>
