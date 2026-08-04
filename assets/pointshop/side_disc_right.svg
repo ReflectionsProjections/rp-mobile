@@ -1,0 +1,15 @@
+<svg width="254" height="254" viewBox="0 0 254 254" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sideDiscRight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(127 127) rotate(90) scale(126.932)">
+      <stop stop-color="#4B5699"/>
+      <stop offset="1" stop-color="#05F3DB"/>
+    </radialGradient>
+    <mask id="sideDiscRightMask" maskUnits="userSpaceOnUse" x="0" y="0" width="254" height="254">
+      <circle cx="127" cy="127" r="124.932" fill="white" stroke="black" stroke-width="4"/>
+    </mask>
+  </defs>
+  <circle cx="127" cy="127" r="126.932" fill="url(#sideDiscRight)"/>
+  <g mask="url(#sideDiscRightMask)">
+    <rect opacity="0.6" x="126.929" y="-65.861" width="37.1324" height="335.707" transform="rotate(42.171 126.929 -65.861)" fill="white"/>
+  </g>
+</svg>
