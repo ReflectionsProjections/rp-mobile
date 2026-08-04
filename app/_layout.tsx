@@ -130,6 +130,7 @@ export default function RootLayout() {
                     animation: 'ios_from_left',
                   }}
                 />
+                <Stack.Screen name="auth/mobile/login" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
               </Stack>

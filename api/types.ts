@@ -273,9 +273,19 @@ export interface APIRoutes {
       response: RoleObject[];
     };
   };
-  '/auth/login/:platform': {
+  '/auth/magic-links': {
     POST: {
-      request: { code: string; redirectUri: string; codeVerifier: string };
+      request: {
+        email: string;
+        client: 'mobile';
+        intent: 'login';
+      };
+      response: never;
+    };
+  };
+  '/auth/magic-links/verify': {
+    POST: {
+      request: { token: string; client: 'mobile' };
       response: { token: string };
     };
   };
