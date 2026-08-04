@@ -9,17 +9,12 @@ import {
   useWindowDimensions,
   Animated,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import * as AuthSession from 'expo-auth-session';
 import { api } from '@/api/api';
-import { path } from '@/api/types';
-import * as WebBrowser from 'expo-web-browser';
 import Background from '@/assets/background/rp_background.svg';
-import { googleAuth } from '@/lib/auth';
-import { OAUTH_CONFIG } from '@/lib/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const BUTTON_COLOR = '#FF4CCC';
@@ -28,48 +23,32 @@ const BUTTON_HEIGHT = 66;
 export default function SignInScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const { width, height } = useWindowDimensions();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const handleEmailLogin = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      Alert.alert('Enter your email', 'We need an email address to send your sign-in link.');
+      return;
+    }
+
     try {
       setIsLoading(true);
-
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme:
-          Platform.OS === 'android'
-            ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME
-            : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
-        path: OAUTH_CONFIG.REDIRECT_PATH,
+      await api.post('/auth/magic-links', {
+        email: normalizedEmail,
+        client: 'mobile',
+        intent: 'login',
       });
-
-      const authResult = await googleAuth();
-      if (!authResult || authResult.result.type !== 'success') {
-        throw new Error('Authentication was cancelled or failed');
-      }
-      const { result, codeVerifier } = authResult;
-
-      const response = await api.post(path('/auth/login/:platform', { platform: Platform.OS }), {
-        code: result.params.code,
-        redirectUri: redirectUri,
-        codeVerifier: codeVerifier,
-      });
-
-      await SecureStore.setItemAsync('jwt', response.data.token);
-      const roles = await api.get('/auth/info').then((res) => res.data.roles);
-      if (roles.length > 0) {
-        router.replace('/(tabs)/home');
-      } else {
-        Alert.alert('Make sure to register for the event first!');
-        await SecureStore.deleteItemAsync('jwt');
-      }
+      Alert.alert('Check your email', 'Tap the link we sent to finish signing in.');
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert(
-        'Login Failed',
-        error.message || 'An error occurred during login. Please try again.',
+        'Could not send link',
+        error.response?.data?.details || 'Please check your email address and try again.',
         [{ text: 'OK' }],
       );
     } finally {
@@ -130,6 +109,27 @@ export default function SignInScreen() {
                 justifyContent: 'center',
               }}
             >
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                placeholderTextColor="#6B7280"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                editable={!isLoading}
+                style={{
+                  width: '100%',
+                  marginBottom: 16,
+                  borderRadius: 18,
+                  backgroundColor: '#FFFFFF',
+                  color: '#111827',
+                  fontSize: 17,
+                  paddingHorizontal: 18,
+                  paddingVertical: 16,
+                }}
+              />
               <View
                 pointerEvents="none"
                 style={{
@@ -173,6 +173,9 @@ export default function SignInScreen() {
                   }}
                 >
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
                     style={{
                       color: '#FFF',
                       fontFamily: 'Ethnocentric',
@@ -180,7 +183,7 @@ export default function SignInScreen() {
                       letterSpacing: 1,
                     }}
                   >
-                    {isLoading ? 'SIGNING IN...' : 'LOGIN WITH GOOGLE'}
+                    {isLoading ? 'SENDING LINK...' : 'SIGN IN WITH A MAGIC LINK'}
                   </Text>
                 </TouchableOpacity>
               </LinearGradient>
