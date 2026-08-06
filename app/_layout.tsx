@@ -131,6 +131,7 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="auth/mobile/login" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
               </Stack>
             </BottomSheetModalProvider>
