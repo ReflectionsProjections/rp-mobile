@@ -15,6 +15,7 @@ export default {
     ios: {
       supportsTablet: false,
       bundleIdentifier: 'com.reflectionsprojections',
+      associatedDomains: ['applinks:reflectionsprojections.org'],
       config: {
         usesNonExemptEncryption: false,
       },
@@ -45,6 +46,18 @@ export default {
           data: [
             {
               scheme: 'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
+            },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            {
+              scheme: 'https',
+              host: 'reflectionsprojections.org',
+              pathPrefix: '/auth/mobile/login',
             },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
