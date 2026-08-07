@@ -9,7 +9,6 @@ import {
   Animated,
   ScrollView,
   StyleSheet,
-  Image,
 } from 'react-native';
 import { logout as clearAuthTokens } from '@/lib/auth';
 import { useLogout } from '@/api/tanstack/user';
@@ -44,6 +43,7 @@ import RankBannerPink from '@/assets/profile/updated/rank_banner_pink.svg';
 import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
 import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
 import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
+import AvatarArt from '@/assets/profile/updated/avatar.svg';
 
 const { width, height } = Dimensions.get('window');
 
@@ -701,10 +701,11 @@ const ProfileScreen = () => {
                     alignItems: 'center',
                   }}
                 >
-                  <Image
-                    source={require('@/assets/profile/updated/avatar_composite.png')}
-                    style={{ position: 'absolute', bottom: 0, width: 97, height: 107 }}
-                    resizeMode="cover"
+                  <AvatarArt
+                    width={98}
+                    height={108}
+                    style={{ position: 'absolute', bottom: 0 }}
+                    preserveAspectRatio="xMidYMax slice"
                   />
                 </View>
                 <CornerBrackets
