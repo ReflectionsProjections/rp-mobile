@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setAttendeeProfile, clearAttendeeProfile, updatePoints } from '@/lib/slices/attendeeSlice';
 import { api } from '../api';
-import type { Attendee } from '../types';
+import type { Attendee, ResponseType } from '../types';
 
 export const ATTENDEE_PROFILE_QK = ['attendee', 'profile'] as const;
 export const ATTENDEE_POINTS_QK = ['attendee', 'points'] as const;
@@ -84,6 +84,30 @@ export function useAttendeePoints(isAuthenticated?: boolean | null) {
     isLoading: query.isLoading,
     error: query.error,
   };
+}
+
+export const ATTENDEE_ATTENDANCE_QK = ['attendee', 'attendance'] as const;
+
+type AttendeeAttendance = ResponseType<'/attendee/attendance', 'GET'>;
+
+async function fetchAttendeeAttendance(): Promise<AttendeeAttendance> {
+  const jwt = await import('expo-secure-store').then((store) => store.getItemAsync('jwt'));
+  if (!jwt) {
+    throw new Error('Not authenticated');
+  }
+
+  const response = await api.get('/attendee/attendance');
+  return response.data as AttendeeAttendance;
+}
+
+export function useAttendeeAttendance(isAuthenticated?: boolean | null) {
+  return useQuery<AttendeeAttendance>({
+    queryKey: ATTENDEE_ATTENDANCE_QK,
+    queryFn: fetchAttendeeAttendance,
+    enabled: isAuthenticated === true,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
 }
 
 export function useRefreshAttendeeProfile() {
