@@ -247,6 +247,21 @@ export default function SignInScreen() {
                 </TouchableOpacity>
               </LinearGradient>
             </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/email-sign-in')}
+              style={{ marginTop: 24 }}
+            >
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: 14,
+                  textDecorationLine: 'underline',
+                }}
+              >
+                Sign in with an email link instead
+              </Text>
+            </TouchableOpacity>
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
