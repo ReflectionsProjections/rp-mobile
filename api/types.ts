@@ -298,6 +298,18 @@ export interface APIRoutes {
       response: { token: string };
     };
   };
+  '/auth/magic-links': {
+    POST: {
+      request: { email: string; client: 'mobile'; intent: 'login' };
+      response: never;
+    };
+  };
+  '/auth/magic-links/verify': {
+    POST: {
+      request: { token: string; client: 'mobile' };
+      response: { token: string };
+    };
+  };
   '/auth/info': {
     GET: {
       response: RoleObject;
