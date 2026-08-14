@@ -304,6 +304,12 @@ export interface APIRoutes {
       response: { token: string };
     };
   };
+  '/auth/magic-links/verify-code': {
+    POST: {
+      request: { email: string; code: string; client: 'mobile' };
+      response: { token: string };
+    };
+  };
   '/auth/info': {
     GET: {
       response: RoleObject;
