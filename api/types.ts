@@ -292,12 +292,6 @@ export interface APIRoutes {
       response: RoleObject[];
     };
   };
-  '/auth/login/:platform': {
-    POST: {
-      request: { code: string; redirectUri: string; codeVerifier: string };
-      response: { token: string };
-    };
-  };
   '/auth/magic-links': {
     POST: {
       request: { email: string; client: 'mobile'; intent: 'login' };

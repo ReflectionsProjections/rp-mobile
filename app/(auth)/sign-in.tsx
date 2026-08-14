@@ -1,25 +1,17 @@
 import '@/global.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   KeyboardAvoidingView,
   Platform,
   Text,
-  Alert,
   useWindowDimensions,
   Animated,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import * as AuthSession from 'expo-auth-session';
-import { api } from '@/api/api';
-import { path } from '@/api/types';
-import * as WebBrowser from 'expo-web-browser';
 import Background from '@/assets/background/rp_background.svg';
-import { googleAuth } from '@/lib/auth';
-import { OAUTH_CONFIG } from '@/lib/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const BUTTON_COLOR = '#FF4CCC';
@@ -27,54 +19,13 @@ const BORDER_WIDTH = 7;
 const BUTTON_HEIGHT = 66;
 export default function SignInScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const { width, height } = useWindowDimensions();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
-  const handleEmailLogin = async () => {
-    try {
-      setIsLoading(true);
-
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme:
-          Platform.OS === 'android'
-            ? OAUTH_CONFIG.ANDROID_REDIRECT_SCHEME
-            : OAUTH_CONFIG.IOS_REDIRECT_SCHEME,
-        path: OAUTH_CONFIG.REDIRECT_PATH,
-      });
-
-      const authResult = await googleAuth();
-      if (!authResult || authResult.result.type !== 'success') {
-        throw new Error('Authentication was cancelled or failed');
-      }
-      const { result, codeVerifier } = authResult;
-
-      const response = await api.post(path('/auth/login/:platform', { platform: Platform.OS }), {
-        code: result.params.code,
-        redirectUri: redirectUri,
-        codeVerifier: codeVerifier,
-      });
-
-      await SecureStore.setItemAsync('jwt', response.data.token);
-      const roles = await api.get('/auth/info').then((res) => res.data.roles);
-      if (roles.length > 0) {
-        router.replace('/(tabs)/home');
-      } else {
-        Alert.alert('Make sure to register for the event first!');
-        await SecureStore.deleteItemAsync('jwt');
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.message || 'An error occurred during login. Please try again.',
-        [{ text: 'OK' }],
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const handleEmailLogin = () => {
+    router.push('/(auth)/email-sign-in');
   };
 
   const handleGuestLogin = () => {
@@ -161,7 +112,6 @@ export default function SignInScreen() {
               >
                 <TouchableOpacity
                   onPress={handleEmailLogin}
-                  disabled={isLoading}
                   activeOpacity={0.85}
                   style={{
                     height: BUTTON_HEIGHT,
@@ -169,7 +119,6 @@ export default function SignInScreen() {
                     backgroundColor: BUTTON_COLOR,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    opacity: isLoading ? 0.7 : 1,
                   }}
                 >
                   <Text
@@ -180,7 +129,7 @@ export default function SignInScreen() {
                       letterSpacing: 1,
                     }}
                   >
-                    {isLoading ? 'SIGNING IN...' : 'LOGIN WITH GOOGLE'}
+                    SIGN IN WITH EMAIL
                   </Text>
                 </TouchableOpacity>
               </LinearGradient>
@@ -248,20 +197,6 @@ export default function SignInScreen() {
               </LinearGradient>
             </View>
 
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/email-sign-in')}
-              style={{ marginTop: 24 }}
-            >
-              <Text
-                style={{
-                  color: '#FFFFFF',
-                  fontSize: 14,
-                  textDecorationLine: 'underline',
-                }}
-              >
-                Sign in with an email link instead
-              </Text>
-            </TouchableOpacity>
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
