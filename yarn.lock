@@ -2447,11 +2447,6 @@
   resolved "https://registry.npmjs.org/@react-native-firebase/messaging/-/messaging-23.1.2.tgz"
   integrity sha512-B6ysoo6TMJGgIGNG+1j8SeImFHiiV4wrnB9nBDHr0y+oymGR7iVCNC8iaOd4RVd3FK96U3ojM35Dn2PPhSnrJg==
 
-"@react-native-google-signin/google-signin@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-15.0.0.tgz"
-  integrity sha512-oU49nE+Z9TT/WaO1K7BH/QL2Nx3d2T3I5PGcYdD8swKNtfhMt8qCX/3mOnNEzthTBPrR0CWFGo3LXpkYspalog==
-
 "@react-native-picker/picker@2.11.1":
   version "2.11.1"
   resolved "https://registry.yarnpkg.com/@react-native-picker/picker/-/picker-2.11.1.tgz#d8884440abc5f75579d82f9888e50ca047c9ec14"
@@ -5140,18 +5135,6 @@ expo-asset@~12.0.13:
     "@expo/image-utils" "^0.8.8"
     expo-constants "~18.0.13"
 
-expo-auth-session@~7.0.10:
-  version "7.0.11"
-  resolved "https://registry.yarnpkg.com/expo-auth-session/-/expo-auth-session-7.0.11.tgz#fa9510862030962eac0147708ef28d6c63df3f71"
-  integrity sha512-AhWtt/m9rb1Po77X/VBFbeE6UTgbm2vXP2iCblUSRsHCw2qD6lO0ulKUB8Xyxy9FtoI9yrNQ1iwCNgIIgo8VYQ==
-  dependencies:
-    expo-application "~7.0.8"
-    expo-constants "~18.0.13"
-    expo-crypto "~15.0.9"
-    expo-linking "~8.0.12"
-    expo-web-browser "~15.0.11"
-    invariant "^2.2.4"
-
 expo-blur@~15.0.8:
   version "15.0.8"
   resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-15.0.8.tgz#846cea275a6644639c5c338987b4cca54cf93eca"
@@ -5172,7 +5155,7 @@ expo-constants@~18.0.13:
     "@expo/config" "~12.0.13"
     "@expo/env" "~2.0.8"
 
-expo-crypto@~15.0.8, expo-crypto@~15.0.9:
+expo-crypto@~15.0.8:
   version "15.0.9"
   resolved "https://registry.yarnpkg.com/expo-crypto/-/expo-crypto-15.0.9.tgz#5600c2e08e9946a8b1dfc8ceaa9891714b79ca8a"
   integrity sha512-SNWKa2fXx7v9gkp1h/7nqXY5XN7qgNDn3yRc2aO0gWGbeMbvob/haMxxsPFe9f51aqH5NjNCqHf2kvLhvAd8KQ==
@@ -5213,7 +5196,7 @@ expo-linear-gradient@~15.0.8:
   resolved "https://registry.yarnpkg.com/expo-linear-gradient/-/expo-linear-gradient-15.0.8.tgz#17cb49522699d2a033eae93146bc820ef180f4f8"
   integrity sha512-V2d8Wjn0VzhPHO+rrSBtcl+Fo+jUUccdlmQ6OoL9/XQB7Qk3d9lYrqKDJyccwDxmQT10JdST3Tmf2K52NLc3kw==
 
-expo-linking@~8.0.11, expo-linking@~8.0.12:
+expo-linking@~8.0.11:
   version "8.0.12"
   resolved "https://registry.yarnpkg.com/expo-linking/-/expo-linking-8.0.12.tgz#773bb2d18b89750af87fa807a6298d519130bdb6"
   integrity sha512-FpXeIpFgZuxihwT9lBo86YD3y6LphBuAhN680MMxm/Y7fmsc57vimn2d3vFu68VI0+Z9w457t494mu2wvlgWTQ==
@@ -5320,7 +5303,7 @@ expo-system-ui@~6.0.9:
     "@react-native/normalize-colors" "0.81.5"
     debug "^4.3.2"
 
-expo-web-browser@~15.0.10, expo-web-browser@~15.0.11:
+expo-web-browser@~15.0.10:
   version "15.0.11"
   resolved "https://registry.yarnpkg.com/expo-web-browser/-/expo-web-browser-15.0.11.tgz#6a8134e2398031ef79c89f516b15a18103903ef5"
   integrity sha512-r2LS4Ro6DgUPZkcaEfgt8mp9eJuoA93x11Jh7S6utFe0FEzvUNn2yFhxg8XVwESaaHGt2k5V8LuK36rsp0BeIw==
