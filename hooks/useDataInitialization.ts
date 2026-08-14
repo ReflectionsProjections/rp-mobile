@@ -18,6 +18,12 @@ export function useDataInitialization() {
   const hasEvents = useAppSelector(
     (state: RootState) => (state.favorites?.events || []).length > 0,
   );
+  // A completed fetch can legitimately return zero events, so "loaded" must come
+  // from fetch completion (eventsLastFetched), not from the list being non-empty.
+  const eventsLoaded = useAppSelector(
+    (state: RootState) =>
+      state.favorites?.eventsLastFetched != null || (state.favorites?.events || []).length > 0,
+  );
   const hasFavorites = useAppSelector(
     (state: RootState) => (state.favorites?.favoriteEventIds || []).length > 0,
   );
@@ -89,10 +95,10 @@ export function useDataInitialization() {
 
   const isInitialized =
     isAuthenticated === false
-      ? hasEvents
-      : hasEvents && (isAuthenticated ? hasUser && hasAttendeeData : true);
+      ? eventsLoaded
+      : eventsLoaded && (isAuthenticated ? hasUser && hasAttendeeData : true);
 
-  const isLoading = isAuthenticated === null ? true : !hasEvents;
+  const isLoading = isAuthenticated === null ? true : !eventsLoaded;
 
   return {
     isInitialized,
