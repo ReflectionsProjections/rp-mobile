@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="46.7165" height="43.8" viewBox="0 0 46.7165 43.8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mask group">
+<rect id="Rectangle 414" x="14.7876" y="3.59714e-05" width="40.3007" height="24.2349" transform="rotate(37.6024 14.7876 3.59714e-05)" fill="#FF4CCC"/>
+<mask id="mask0_0_93" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="47" height="44">
+<rect id="Rectangle 415" x="14.6453" y="0.184814" width="40.3153" height="24.0017" transform="rotate(37.6024 14.6453 0.184814)" fill="#F52DBC"/>
+</mask>
+<g mask="url(#mask0_0_93)">
+<path id="Subtract" d="M8.84536 21.9087L11.2224 18.8818L19.214 19.0399L17.1658 11.3136L19.5428 8.28674L23.2301 22.1938L8.84536 21.9087Z" fill="#8F8F8F"/>
+<path id="Subtract_2" d="M2.60242e-05 14.8068L2.37704 11.7799L10.3687 11.938L8.32048 4.21166L10.6975 1.18481L14.3847 15.0918L2.60242e-05 14.8068Z" fill="#C9C9C9"/>
+<path id="Subtract_3" d="M26.2795 35.856L28.6565 32.8291L36.6481 32.9872L34.5999 25.2609L36.9769 22.234L40.6642 36.141L26.2795 35.856Z" fill="#C9C9C9"/>
+<path id="Subtract_4" d="M17.5624 28.8823L19.9394 25.8555L27.9311 26.0135L25.8829 18.2872L28.2599 15.2604L31.9471 29.1674L17.5624 28.8823Z" fill="#9D9D9D"/>
+</g>
+</g>
+</svg>

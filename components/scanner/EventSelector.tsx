@@ -20,8 +20,8 @@ export default function EventSelector({
     return (
       <View className="px-4 py-2">
         <LinearGradient colors={['#ffffff10', '#ffffff05']} className="rounded-xl p-[1px]">
-          <View className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-center">
-            <ActivityIndicator size="small" color="#00adb5" />
+          <View className="rounded-xl p-3 bg-[#150935] border border-[#373792] flex-row items-center justify-center">
+            <ActivityIndicator size="small" color="#ff4ccc" />
             <Text className="text-white/60 ml-2">Loading events...</Text>
           </View>
         </LinearGradient>
@@ -30,10 +30,10 @@ export default function EventSelector({
   }
 
   return (
-    <View className="px-4 py-0.5">
+    <View className="px-4 py-0.5 mt-2">
       <LinearGradient colors={['#ffffff10', '#ffffff05']} className="rounded-xl p-[1px]">
         <TouchableOpacity
-          className="rounded-xl p-3 bg-[#121212] border border-white/10 flex-row items-center justify-between"
+          className="rounded-xl p-3 bg-[#150935] border border-[#373792] flex-row items-center justify-between"
           onPress={onEventSelect}
           activeOpacity={0.8}
         >
