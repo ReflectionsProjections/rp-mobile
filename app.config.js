@@ -23,10 +23,7 @@ export default {
       infoPlist: {
         CFBundleURLTypes: [
           {
-            CFBundleURLSchemes: [
-              'reflectionsprojections',
-              'com.googleusercontent.apps.693438449476-tmppq76n7cauru3l0gvk32mufrd7eoq0',
-            ],
+            CFBundleURLSchemes: ['reflectionsprojections'],
           },
         ],
         UIBackgroundModes: ['remote-notification'],
@@ -40,16 +37,6 @@ export default {
       package: 'com.reflectionsprojections',
       googleServicesFile: './googleServices/google-services.json',
       intentFilters: [
-        {
-          action: 'VIEW',
-          autoVerify: true,
-          data: [
-            {
-              scheme: 'com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf',
-            },
-          ],
-          category: ['BROWSABLE', 'DEFAULT'],
-        },
         {
           action: 'VIEW',
           autoVerify: true,
@@ -88,8 +75,6 @@ export default {
       typedRoutes: true,
     },
     extra: {
-      iosGoogleClientId: process.env.IOS_OAUTH_GOOGLE_CLIENT_ID,
-      androidGoogleClientId: process.env.ANDROID_OAUTH_GOOGLE_CLIENT_ID,
       apiUrl: process.env.API_URL || 'https://api.reflectionsprojections.org',
       eas: {
         projectId: '31b01df4-91df-45dc-9131-17913e919c8a',
