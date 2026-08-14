@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSelector } from '@/lib/store';
@@ -26,18 +27,20 @@ export default function ScannerScreen() {
   return (
     <View style={{ flex: 1 }}>
       {content}
-      <SafeAreaView style={{ position: 'absolute', top: 0, left: 0 }} pointerEvents="box-none">
+      <SafeAreaView
+        style={{ position: 'absolute', top: 0, left: 0 }}
+        edges={['top']}
+        pointerEvents="box-none"
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={{
             marginLeft: 20,
-            marginTop: 8,
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: 'rgba(24, 24, 24, 0.7)',
-            borderWidth: 1,
-            borderColor: '#373792',
+            marginTop: 16,
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            backgroundColor: '#ff4ccc',
             justifyContent: 'center',
             alignItems: 'center',
           }}
