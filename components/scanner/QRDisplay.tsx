@@ -2,6 +2,11 @@ import React from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+// Module colors from the Figma "qr scan" design (1943:6343): purple -> cyan
+// diagonal gradient. Both ends stay bright against the #181818 panel so the
+// code keeps enough contrast to scan reliably.
+const QR_GRADIENT: [string, string] = ['#B44FBF', '#5CE1E6'];
+
 interface QRDisplayProps {
   qrValue: string | null;
   loading: boolean;
@@ -23,11 +28,16 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
 }) => {
   const MAX_RETRY_ATTEMPTS = 3;
 
-  if (loading) {
+  if (loading && !qrValue) {
     return (
-      <View className="items-center">
-        <ActivityIndicator size="large" color="#fff" />
-        <Text className="text-white text-sm mt-2">Loading QR Code...</Text>
+      <View className="items-center justify-center" style={{ width: qrSize, height: qrSize }}>
+        <ActivityIndicator size="large" color="#ff4ccc" />
+        <Text
+          className="text-white text-sm mt-2"
+          style={{ fontFamily: 'ShareTechMono', color: 'rgba(255,255,255,0.7)' }}
+        >
+          Loading QR Code...
+        </Text>
         {retryCount > 0 && (
           <Text className="text-yellow-400 text-xs mt-1">
             Retry attempt {retryCount}/{MAX_RETRY_ATTEMPTS}
@@ -37,16 +47,25 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
     );
   }
 
-  if (error) {
+  if (error && !qrValue) {
     return (
-      <View className="items-center">
-        <Text className="text-red-500 text-base text-center mb-4">{error}</Text>
+      <View className="items-center justify-center" style={{ width: qrSize, height: qrSize }}>
+        <Text className="text-red-500 text-sm text-center mb-4">{error}</Text>
         <TouchableOpacity
           onPress={onManualRefresh}
           disabled={loading}
-          className="bg-[#EDE053] px-6 py-3 rounded-lg"
+          style={{
+            backgroundColor: '#150935',
+            borderWidth: 2,
+            borderColor: '#ff4ccc',
+            borderRadius: 10,
+            paddingHorizontal: 24,
+            paddingVertical: 10,
+          }}
         >
-          <Text className="text-[#E66300] font-bold">Retry</Text>
+          <Text className="text-white" style={{ fontFamily: 'ShareTechMono', fontSize: 14 }}>
+            Retry
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -54,14 +73,13 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
 
   if (qrValue) {
     return (
-      <View className="items-center">
-        <View
-          className="transform rotate-[12.5deg] justify-center items-center rounded-[12px] p-5"
-          style={{ width: qrSize + 0, height: qrSize }}
-        >
-          <QRCode value={qrValue} size={qrSize} backgroundColor="transparent" color="#000" />
-        </View>
-      </View>
+      <QRCode
+        value={qrValue}
+        size={qrSize}
+        backgroundColor="transparent"
+        enableLinearGradient
+        linearGradient={QR_GRADIENT}
+      />
     );
   }
 
