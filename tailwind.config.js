@@ -4,6 +4,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        geistPixel: ['GeistPixel', 'System'],
+        shareTechMono: ['ShareTechMono', 'System'],
         racing: ['RacingSansOne', 'System'],
         inter: ['Inter', 'System'],
         proRacing: ['ProRacing', 'System'],
