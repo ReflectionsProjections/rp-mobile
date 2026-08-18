@@ -43,6 +43,7 @@ export default function RootLayout() {
   // };
 
   const [loaded] = useFonts({
+    GeistPixel: require('../assets/fonts/GeistPixel-Regular.ttf'),
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ShareTechMono: require('../assets/fonts/ShareTechMono-Regular.ttf'),
