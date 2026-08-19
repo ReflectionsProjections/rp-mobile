@@ -8,8 +8,8 @@ import {
   Dimensions,
   Text,
 } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { ProfileButton } from '@/components/misc/ProfileButton';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { fetchEvents } from '@/lib/slices/favoritesSlice';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
@@ -118,9 +118,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
           )}
         </View>
       )}
-      <TouchableOpacity onPress={handleProfilePress}>
-        <FontAwesome name="user-circle-o" size={28} color="#fff" />
-      </TouchableOpacity>
+      <ProfileButton onPress={handleProfilePress} />
     </View>
   );
 };

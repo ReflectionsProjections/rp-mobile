@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions, Text, SafeAreaView, Platform } from 'reac
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FolderTabs, FolderSection } from '@/components/home/FolderTabs';
+import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { EventListItem } from '@/components/home/EventListItem';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
@@ -227,6 +228,7 @@ export default function HomeScreen() {
           paddingTop: Platform.OS === 'android' ? 15 : 0,
         }}
       >
+        <HomeTopBar onProfilePress={() => router.push('/screens/profile')} />
         <FolderTabs<HomeCard>
           sections={sections}
           openId={openSection}
@@ -235,7 +237,6 @@ export default function HomeScreen() {
           renderItem={(item, index) => (
             <EventListItem item={item} onPress={openEvent} index={index} />
           )}
-          onProfilePress={() => router.push('/screens/profile')}
         />
       </SafeAreaView>
 

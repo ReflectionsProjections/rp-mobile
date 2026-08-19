@@ -185,9 +185,28 @@ export interface APIRoutes {
       };
     };
   };
+  '/leaderboard/me': {
+    GET: {
+      response: {
+        rank: number;
+        points: number;
+        totalParticipants: number;
+        nextRank: number | null;
+        pointsToNextRank: number | null;
+      };
+    };
+  };
   '/attendee': {
     GET: {
       response: Attendee;
+    };
+  };
+  '/attendee/attendance': {
+    GET: {
+      response: {
+        eventsAttended: string[];
+        count: number;
+      };
     };
   };
   '/attendee/icon': {
@@ -273,9 +292,21 @@ export interface APIRoutes {
       response: RoleObject[];
     };
   };
-  '/auth/login/:platform': {
+  '/auth/magic-links': {
     POST: {
-      request: { code: string; redirectUri: string; codeVerifier: string };
+      request: { email: string; client: 'mobile'; intent: 'login' };
+      response: never;
+    };
+  };
+  '/auth/magic-links/verify': {
+    POST: {
+      request: { token: string; client: 'mobile' };
+      response: { token: string };
+    };
+  };
+  '/auth/magic-links/verify-code': {
+    POST: {
+      request: { email: string; code: string; client: 'mobile' };
       response: { token: string };
     };
   };

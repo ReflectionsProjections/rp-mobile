@@ -28,6 +28,12 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="reflectionsprojections"/>
       </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="https" android:host="reflectionsprojections.org" android:pathPrefix="/auth/mobile/login"/>
+      </intent-filter>
       <intent-filter autoVerify="true">
         <action android:name="android.intent.action.VIEW"/>
         <data android:scheme="com.googleusercontent.apps.693438449476-ggdmrch475gd9otkn76uo71cm0h5q2sf"/>
