@@ -9,7 +9,8 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import type { SvgProps } from 'react-native-svg';
-import Animated, { SharedValue, useAnimatedProps } from 'react-native-reanimated';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { getPointShopMilestoneStates, POINT_SHOP_MILESTONES } from '@/lib/pointShopProgress';
 

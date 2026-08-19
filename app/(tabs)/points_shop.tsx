@@ -1,23 +1,39 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
   Easing,
   interpolate,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
 
+import LOGO from '@/assets/images/logo.svg';
 import SideDiscLeft from '@/assets/pointshop/side_disc_left.svg';
 import SideDiscRight from '@/assets/pointshop/side_disc_right.svg';
 import type { TierType } from '@/api/types';
+import { ProfileButton } from '@/components/misc/ProfileButton';
 import CdPlayerSvg from '@/components/pointshop/CdPlayerSvg';
 import DiscLabelSvg from '@/components/pointshop/DiscLabelSvg';
 import MilestoneBarSvg from '@/components/pointshop/MilestoneBarSvg';
+import SkipArrowsSvg from '@/components/pointshop/SkipArrowsSvg';
+import { triggerIfEnabled } from '@/lib/haptics';
 import { getPointShopProgressWidth, POINT_SHOP_MILESTONES } from '@/lib/pointShopProgress';
 import { getTierDisplayName } from '@/lib/redemptionUtils';
 import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
@@ -26,6 +42,9 @@ import { RootState, useAppDispatch, useAppSelector } from '@/lib/store';
 const DESIGN_WIDTH = 402;
 const DESIGN_HEIGHT = 874;
 const DISC_IMAGE = require('../../assets/pointshop/disc.png');
+const ARROW_PRESSED_COLOR = '#FF4CCC';
+// Degrees of disc rotation dragged before the shop cycles to the next/previous item.
+const DISC_NOTCH_DEGREES = 90;
 const POINT_SHOP_ITEMS = (
   [
     ['TIER1', POINT_SHOP_MILESTONES[0]],
@@ -38,6 +57,7 @@ const POINT_SHOP_ITEMS = (
 export default function PointsShopScreen() {
   const dispatch = useAppDispatch();
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
   const isSignedIn = Boolean(attendee);
   const { width, height } = useWindowDimensions();
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
@@ -52,6 +72,9 @@ export default function PointsShopScreen() {
   const progressWidth = useSharedValue(0);
   const previousPoints = useRef(points);
   const continuousRotation = useSharedValue(0);
+  const dragAngle = useSharedValue(0);
+  const dragPrevAngle = useSharedValue(0);
+  const dragNotchCount = useSharedValue(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -113,14 +136,47 @@ export default function PointsShopScreen() {
     ],
   }));
   const continuousSpinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${continuousRotation.value}deg` }],
+    transform: [{ rotate: `${continuousRotation.value + dragAngle.value}deg` }],
   }));
-  const cycleItem = (direction: -1 | 1) => {
-    setSelectedItemIndex(
-      (currentIndex) =>
-        (currentIndex + direction + POINT_SHOP_ITEMS.length) % POINT_SHOP_ITEMS.length,
-    );
-  };
+  const cycleItem = useCallback(
+    (direction: -1 | 1) => {
+      triggerIfEnabled(hapticsEnabled, 'light');
+      setSelectedItemIndex(
+        (currentIndex) =>
+          (currentIndex + direction + POINT_SHOP_ITEMS.length) % POINT_SHOP_ITEMS.length,
+      );
+    },
+    [hapticsEnabled],
+  );
+
+  // Dragging the disc spins it like a record; every quarter turn cycles the shop item.
+  const discSize = 199 * scale;
+  const discPan = useMemo(() => {
+    const angleAt = (x: number, y: number) => {
+      'worklet';
+      return (Math.atan2(y - discSize / 2, x - discSize / 2) * 180) / Math.PI;
+    };
+
+    return Gesture.Pan()
+      .onBegin((event) => {
+        dragPrevAngle.value = angleAt(event.x, event.y);
+      })
+      .onUpdate((event) => {
+        const angle = angleAt(event.x, event.y);
+        let delta = angle - dragPrevAngle.value;
+        if (delta > 180) delta -= 360;
+        else if (delta < -180) delta += 360;
+        dragPrevAngle.value = angle;
+        dragAngle.value += delta;
+
+        const notches = Math.trunc(dragAngle.value / DISC_NOTCH_DEGREES);
+        if (notches !== dragNotchCount.value) {
+          const direction = notches > dragNotchCount.value ? 1 : -1;
+          dragNotchCount.value = notches;
+          runOnJS(cycleItem)(direction);
+        }
+      });
+  }, [cycleItem, discSize, dragAngle, dragNotchCount, dragPrevAngle]);
 
   return (
     <LinearGradient colors={['#0F062D', '#24114C']} style={styles.page}>
@@ -182,7 +238,7 @@ export default function PointsShopScreen() {
         <View
           style={[
             styles.sideDisc,
-            { left: -233 * scale, top: 289 * scale, width: 254 * scale, height: 254 * scale },
+            { left: -233 * scale, top: 272.5 * scale, width: 254 * scale, height: 254 * scale },
           ]}
         >
           <SideDiscLeft width={254 * scale} height={254 * scale} />
@@ -190,7 +246,7 @@ export default function PointsShopScreen() {
         <View
           style={[
             styles.sideDisc,
-            { left: 381 * scale, top: 289 * scale, width: 254 * scale, height: 254 * scale },
+            { left: 381 * scale, top: 272.5 * scale, width: 254 * scale, height: 254 * scale },
           ]}
         >
           <SideDiscRight width={254 * scale} height={254 * scale} />
@@ -200,7 +256,7 @@ export default function PointsShopScreen() {
           style={[
             styles.player,
             {
-              top: 212.5 * scale,
+              top: 196 * scale,
               width: 402 * scale,
               height: 480 * scale,
             },
@@ -260,7 +316,16 @@ export default function PointsShopScreen() {
                 height: 38 * scale,
               },
             ]}
-          />
+          >
+            {({ pressed }) => (
+              <SkipArrowsSvg
+                direction="back"
+                color={pressed ? ARROW_PRESSED_COLOR : '#FFFFFF'}
+                width={13 * scale}
+                height={8.2 * scale}
+              />
+            )}
+          </Pressable>
           <Pressable
             onPress={() => cycleItem(1)}
             accessibilityRole="button"
@@ -275,42 +340,56 @@ export default function PointsShopScreen() {
                 height: 38 * scale,
               },
             ]}
-          />
+          >
+            {({ pressed }) => (
+              <SkipArrowsSvg
+                direction="forward"
+                color={pressed ? ARROW_PRESSED_COLOR : '#FFFFFF'}
+                width={13 * scale}
+                height={8.2 * scale}
+              />
+            )}
+          </Pressable>
         </View>
 
-        <Animated.View
-          style={[
-            styles.rollingDisc,
-            {
-              left: 101.31 * scale,
-              top: 317.53 * scale,
-              width: 199 * scale,
-              height: 199 * scale,
-            },
-            rollingDiscStyle,
-          ]}
-        >
-          <Animated.View style={continuousSpinStyle}>
-            <Image
-              source={DISC_IMAGE}
-              resizeMode="contain"
-              style={{ width: 199 * scale, height: 199 * scale }}
-            />
-            <DiscLabelSvg
-              itemName={selectedItem.name}
-              width={199 * scale}
-              height={199 * scale}
-              style={styles.discLabel}
-            />
+        <GestureDetector gesture={discPan}>
+          <Animated.View
+            accessible
+            accessibilityRole="adjustable"
+            accessibilityLabel="Shop item disc. Drag to spin to another item."
+            style={[
+              styles.rollingDisc,
+              {
+                left: 101.31 * scale,
+                top: 301 * scale,
+                width: discSize,
+                height: discSize,
+              },
+              rollingDiscStyle,
+            ]}
+          >
+            <Animated.View style={continuousSpinStyle}>
+              <Image
+                source={DISC_IMAGE}
+                resizeMode="contain"
+                style={{ width: discSize, height: discSize }}
+              />
+              <DiscLabelSvg
+                itemName={selectedItem.name}
+                width={discSize}
+                height={discSize}
+                style={styles.discLabel}
+              />
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
+        </GestureDetector>
 
         <View
           style={[
             styles.milestone,
             {
               left: 20 * scale,
-              top: 717.06 * scale,
+              top: 672 * scale,
               width: 363 * scale,
               height: 51 * scale,
             },
@@ -324,6 +403,13 @@ export default function PointsShopScreen() {
           />
         </View>
       </View>
+
+      <SafeAreaView edges={['top']} pointerEvents="box-none" style={styles.topBarSafeArea}>
+        <View pointerEvents="box-none" style={styles.topBar}>
+          <LOGO width={32} height={32} />
+          <ProfileButton onPress={() => router.push('/screens/profile')} />
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -337,10 +423,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
   },
+  topBarSafeArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingTop: Platform.OS === 'android' ? 15 : 0,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
   title: {
     position: 'absolute',
     color: '#FFFFFF',
-    fontFamily: 'Ethnocentric',
+    fontFamily: 'GeistPixel',
     textAlign: 'center',
     textShadowColor: 'rgba(255,255,255,0.72)',
     textShadowOffset: { width: 0, height: 0 },
@@ -401,18 +502,20 @@ const styles = StyleSheet.create({
   },
   playerCostNumber: {
     color: '#FFFFFF',
-    fontFamily: 'Ethnocentric',
+    fontFamily: 'GeistPixel',
     textAlign: 'center',
   },
   playerCostUnit: {
     color: '#FFFFFF',
-    fontFamily: 'Ethnocentric',
+    fontFamily: 'GeistPixel',
     textAlign: 'center',
     marginTop: -2,
   },
   playerArrowButton: {
     position: 'absolute',
     zIndex: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rollingDisc: {
     position: 'absolute',
