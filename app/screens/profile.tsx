@@ -43,7 +43,7 @@ import RankBannerPink from '@/assets/profile/updated/rank_banner_pink.svg';
 import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
 import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
 import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
-import AvatarArt from '@/assets/profile/updated/avatar.svg';
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -688,26 +688,11 @@ const ProfileScreen = () => {
 
               {/* Avatar tile with corner brackets (brackets drawn above the tile) */}
               <View style={{ alignSelf: 'center', width: 116, height: 113 }}>
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 2.4,
-                    left: 4.3,
-                    width: 107.3,
-                    height: 107.3,
-                    borderRadius: 2.4,
-                    backgroundColor: COLORS.dark,
-                    overflow: 'hidden',
-                    alignItems: 'center',
-                  }}
-                >
-                  <AvatarArt
-                    width={98}
-                    height={108}
-                    style={{ position: 'absolute', bottom: 0 }}
-                    preserveAspectRatio="xMidYMax slice"
-                  />
-                </View>
+                <ProfileAvatar
+                  size={107.3}
+                  borderRadius={2.4}
+                  style={{ position: 'absolute', top: 2.4, left: 4.3 }}
+                />
                 <CornerBrackets
                   width={116}
                   height={20.2}
