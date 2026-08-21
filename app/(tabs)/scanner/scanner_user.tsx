@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useQRCode } from '@/hooks/useQRCode';
 import QRDisplay from '@/components/scanner/QRDisplay';
 import { useAppSelector } from '@/lib/store';
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import PhotoBracketTop from '@/assets/qr/photo_bracket_top.svg';
 import PhotoBracketBottom from '@/assets/qr/photo_bracket_bottom.svg';
 
@@ -105,15 +106,10 @@ export default function ScannerScreen() {
               alignItems: 'center',
             }}
           >
-            <View
-              style={{
-                position: 'absolute',
-                top: 2.33,
-                width: PHOTO_SIZE,
-                height: PHOTO_SIZE,
-                borderRadius: 2.33,
-                backgroundColor: '#ddd',
-              }}
+            <ProfileAvatar
+              size={PHOTO_SIZE}
+              borderRadius={2.33}
+              style={{ position: 'absolute', top: 2.33 }}
             />
             <View style={{ position: 'absolute', top: 0, transform: [{ scaleY: -1 }] }}>
               <PhotoBracketTop width={PHOTO_BOX_W} height={19.55} />
