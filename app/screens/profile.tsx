@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import Background from '@/assets/background/dottedBackground2.svg';
-import LottieView from 'lottie-react-native';
+import LoadingScreenView from '@/components/loading/LoadingScreenView';
 import { useAppSelector } from '@/lib/store';
 import { RootState, useAppDispatch, persistor } from '@/lib/store';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
@@ -268,17 +268,7 @@ const ProfileScreen = () => {
   );
 
   if (!isInitialized) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <LottieView
-          source={require('@/assets/lottie/rp_animation.json')}
-          autoPlay
-          loop
-          style={{ width: 1000, height: 1000 }}
-          speed={4}
-        />
-      </SafeAreaView>
-    );
+    return <LoadingScreenView />;
   }
 
   if (!user || user.roles.length === 0) {
