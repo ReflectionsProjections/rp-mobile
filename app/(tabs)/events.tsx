@@ -15,7 +15,7 @@ import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
 import { Event } from '../../api/types';
 import { formatAMPM } from '@/lib/utils';
-import LottieView from 'lottie-react-native';
+import LoadingScreenView from '@/components/loading/LoadingScreenView';
 import { Header } from '@/components/home/Header';
 import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
@@ -182,17 +182,7 @@ const EventsScreen = () => {
   };
 
   if (!events) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <LottieView
-          source={require('@/assets/lottie/rp_animation.json')}
-          autoPlay
-          loop
-          style={{ width: 1000, height: 1000 }}
-          speed={4}
-        />
-      </SafeAreaView>
-    );
+    return <LoadingScreenView />;
   }
 
   return (
