@@ -140,7 +140,7 @@ export default function PointsShopScreen() {
   }));
   const cycleItem = useCallback(
     (direction: -1 | 1) => {
-      triggerIfEnabled(hapticsEnabled, 'light');
+      triggerIfEnabled(hapticsEnabled, 'medium');
       setSelectedItemIndex(
         (currentIndex) =>
           (currentIndex + direction + POINT_SHOP_ITEMS.length) % POINT_SHOP_ITEMS.length,
