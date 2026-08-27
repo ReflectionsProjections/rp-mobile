@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Text, SafeAreaView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FolderTabs, FolderSection } from '@/components/home/FolderTabs';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { EventListItem } from '@/components/home/EventListItem';
-import { EventModal } from '@/components/home/EventModal';
+import { EventDetailModal } from '@/components/events/EventDetailModal';
 import { CardType } from '@/components/home/types';
+import { Event } from '@/api/types';
 
 import { useToggleFavorite } from '@/api/tanstack/favorites';
 import { useDataInitialization } from '@/hooks/useDataInitialization';
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
-import { useThemeColor } from '@/lib/theme';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
@@ -34,14 +34,15 @@ export default function HomeScreen() {
   const favorites = useAppSelector((state: RootState) => state.favorites.favoriteEventIds) || [];
   const user = useAppSelector((state: RootState) => state.user.profile);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
-  const themeColor = useThemeColor();
   const dispatch = useAppDispatch();
 
   const toggleFavoriteMutation = useToggleFavorite();
 
-  const [selectedEvent, setSelectedEvent] = useState<CardType | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [openSection, setOpenSection] = useState('next');
+  const [openSection, setOpenSection] = useState('recommended');
+
+  const loadingAnimationRef = useRef<LottieView>(null);
 
   const cards = useMemo<HomeCard[]>(() => {
     if (!events || events.length === 0) return [];
@@ -63,33 +64,32 @@ export default function HomeScreen() {
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   }, [events]);
 
-  // NEXT EVENTS — the rest of today's events (soonest first)
-  // const nextEvents = useMemo(() => {
-  //   const now = new Date();
-  //   const endOfDay = new Date();
-  //   endOfDay.setHours(23, 59, 59, 999);
+  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const userTags = useMemo(
+    () => (attendee?.tags ?? []).map((t: string) => t.toLowerCase()),
+    [attendee?.tags],
+  );
 
-  //   return cards.filter((c) => {
-  //     if (!c.startTime) return false;
-  //     const d = new Date(c.startTime);
-  //     return d >= now && d <= endOfDay;
-  //   });
-  // }, [cards]);
+  // RECOMMENDED — events ranked by overlap with the user's tags. Scored across
+  // all events (not just "today") so there's still something to show outside
+  // the exact conference dates.
+  const recommended = useMemo(() => {
+    if (!cards.length) return [];
+    if (!userTags.length) return cards.slice(0, 5);
 
-  // // UPCOMING EVENTS — everything after today
-  // const upcomingEvents = useMemo(() => {
-  //   const endOfDay = new Date();
-  //   endOfDay.setHours(23, 59, 59, 999);
-
-  //   return cards.filter((c) => {
-  //     if (!c.startTime) return false;
-  //     return new Date(c.startTime) > endOfDay;
-  //   });
-  // }, [cards]);
-
-  // @TODO use above version for final version, below is for debugging and checking api response
-
-  const nextEvents = useMemo(() => cards.slice(0, 5), [cards]);
+    const tagSet = new Set(userTags);
+    const scored = cards.map((c) => ({
+      c,
+      score: (c.tags ?? []).reduce(
+        (acc: number, t: string) => acc + (tagSet.has(t.toLowerCase()) ? 1 : 0),
+        0,
+      ),
+    }));
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(({ c }) => c);
+  }, [cards, userTags]);
 
   // UPCOMING EVENTS — everything after those
   const upcomingEvents = useMemo(() => cards.slice(5), [cards]);
@@ -103,10 +103,10 @@ export default function HomeScreen() {
   const sections = useMemo<FolderSection<HomeCard>[]>(
     () => [
       {
-        id: 'next',
-        label: 'NEXT EVENTS',
-        data: nextEvents,
-        emptyMessage: 'No more events today —\ncheck the upcoming tab!',
+        id: 'recommended',
+        label: 'RECOMMENDED',
+        data: recommended,
+        emptyMessage: 'No recommendations yet —\ncheck the upcoming tab!',
       },
       {
         id: 'saved',
@@ -121,7 +121,7 @@ export default function HomeScreen() {
         emptyMessage: 'No upcoming events yet!',
       },
     ],
-    [nextEvents, savedEvents, upcomingEvents],
+    [recommended, savedEvents, upcomingEvents],
   );
 
   const error = null;
@@ -130,8 +130,6 @@ export default function HomeScreen() {
     if (!user) return false;
     return user.roles?.some((r: string) => r.toUpperCase() === 'USER');
   }, [user]);
-
-  const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
 
   const toggleFlag = async (id: string) => {
     if (!hasUserRole || !user?.userId) {
@@ -161,7 +159,9 @@ export default function HomeScreen() {
   };
 
   const openEvent = (evt: CardType) => {
-    setSelectedEvent(evt);
+    const raw = events.find((e) => e.eventId === evt.id);
+    if (!raw) return;
+    setSelectedEvent(raw);
     setModalVisible(true);
   };
 
@@ -189,11 +189,13 @@ export default function HomeScreen() {
           preserveAspectRatio="none"
         />
         <LottieView
-          source={require('@/assets/lottie/rp_animation.json')}
+          ref={loadingAnimationRef}
+          source={require('../../assets/lottie/rp_animation.json')}
           autoPlay
           loop
           style={{ width: 1000, height: 1000 }}
           speed={4}
+          onLayout={() => loadingAnimationRef.current?.play()}
         />
       </View>
     );
@@ -240,11 +242,10 @@ export default function HomeScreen() {
         />
       </SafeAreaView>
 
-      <EventModal
-        key={`event-modal-${themeColor}`}
+      <EventDetailModal
         visible={modalVisible}
         event={selectedEvent}
-        isFlagged={selectedEvent ? favorites.includes(selectedEvent.id) : false}
+        isFlagged={selectedEvent ? favorites.includes(selectedEvent.eventId) : false}
         onClose={closeEvent}
         onToggleFlag={toggleFlag}
       />

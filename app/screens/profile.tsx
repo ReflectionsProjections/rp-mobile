@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
-  ScrollView,
   StyleSheet,
 } from 'react-native';
 import { logout as clearAuthTokens } from '@/lib/auth';
@@ -271,7 +270,7 @@ const ProfileScreen = () => {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <LottieView
-          source={require('@/assets/lottie/rp_animation.json')}
+          source={require('../../assets/lottie/rp_animation.json')}
           autoPlay
           loop
           style={{ width: 1000, height: 1000 }}
@@ -439,12 +438,20 @@ const ProfileScreen = () => {
   }
   if (staffWithoutUser) {
     return (
-      <View className="flex-1">
+      <View className="flex-1" style={{ overflow: 'hidden' }}>
         <Background
           width={width}
           height={height}
-          style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          preserveAspectRatio="none"
+          style={{
+            zIndex: 0,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            transform: [{ scale: 1.3 }],
+          }}
+          preserveAspectRatio="xMidYMid slice"
         />
 
         <SafeAreaView className="flex-1 justify-center items-center px-6">
@@ -630,10 +637,7 @@ const ProfileScreen = () => {
       />
 
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ alignItems: 'center', paddingBottom: 60, paddingTop: 10 }}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={{ flex: 1, alignItems: 'center', paddingTop: 10 }}>
           {/* Decorative frame hanging off the right edge */}
           <View
             pointerEvents="none"
@@ -1014,7 +1018,7 @@ const ProfileScreen = () => {
               }}
             />
           </Animated.View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );
