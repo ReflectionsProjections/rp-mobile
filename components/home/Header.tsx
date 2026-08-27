@@ -112,7 +112,15 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
       </TouchableOpacity>
       {title && (
         <View style={[styles.titleContainer, title === 'EVENTS' && styles.eventsTitleContainer]}>
-          <Text style={[styles.mainTitle, { fontSize: bigText ? 32 : 28 }]}>{title}</Text>
+          <Text
+            style={[
+              styles.mainTitle,
+              { fontSize: bigText ? 32 : 28 },
+              title === 'EVENTS' && styles.eventsTitle,
+            ]}
+          >
+            {title}
+          </Text>
           {title !== 'EVENTS' && (
             <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
           )}
@@ -142,6 +150,12 @@ const styles = StyleSheet.create({
     lineHeight: height < 700 ? 32 : 40,
     letterSpacing: 0,
     textAlign: 'center',
+  },
+  eventsTitle: {
+    letterSpacing: 4,
+    textShadowColor: '#FF3CF0',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 22,
   },
   titleUnderline: {
     marginTop: height < 700 ? 2 : 4,
