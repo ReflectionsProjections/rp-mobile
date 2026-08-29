@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, Text, SafeAreaView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FolderTabs, FolderSection } from '@/components/home/FolderTabs';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { EventListItem } from '@/components/home/EventListItem';
 import { EventDetailModal } from '@/components/events/EventDetailModal';
+import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { CardType } from '@/components/home/types';
 import { Event } from '@/api/types';
 
@@ -15,12 +16,8 @@ import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
-import BackgroundSvg from '@/assets/background/home_background.svg';
-import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import { triggerIfEnabled } from '@/lib/haptics';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const BG_BASE = '#150935';
 const BG_GRADIENT = [BG_BASE, BG_BASE, BG_BASE] as const;
@@ -41,8 +38,6 @@ export default function HomeScreen() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [openSection, setOpenSection] = useState('recommended');
-
-  const loadingAnimationRef = useRef<LottieView>(null);
 
   const cards = useMemo<HomeCard[]>(() => {
     if (!events || events.length === 0) return [];
@@ -180,25 +175,7 @@ export default function HomeScreen() {
   }, [dispatch, user, attendee]);
 
   if (initLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-black">
-        <BackgroundSvg
-          style={StyleSheet.absoluteFillObject}
-          width={screenWidth}
-          height={screenHeight}
-          preserveAspectRatio="none"
-        />
-        <LottieView
-          ref={loadingAnimationRef}
-          source={require('../../assets/lottie/rp_animation.json')}
-          autoPlay
-          loop
-          style={{ width: 1000, height: 1000 }}
-          speed={4}
-          onLayout={() => loadingAnimationRef.current?.play()}
-        />
-      </View>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
