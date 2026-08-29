@@ -10,11 +10,11 @@ import {
   View,
 } from 'react-native';
 import { Event } from '../../api/types';
-import LottieView from 'lottie-react-native';
 import { Header } from '@/components/home/Header';
 import { DayTabs } from '@/components/events/DayTabs';
 import { EventListItem } from '@/components/events/EventListItem';
 import { EventDetailModal } from '@/components/events/EventDetailModal';
+import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAppSelector, useAppDispatch, RootState } from '@/lib/store';
@@ -101,17 +101,7 @@ const EventsScreen = () => {
   };
 
   if (!events) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <LottieView
-          source={require('../../assets/lottie/rp_animation.json')}
-          autoPlay
-          loop
-          style={{ width: 1000, height: 1000 }}
-          speed={4}
-        />
-      </SafeAreaView>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

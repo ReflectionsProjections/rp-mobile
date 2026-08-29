@@ -1,18 +1,23 @@
 import * as SecureStore from 'expo-secure-store';
 
 export async function validateAuthToken(): Promise<boolean> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
   try {
     const response = await fetch('https://api.reflectionsprojections.org/auth/info', {
       method: 'GET',
       headers: {
         Authorization: (await SecureStore.getItemAsync('jwt')) || '',
       },
+      signal: controller.signal,
     });
 
     return response.ok;
   } catch (error) {
     console.error('Token validation error:', error);
     return false;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

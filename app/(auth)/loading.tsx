@@ -7,6 +7,7 @@ import Svg, { Defs, Path, Pattern, RadialGradient, Rect, Stop } from 'react-nati
 import Animated, {
   Easing,
   interpolate,
+  ReduceMotion,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -77,9 +78,30 @@ export default function LoadingScreen() {
   const blink = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.linear }), -1);
-    pulse.value = withRepeat(withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }), -1, true);
-    blink.value = withRepeat(withTiming(1, { duration: 1000, easing: Easing.linear }), -1);
+    // This is a "the app is working" spinner, not decorative motion — it
+    // needs to run even when the OS-level reduced motion setting is on,
+    // otherwise Reanimated silently skips it and the screen looks frozen.
+    progress.value = withRepeat(
+      withTiming(1, { duration: 2400, easing: Easing.linear }),
+      -1,
+      false,
+      undefined,
+      ReduceMotion.Never,
+    );
+    pulse.value = withRepeat(
+      withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+      undefined,
+      ReduceMotion.Never,
+    );
+    blink.value = withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.linear }),
+      -1,
+      false,
+      undefined,
+      ReduceMotion.Never,
+    );
 
     const checkAuthStatus = async () => {
       try {
