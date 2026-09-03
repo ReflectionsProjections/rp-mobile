@@ -55,6 +55,35 @@ target 'reflectionsprojections' do
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
 
+    # Xcode 26's clang rejects fmt 11.0.2's consteval format-string checks (fixed
+    # upstream in fmt 11.1, not yet picked up by React Native). fmt's base.h defines
+    # FMT_USE_CONSTEVAL without an #ifndef guard, so a -D flag can't override it —
+    # patch the vendored header to force the non-consteval (runtime check) path.
+    fmt_base = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      contents = File.read(fmt_base)
+      patched = contents.gsub('#  define FMT_USE_CONSTEVAL 1', '#  define FMT_USE_CONSTEVAL 0')
+      File.write(fmt_base, patched) if patched != contents
+    end
+
+    # Same Xcode 26 fallout in folly: its __builtin_operator_new version probe fails
+    # under the new clang, falling back to library operator new/delete overloads that
+    # don't resolve. Clang has supported these builtins (incl. aligned forms) since
+    # clang 10, so force the builtin path.
+    folly_new = File.join(__dir__, 'Pods', 'RCT-Folly', 'folly', 'lang', 'New.h')
+    if File.exist?(folly_new)
+      contents = File.read(folly_new)
+      patched = contents
+        .gsub(/constexpr auto op_new_builtin_ =\s*\n\s*FOLLY_HAS_BUILTIN\(__builtin_operator_new\) >= 201802L;/,
+              'constexpr auto op_new_builtin_ = true;')
+        .gsub(/constexpr auto op_del_builtin_ =\s*\n\s*FOLLY_HAS_BUILTIN\(__builtin_operator_delete?\) >= 201802L;/,
+              'constexpr auto op_del_builtin_ = true;')
+      if patched != contents
+        File.chmod(0644, folly_new)
+        File.write(folly_new, patched)
+      end
+    end
+
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
     installer.target_installation_results.pod_target_installation_results

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, Dimensions, Text, SafeAreaView, Platform } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FolderTabs, FolderSection } from '@/components/home/FolderTabs';
+import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { EventListItem } from '@/components/home/EventListItem';
 import { EventModal } from '@/components/home/EventModal';
 import { CardType } from '@/components/home/types';
@@ -14,12 +15,9 @@ import { useThemeColor } from '@/lib/theme';
 import { fetchUserProfile } from '@/lib/slices/userSlice';
 import { fetchAttendeeProfile } from '@/lib/slices/attendeeSlice';
 
-import BackgroundSvg from '@/assets/background/home_background.svg';
-import LottieView from 'lottie-react-native';
+import LoadingScreenView from '@/components/loading/LoadingScreenView';
 import Toast from 'react-native-toast-message';
 import { triggerIfEnabled } from '@/lib/haptics';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const BG_BASE = '#150935';
 const BG_GRADIENT = [BG_BASE, BG_BASE, BG_BASE] as const;
@@ -179,23 +177,7 @@ export default function HomeScreen() {
   }, [dispatch, user, attendee]);
 
   if (initLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-black">
-        <BackgroundSvg
-          style={StyleSheet.absoluteFillObject}
-          width={screenWidth}
-          height={screenHeight}
-          preserveAspectRatio="none"
-        />
-        <LottieView
-          source={require('@/assets/lottie/rp_animation.json')}
-          autoPlay
-          loop
-          style={{ width: 1000, height: 1000 }}
-          speed={4}
-        />
-      </View>
-    );
+    return <LoadingScreenView />;
   }
 
   if (error) {
@@ -227,6 +209,7 @@ export default function HomeScreen() {
           paddingTop: Platform.OS === 'android' ? 15 : 0,
         }}
       >
+        <HomeTopBar onProfilePress={() => router.push('/screens/profile')} />
         <FolderTabs<HomeCard>
           sections={sections}
           openId={openSection}
@@ -235,7 +218,6 @@ export default function HomeScreen() {
           renderItem={(item, index) => (
             <EventListItem item={item} onPress={openEvent} index={index} />
           )}
-          onProfilePress={() => router.push('/screens/profile')}
         />
       </SafeAreaView>
 

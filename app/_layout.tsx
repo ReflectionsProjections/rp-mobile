@@ -43,6 +43,7 @@ export default function RootLayout() {
   // };
 
   const [loaded] = useFonts({
+    GeistPixel: require('../assets/fonts/GeistPixel-Regular.ttf'),
     RacingSansOne: require('../assets/fonts/RacingSansOne-Regular.ttf'),
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ShareTechMono: require('../assets/fonts/ShareTechMono-Regular.ttf'),
@@ -130,9 +131,10 @@ export default function RootLayout() {
                     animation: 'ios_from_left',
                   }}
                 />
-                <Stack.Screen name="auth/mobile/login" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="auth/mobile/login" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/scanner" options={{ headerShown: false }} />
               </Stack>
             </BottomSheetModalProvider>
             <StatusBar style="light" />

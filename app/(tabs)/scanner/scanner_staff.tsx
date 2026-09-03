@@ -6,9 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Modal,
-  Pressable,
-  Dimensions,
   TouchableWithoutFeedback,
   AppState,
 } from 'react-native';
@@ -32,12 +29,17 @@ import GeneralCheckinModal from '@/components/scanner/GeneralCheckinModal';
 import TshirtRedemptionModal from '@/components/scanner/TshirtRedemptionModal';
 import EventPickerModal from '@/components/scanner/EventPickerModal';
 import ErrorModal from '@/components/scanner/ErrorModal';
-import SuccessModal from '@/components/scanner/SuccessModal';
+import TicketConfirmationModal from '@/components/scanner/TicketConfirmationModal';
 import { EventConfirmationModal } from '@/components/scanner/EventConfirmationModal';
+import BracketTopLeft from '@/assets/scanner/bracket_top_left.svg';
+import BracketTopRight from '@/assets/scanner/bracket_top_right.svg';
+import BracketBottomLeft from '@/assets/scanner/bracket_bottom_left.svg';
+import BracketBottomRight from '@/assets/scanner/bracket_bottom_right.svg';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const SCAN_BOX_SIZE = SCREEN_WIDTH * 0.7;
-const SCAN_BOX_TOP_OFFSET = SCREEN_HEIGHT * 0.05; // Position box in upper-middle area
+const BRACKET_INSET = 18;
+const BRACKET_SIZE = 76;
+const READY_COLOR = '#22c55e';
+const IDLE_COLOR = '#ffffff';
 
 const DEMO_ACCOUNT_ID = 'demoacct-bd2c-6535-89b7-reflect12334';
 const GENERAL_CHECKIN_EVENT_ID = 'af789f27-0792-49b0-9db8-65fc5ffff1d9';
@@ -99,8 +101,7 @@ export default function ScannerScreen() {
   const [selectedEvent, setSelectedEvent] = useState<Record<string, any>>({});
   const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [ticket, setTicket] = useState<{ name: string; points: number | null } | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scanReady, setScanReady] = useState(true);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -215,7 +216,7 @@ export default function ScannerScreen() {
     return () => {
       setScanned(false);
       setLoading(false);
-      setShowSuccess(false);
+      setTicket(null);
       setScanReady(false);
       setLastScannedCode('');
       setScanDisabled(false);
@@ -228,6 +229,11 @@ export default function ScannerScreen() {
       lastScannedCodeRef.current = '';
     };
   }, []);
+
+  const pointsForEvent = (eventId: string): number | null => {
+    const evt = events.find((e) => e.eventId === eventId);
+    return evt?.points ?? null;
+  };
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
     if (errorOccurred || isProcessingRef.current || loading || scanned || !scanReady || scanDisabled) {
@@ -276,9 +282,8 @@ export default function ScannerScreen() {
       if (parsedQr.userId === DEMO_ACCOUNT_ID) {
         const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
         const targetEventId = isGeneralCheckinMode ? GENERAL_CHECKIN_EVENT_ID : selectedEvent.eventId;
-        
-        setSuccessMessage(`Successfully checked in demo user into ${eventName}!`);
-        setShowSuccess(true);
+
+        setTicket({ name: eventName, points: pointsForEvent(targetEventId) });
         setLastSuccessfulScan({
           eventId: targetEventId,
           qrCode: data,
@@ -307,15 +312,14 @@ export default function ScannerScreen() {
 
       const eventName = isGeneralCheckinMode ? 'General Check-in' : selectedEvent.name;
       const targetEventId = isGeneralCheckinMode ? GENERAL_CHECKIN_EVENT_ID : selectedEvent.eventId;
-      
+
       setLastSuccessfulScan({
         eventId: targetEventId,
         qrCode: data,
       });
 
       if (!isGeneralCheckinMode) {
-        setSuccessMessage(`Successfully checked in user into ${eventName}!`);
-        setShowSuccess(true);
+        setTicket({ name: eventName, points: pointsForEvent(targetEventId) });
       }
       await handlePostCheckInFlow(parsedQr.userId);
     } catch (err: any) {
@@ -333,7 +337,7 @@ export default function ScannerScreen() {
             const parsed = parseQrCode(lastScannedCodeRef.current);
             if (parsed.userId) {
               await handleGeneralCheckinFlow(parsed.userId);
-              setShowSuccess(false);
+              setTicket(null);
               return;
             }
           } catch {}
@@ -480,7 +484,7 @@ export default function ScannerScreen() {
 
   const resetScan = () => {
     setScanned(false);
-    setShowSuccess(false);
+    setTicket(null);
     setScanReady(true); // Always ready for next scan
     setLoading(false);
     setLastScannedCode('');
@@ -527,26 +531,34 @@ export default function ScannerScreen() {
 
   if (!permission) {
     return (
-      <SafeAreaView className="flex-1 bg-black justify-center items-center">
-        <ActivityIndicator size="large" color="#00adb5" />
+      <SafeAreaView className="flex-1 bg-[#0f062d] justify-center items-center">
+        <ActivityIndicator size="large" color="#ff4ccc" />
       </SafeAreaView>
     );
   }
   if (!permission.granted) {
     return (
-      <SafeAreaView className="flex-1 bg-black justify-center items-center px-6">
+      <SafeAreaView className="flex-1 bg-[#0f062d] justify-center items-center px-6">
         <Text className="text-white text-lg text-center mb-4">
           Camera access is required to scan QR codes
         </Text>
-        <TouchableOpacity className="bg-[#00adb5] px-6 py-3 rounded-lg" onPress={requestPermission}>
+        <TouchableOpacity className="bg-[#ff4ccc] px-6 py-3 rounded-lg" onPress={requestPermission}>
           <Text className="text-white font-semibold">Continue</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
+  const bracketColor = scanReady && !scanDisabled ? READY_COLOR : IDLE_COLOR;
+
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <View className="flex-1">
+      <LinearGradient
+        colors={['#0f062d', '#24114c']}
+        locations={[0.2, 0.56]}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <SafeAreaView className="flex-1" edges={['top']}>
       <ModeSwitch isGeneralCheckinMode={isGeneralCheckinMode} onModeChange={handleModeChange} />
 
       {!isGeneralCheckinMode && (
@@ -562,146 +574,100 @@ export default function ScannerScreen() {
         />
       )}
 
-      <View className="flex-1 relative">
-        {!errorOccurred ? (
-          <CameraView
-            ref={cameraRef}
-            style={{ flex: 1 }}
-            facing="back"
-            onBarcodeScanned={
-              scanReady && !scanned && !loading && !scanDisabled ? handleBarCodeScanned : undefined
-            }
-            barcodeScannerSettings={{
-              barcodeTypes: ['qr'],
-            }}
-          />
-        ) : (
-          <View className="flex-1 bg-black justify-center items-center">
-            <Text className="text-white text-lg text-center">Scanner disabled due to error</Text>
-          </View>
-        )}
-
-        {loading && (
-          <View className="absolute inset-0 justify-center items-center bg-black/70 z-20">
-            <ActivityIndicator size="large" color="#00adb5" />
-            <Text className="text-white/90 mt-4 text-center">Processing...</Text>
-          </View>
-        )}
-
+      {/* Camera panel */}
+      <TouchableWithoutFeedback onPress={() => setScanReady(true)}>
         <View
-          className="absolute items-center justify-center"
-          style={{
-            top: SCAN_BOX_TOP_OFFSET,
-            left: 0,
-            right: 0,
-            width: '100%',
-          }}
+          className="flex-1 mx-4 mt-3 rounded-[20px] overflow-hidden"
+          style={{ backgroundColor: '#262626' }}
         >
-          <TouchableWithoutFeedback onPress={() => setScanReady(true)}>
-            <View className="relative" style={{ width: SCAN_BOX_SIZE, height: SCAN_BOX_SIZE }}>
-              {/* Corner indicators - green when ready to scan, teal when not ready */}
-              <View className="absolute top-0 left-0 w-16 h-16">
-                <View
-                  className={`absolute top-0 left-0 w-10 h-1 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-                <View
-                  className={`absolute top-0 left-0 w-1 h-10 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-              </View>
-              <View className="absolute top-0 right-0 w-16 h-16">
-                <View
-                  className={`absolute top-0 right-0 w-10 h-1 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-                <View
-                  className={`absolute top-0 right-0 w-1 h-10 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-              </View>
-              <View className="absolute bottom-0 left-0 w-16 h-16">
-                <View
-                  className={`absolute bottom-0 left-0 w-10 h-1 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-                <View
-                  className={`absolute bottom-0 left-0 w-1 h-10 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-              </View>
-              <View className="absolute bottom-0 right-0 w-16 h-16">
-                <View
-                  className={`absolute bottom-0 right-0 w-10 h-1 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-                <View
-                  className={`absolute bottom-0 right-0 w-1 h-10 shadow-lg ${
-                    scanReady
-                      ? 'bg-green-500 shadow-green-500/50'
-                      : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                  }`}
-                />
-              </View>
-
-              {/* Center dot indicator - also changes color */}
-              <View
-                className={`absolute top-1/2 left-1/2 w-2 h-2 rounded-full -translate-x-1 -translate-y-1 shadow-lg ${
-                  scanReady
-                    ? 'bg-green-500 shadow-green-500/50'
-                    : 'bg-[#00adb5] shadow-[#00adb5]/50'
-                }`}
-              />
+          {!errorOccurred ? (
+            <CameraView
+              ref={cameraRef}
+              style={{ flex: 1 }}
+              facing="back"
+              onBarcodeScanned={
+                scanReady && !scanned && !loading && !scanDisabled ? handleBarCodeScanned : undefined
+              }
+              barcodeScannerSettings={{
+                barcodeTypes: ['qr'],
+              }}
+            />
+          ) : (
+            <View className="flex-1 justify-center items-center">
+              <Text className="text-white text-lg text-center">Scanner disabled due to error</Text>
             </View>
-          </TouchableWithoutFeedback>
-        </View>
-
-        {/* Instructions */}
-        <View className="absolute bottom-20 left-0 right-0 px-6 mb-10">
-          {lastSuccessfulScan && (
-            <TouchableOpacity
-              onPress={handleUndoScan}
-              disabled={undoing}
-              className={`mb-4 mx-auto px-6 py-3 rounded-full flex-row items-center border border-[#ff4444] bg-[#121212]/90 ${undoing ? 'opacity-50' : 'opacity-100'}`}
-            >
-              <Text className="text-white font-bold ml-2">Undo Last Scan</Text>
-            </TouchableOpacity>
           )}
-          <LinearGradient colors={['#00adb520', '#00adb510']} className="rounded-lg p-[1px]">
-            <View className="bg-[#121212] rounded-lg p-4 border border-[#00adb5]/20">
-              <Text className="text-[#00adb5] text-center text-lg font-semibold mb-1">
-                {isGeneralCheckinMode ? 'General Check-in Scanner' : 'Event Check-in Scanner'}
-              </Text>
-              <Text className="text-white/80 text-center text-sm">
-                {scanReady ? 'Green corners = Ready to scan!' : 'Tap the scan box to begin'}
-              </Text>
+
+          {/* Corner brackets - green when ready to scan */}
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          >
+            <BracketTopLeft
+              width={BRACKET_SIZE}
+              height={BRACKET_SIZE * 1.05}
+              color={bracketColor}
+              style={{ position: 'absolute', top: BRACKET_INSET, left: BRACKET_INSET }}
+            />
+            <BracketTopRight
+              width={BRACKET_SIZE}
+              height={BRACKET_SIZE * 1.05}
+              color={bracketColor}
+              style={{ position: 'absolute', top: BRACKET_INSET, right: BRACKET_INSET }}
+            />
+            <BracketBottomLeft
+              width={BRACKET_SIZE * 1.05}
+              height={BRACKET_SIZE}
+              color={bracketColor}
+              style={{ position: 'absolute', bottom: BRACKET_INSET, left: BRACKET_INSET }}
+            />
+            <BracketBottomRight
+              width={BRACKET_SIZE}
+              height={BRACKET_SIZE}
+              color={bracketColor}
+              style={{ position: 'absolute', bottom: BRACKET_INSET, right: BRACKET_INSET }}
+            />
+          </View>
+
+          {loading && (
+            <View
+              className="justify-center items-center bg-black/70 z-20"
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            >
+              <ActivityIndicator size="large" color="#ff4ccc" />
+              <Text className="text-white/90 mt-4 text-center">Processing...</Text>
             </View>
-          </LinearGradient>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
+
+      {/* Instructions */}
+      <View className="px-6 py-4">
+        {lastSuccessfulScan && (
+          <TouchableOpacity
+            onPress={handleUndoScan}
+            disabled={undoing}
+            className={`mb-3 mx-auto px-6 py-2 rounded-full flex-row items-center border border-[#ff4ccc] bg-[#150935]/90 ${undoing ? 'opacity-50' : 'opacity-100'}`}
+          >
+            <Text className="text-white font-bold">Undo Last Scan</Text>
+          </TouchableOpacity>
+        )}
+        <View className="bg-black rounded-xl px-8 py-5">
+          <Text
+            className="text-white text-center"
+            style={{ fontFamily: 'ShareTechMono', fontSize: 14, lineHeight: 19 }}
+          >
+            {'Place QR inside frame to scan!\nGreen corners = ready to scan!'}
+          </Text>
         </View>
       </View>
 
-      <SuccessModal visible={showSuccess} message={successMessage} onClose={resetScan} />
+      <TicketConfirmationModal
+        visible={ticket != null}
+        eventName={ticket?.name ?? ''}
+        points={ticket?.points ?? null}
+        onClose={resetScan}
+      />
 
       <GeneralCheckinModal
         visible={generalCheckinModalVisible}
@@ -760,6 +726,7 @@ export default function ScannerScreen() {
         onConfirm={handleEventConfirmation}
         onClose={handleEventConfirmationCancel}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }

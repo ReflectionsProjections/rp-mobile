@@ -1,22 +1,23 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, Animated, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { Alert } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { validateAuthToken } from '@/lib/auth';
 import { api } from '@/api/api';
+import LoadingScreenView from '@/components/loading/LoadingScreenView';
 
 export default function LoadingScreen() {
   const router = useRouter();
-  const loadingAnimation = useRef(new Animated.Value(0)).current;
+  // guest=1 skips the auth check: guests have no JWT but still belong on home.
+  const { guest } = useLocalSearchParams<{ guest?: string }>();
 
   useEffect(() => {
-    Animated.timing(loadingAnimation, {
-      toValue: 1,
-      duration: 2000,
-      useNativeDriver: false,
-    }).start();
-
     const checkAuthStatus = async () => {
+      if (guest === '1') {
+        router.replace('/(tabs)/home');
+        return;
+      }
+
       try {
         const jwt = await SecureStore.getItemAsync('jwt');
 
@@ -46,27 +47,7 @@ export default function LoadingScreen() {
     setTimeout(() => {
       checkAuthStatus();
     }, 2000);
-  }, [router, loadingAnimation]);
+  }, [router, guest]);
 
-  const width = loadingAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
-  return (
-    <View className="flex-1 justify-center items-center bg-white p-5">
-      <Text className="text-center font-proRacing mb-8">
-        <Text className="text-[32px] font-bold text-black tracking-[2px]">reflections</Text>
-        {'\n'}
-        <Text className="text-[32px] font-bold text-[#F0363D] tracking-[2px]">projections</Text>
-      </Text>
-
-      <View className="w-4/5 h-3 bg-[#EEEEEE] rounded-md overflow-hidden mb-4">
-        <Animated.View className="h-full bg-[#F0363D] rounded-md" style={{ width }} />
-      </View>
-      <Text className="text-[#F0363D] text-sm font-bold font-proRacing tracking-wider">
-        REVVING ENGINES...
-      </Text>
-    </View>
-  );
+  return <LoadingScreenView />;
 }
