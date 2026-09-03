@@ -8,7 +8,7 @@ export default {
     slug: 'reflectionsprojections',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/images/rp_logo_2025.png',
+    icon: './assets/images/rp_app_icon_2026.png',
     scheme: 'reflectionsprojections',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -31,7 +31,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/rp-logo.png',
+        foregroundImage: './assets/images/rp_app_icon_2026.png',
         backgroundColor: '#000000',
       },
       package: 'com.reflectionsprojections',
@@ -54,14 +54,14 @@ export default {
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/rp-logo.png',
+      favicon: './assets/images/rp_app_icon_2026.png',
     },
     plugins: [
       'expo-router',
       [
         'expo-splash-screen',
         {
-          image: './assets/images/rp-logo.png',
+          image: './assets/images/rp_app_icon_2026.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#000000',

@@ -13,6 +13,7 @@ export const setStore = (reduxStore: any) => {
 export const api = createApi(API_CONFIG.BASE_URL, async () => {
   // Clear JWT token
   await SecureStore.deleteItemAsync('jwt');
+  await SecureStore.deleteItemAsync('codeVerifier');
 
   if (store) {
     // Dispatch logout actions

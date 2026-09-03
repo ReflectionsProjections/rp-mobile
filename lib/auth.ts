@@ -19,6 +19,7 @@ export async function validateAuthToken(): Promise<boolean> {
 export async function clearAuth(): Promise<void> {
   try {
     await SecureStore.deleteItemAsync('jwt');
+    await SecureStore.deleteItemAsync('codeVerifier');
   } catch (error) {
     console.error('Error clearing auth:', error);
   }
@@ -27,6 +28,7 @@ export async function clearAuth(): Promise<void> {
 export const logout = async () => {
   try {
     await SecureStore.deleteItemAsync('jwt');
+    await SecureStore.deleteItemAsync('codeVerifier');
     return true;
   } catch (error) {
     console.error('Error during logout:', error);

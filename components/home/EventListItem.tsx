@@ -1,31 +1,27 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
-import TagButtonArt from '@/assets/home/tag_button.svg';
+import { GradientPill } from './GradientPill';
 
 const SPECIAL_EVENT_ID = '8852aff5-015a-40b2-a32b-f1f738db34c8';
 const CARD_BG = '#D9D9D9';
+const ACCENT = '#FF4CCC';
 
 function TagPill({ label }: { label: string }) {
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-
-  const onLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setSize({ width, height });
-  };
-
   return (
-    <View style={styles.tagPill} onLayout={onLayout}>
-      {size && (
-        <View style={StyleSheet.absoluteFillObject}>
-          <TagButtonArt width={size.width} height={size.height} preserveAspectRatio="none" />
-        </View>
-      )}
+    <GradientPill
+      colors={['#373792', ACCENT]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      borderRadius={15}
+      innerBackgroundColor="#150935"
+      innerStyle={styles.tagPillInner}
+    >
       <ThemedText style={styles.tagText} numberOfLines={1}>
         {label.toUpperCase()}
       </ThemedText>
-    </View>
+    </GradientPill>
   );
 }
 
@@ -91,31 +87,30 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#0A0A0A',
-    fontSize: 20,
-    fontFamily: 'ProRacing',
-    letterSpacing: 0.3,
-    lineHeight: 28,
+    fontSize: 18,
+    fontFamily: 'Ethnocentric',
+    lineHeight: 23,
     marginBottom: 12,
     paddingRight: 8,
   },
   meta: {
     color: '#2B2B2B',
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'ShareTechMono',
     lineHeight: 24,
   },
   tagRow: {
-    marginTop: 16,
+    marginTop: 14,
     alignItems: 'flex-end',
   },
-  tagPill: {
-    paddingHorizontal: 14,
+  tagPillInner: {
+    paddingHorizontal: 16,
     paddingVertical: 8,
   },
   tagText: {
     color: '#fff',
     fontSize: 10,
     fontFamily: 'ProRacing',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
 });
