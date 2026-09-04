@@ -2,11 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
   ScrollView,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Event } from '@/api/types';
 

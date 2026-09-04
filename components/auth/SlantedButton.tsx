@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pressable, View, type TouchableOpacityProps, TouchableOpacity } from 'react-native';
+import { View, type TouchableOpacityProps } from 'react-native';
 import { styled } from 'nativewind';
 import { ThemedText } from '../themed/ThemedText';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 
 const StyledPressable = styled(TouchableOpacity);
 const StyledView = styled(View);

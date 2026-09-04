@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 
 type DayTab = { label: string; dayNumber: number };

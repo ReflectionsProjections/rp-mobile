@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, View, StyleSheet } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
 import { ShiftCard } from '@/api/types';
