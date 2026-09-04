@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { fetchEvents } from '@/lib/slices/favoritesSlice';
@@ -44,7 +44,7 @@ export const useAutoRefresh = () => {
   const lastRefreshRef = useRef<number>(0);
 
   // Same refresh logic as the header button
-  const refreshAllData = async () => {
+  const refreshAllData = useCallback(async () => {
     const now = Date.now();
     // Prevent too frequent refreshes (minimum 30 seconds between refreshes)
     if (now - lastRefreshRef.current < 30 * 1000) {
@@ -81,10 +81,10 @@ export const useAutoRefresh = () => {
     } catch (e) {
       console.warn('Failed to auto-refresh app data:', e);
     }
-  };
+  }, [dispatch, hasStaffOrAdminRole, hasUserRole, profile?.email]);
 
   // Check if any data is stale (only check slices that have lastFetched)
-  const isAnyDataStale = () => {
+  const isAnyDataStale = useCallback(() => {
     return (
       isDataStale(userState.lastFetched, STALE_THRESHOLDS.USER_PROFILE) ||
       (hasUserRole && isDataStale(attendeeState.lastFetched, STALE_THRESHOLDS.ATTENDEE_PROFILE)) ||
@@ -98,7 +98,17 @@ export const useAutoRefresh = () => {
       //   (!leaderboardState.global.leaderboard.length && !leaderboardState.global.loading) ||
       //   (!staffState.me && !staffState.loading)
     );
-  };
+  }, [
+    attendeeState.lastFetched,
+    favoritesState.eventsLastFetched,
+    hasStaffOrAdminRole,
+    hasUserRole,
+    leaderboardState.daily.lastFetched,
+    leaderboardState.global.lastFetched,
+    shiftsState.lastFetched,
+    staffState.lastFetched,
+    userState.lastFetched,
+  ]);
 
   // Auto-refresh on app focus
   useEffect(() => {
@@ -114,15 +124,7 @@ export const useAutoRefresh = () => {
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription?.remove();
-  }, [
-    userState.lastFetched,
-    attendeeState.lastFetched,
-    favoritesState.eventsLastFetched,
-    shiftsState.lastFetched,
-    leaderboardState.daily.leaderboard.length,
-    leaderboardState.global.leaderboard.length,
-    staffState.me,
-  ]);
+  }, [isAnyDataStale, refreshAllData]);
 
   // Periodic refresh every 2 minutes
   useEffect(() => {
@@ -137,15 +139,7 @@ export const useAutoRefresh = () => {
     ); // 1 minute
 
     return () => clearInterval(interval);
-  }, [
-    userState.lastFetched,
-    attendeeState.lastFetched,
-    favoritesState.eventsLastFetched,
-    shiftsState.lastFetched,
-    leaderboardState.daily.leaderboard.length,
-    leaderboardState.global.leaderboard.length,
-    staffState.me,
-  ]);
+  }, [isAnyDataStale, refreshAllData]);
 
   return {
     refreshAllData,

@@ -506,6 +506,32 @@ const ProfileScreen = () => {
                 {user.email}
               </Text>
             )}
+            <TouchableOpacity
+              onPress={handleLogout}
+              accessibilityRole="button"
+              accessibilityLabel="Log out"
+              activeOpacity={0.8}
+              style={{
+                marginTop: 28,
+                paddingHorizontal: 28,
+                paddingVertical: 12,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.3)',
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontFamily: 'ProRacing',
+                  fontSize: 16,
+                  textAlign: 'center',
+                }}
+              >
+                LOG OUT
+              </Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
