@@ -59,8 +59,11 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
         // Re-initialize app data via Redux fetches so routes refetch
         dispatch(fetchEvents());
         dispatch(fetchUserProfile());
-        dispatch(fetchAttendeeProfile());
         const roles: string[] = Array.isArray(profile?.roles) ? (profile?.roles as string[]) : [];
+        const hasUserRole = roles.some((r) => (r || '').toUpperCase() === 'USER');
+        if (hasUserRole) {
+          dispatch(fetchAttendeeProfile());
+        }
         const hasStaffOrAdmin = roles.some((r) => {
           const R = (r || '').toUpperCase();
           return R === 'STAFF' || R === 'ADMIN';
@@ -105,11 +108,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
 
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity
-        onPress={handleLogoPress}
-        disabled={isSpinning}
-        style={styles.headerAction}
-      >
+      <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning} style={styles.headerAction}>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <LOGO width={32} height={32} />
         </Animated.View>
