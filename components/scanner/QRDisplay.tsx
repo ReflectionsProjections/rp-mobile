@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import QRCode from 'react-native-qrcode-svg';
 
 // Module colors from the Figma "qr scan" design (1943:6343): purple -> cyan

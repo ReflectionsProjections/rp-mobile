@@ -1,16 +1,20 @@
 import '@/global.css';
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   KeyboardAvoidingView,
   Platform,
   Text,
+  Alert,
   useWindowDimensions,
   Animated,
-  TouchableOpacity,
+  TextInput,
+  ScrollView,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { api } from '@/api/api';
 import Background from '@/assets/background/rp_background.svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -19,13 +23,38 @@ const BORDER_WIDTH = 7;
 const BUTTON_HEIGHT = 66;
 export default function SignInScreen() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const { width, height } = useWindowDimensions();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
-  const handleEmailLogin = () => {
-    router.push('/(auth)/email-sign-in');
+  const handleEmailLogin = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      Alert.alert('Enter your email', 'We need an email address to send your sign-in link.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await api.post('/auth/magic-links', {
+        email: normalizedEmail,
+        client: 'mobile',
+        intent: 'login',
+      });
+      Alert.alert('Check your email', 'Tap the link we sent to finish signing in.');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert(
+        'Could not send link',
+        error.response?.data?.details || 'Please check your email address and try again.',
+        [{ text: 'OK' }],
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGuestLogin = () => {
@@ -62,17 +91,27 @@ export default function SignInScreen() {
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1 items-center justify-center"
+          className="flex-1"
         >
-          <Animated.View
-            className="w-full items-center px-6"
-            style={{
-              opacity: fadeAnim,
-              transform: [{ translateY: cardSlideAnim }],
-              maxWidth: width * 0.85,
-              marginTop: 80,
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: Math.max(20, Math.min(32, width * 0.06)),
+              paddingVertical: 24,
             }}
+            showsVerticalScrollIndicator={false}
           >
+            <Animated.View
+              style={{
+                width: '100%',
+                maxWidth: 480,
+                alignItems: 'center',
+                opacity: fadeAnim,
+                transform: [{ translateY: cardSlideAnim }],
+              }}
+            >
             <View
               style={{
                 width: '100%',
@@ -81,6 +120,27 @@ export default function SignInScreen() {
                 justifyContent: 'center',
               }}
             >
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                placeholderTextColor="#6B7280"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                editable={!isLoading}
+                style={{
+                  width: '100%',
+                  marginBottom: 16,
+                  borderRadius: 18,
+                  backgroundColor: '#FFFFFF',
+                  color: '#111827',
+                  fontSize: 17,
+                  paddingHorizontal: 18,
+                  paddingVertical: 16,
+                }}
+              />
               <View
                 pointerEvents="none"
                 style={{
@@ -112,6 +172,7 @@ export default function SignInScreen() {
               >
                 <TouchableOpacity
                   onPress={handleEmailLogin}
+                  disabled={isLoading}
                   activeOpacity={0.85}
                   style={{
                     height: BUTTON_HEIGHT,
@@ -119,9 +180,13 @@ export default function SignInScreen() {
                     backgroundColor: BUTTON_COLOR,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    opacity: isLoading ? 0.7 : 1,
                   }}
                 >
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
                     style={{
                       color: '#FFF',
                       fontFamily: 'Ethnocentric',
@@ -129,7 +194,7 @@ export default function SignInScreen() {
                       letterSpacing: 1,
                     }}
                   >
-                    SIGN IN WITH EMAIL
+                    {isLoading ? 'SENDING LINK...' : 'SIGN IN WITH A MAGIC LINK'}
                   </Text>
                 </TouchableOpacity>
               </LinearGradient>
@@ -184,6 +249,9 @@ export default function SignInScreen() {
                   }}
                 >
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
                     style={{
                       color: '#FFFFFF',
                       fontFamily: 'Ethnocentric',
@@ -196,8 +264,8 @@ export default function SignInScreen() {
                 </TouchableOpacity>
               </LinearGradient>
             </View>
-
-          </Animated.View>
+            </Animated.View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>

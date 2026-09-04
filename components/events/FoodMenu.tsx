@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, Image, Linking } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { Ionicons } from '@expo/vector-icons';
 
 interface FoodItem {

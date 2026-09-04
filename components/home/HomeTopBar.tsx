@@ -5,9 +5,33 @@ import { GradientPill } from './GradientPill';
 import { ProfileButton } from '@/components/misc/ProfileButton';
 
 const ACCENT = '#FF4CCC';
+const CONFERENCE_YEAR = 2026;
+const CONFERENCE_MONTH = 9;
+const CENTRAL_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Chicago',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+});
+
+const getConferenceDayLabel = (date = new Date()) => {
+  const dateParts = Object.fromEntries(
+    CENTRAL_DATE_FORMATTER.formatToParts(date).map(({ type, value }) => [type, value]),
+  );
+  const year = Number(dateParts.year);
+  const month = Number(dateParts.month);
+  const dateOfMonth = Number(dateParts.day);
+
+  if (year !== CONFERENCE_YEAR || month !== CONFERENCE_MONTH) {
+    return '-';
+  }
+
+  const dayNumber = dateOfMonth - 15;
+  return dayNumber >= 1 && dayNumber <= 4 ? `DAY ${dayNumber}` : '-';
+};
 
 export function HomeTopBar({
-  day = 'DAY 2',
+  day = getConferenceDayLabel(),
   onProfilePress,
 }: {
   day?: string;
@@ -15,7 +39,9 @@ export function HomeTopBar({
 }) {
   return (
     <View style={styles.row}>
-      <LOGO width={32} height={32} />
+      <View style={styles.headerAction}>
+        <LOGO width={32} height={32} />
+      </View>
       <View style={styles.right}>
         <GradientPill
           colors={['#373792', ACCENT]}
@@ -37,12 +63,17 @@ export function HomeTopBar({
 
 const styles = StyleSheet.create({
   row: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 14,
+  },
+  headerAction: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   right: {
     flexDirection: 'row',

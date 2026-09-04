@@ -3,15 +3,16 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   SafeAreaView,
   StyleSheet,
   Dimensions,
   Image,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import { Header } from '@/components/home/Header';
 
 const CROWN_GOLD   = require('@/assets/images/leaderboard/crown_gold.png');
 const CROWN_SILVER = require('@/assets/images/leaderboard/crown_silver.png');
@@ -215,9 +216,7 @@ export default function LeaderboardGuestScreen() {
       />
 
       <SafeAreaView style={s.safe}>
-
-        {/* Title */}
-        <Text style={s.title}>STANDINGS</Text>
+        <Header title="STANDINGS" bigText={false} />
 
         {/* Podium — wrapped in a glowing outer box matching the screenshot */}
         <View style={s.podium}>
@@ -274,22 +273,6 @@ export default function LeaderboardGuestScreen() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   safe: { flex: 1 },
-
-  // Title
-  title: {
-    fontFamily: 'Ethnocentric',
-    fontSize: SW > 390 ? 30 : 25,
-    color: TEXT_W,
-    textAlign: 'center',
-    letterSpacing: 4,
-    marginTop: 20,
-    marginBottom: 8,
-    paddingVertical: 8,
-    textShadowColor: TITLE_GLOW,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-  },
-
   // Podium outer wrapper — the glowing rectangle around all 3 slots
   podiumOuter: {
     marginHorizontal: 16,

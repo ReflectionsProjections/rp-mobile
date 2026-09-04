@@ -5,12 +5,11 @@ import {
   FlatList,
   SafeAreaView,
   StyleSheet,
-  TouchableOpacity,
-  Platform,
   Linking,
   ScrollView,
 } from 'react-native';
-import { Modal, Pressable } from 'react-native';
+import { Modal } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { Dimensions } from 'react-native';
 import { Animated, Easing } from 'react-native';
 import { Event } from '../../api/types';
@@ -193,13 +192,7 @@ const EventsScreen = () => {
         end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
-      <SafeAreaView
-        style={{
-          flex: 1,
-          paddingTop: Platform.OS === 'android' ? 15 : 0,
-          top: Platform.OS === 'ios' ? -12 : 0,
-        }}
-      >
+      <SafeAreaView style={{ flex: 1 }}>
         <Header title={'EVENTS'} bigText={true} />
 
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
@@ -244,7 +237,11 @@ const EventsScreen = () => {
         <Modal visible={!!selectedEvent && !showFoodMenu} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <BlurView intensity={55} tint="dark" style={StyleSheet.absoluteFillObject} />
-            <Pressable style={StyleSheet.absoluteFillObject} onPress={handleCloseModal} />
+            <Pressable
+              hapticDisabled
+              style={StyleSheet.absoluteFillObject}
+              onPress={handleCloseModal}
+            />
             <Animated.View
               style={{
                 transform: [
@@ -421,6 +418,7 @@ const EventsScreen = () => {
                         {selectedEvent.eventType === 'MEALS' && (
                           <Animated.View style={{ opacity: foodMenuOpacity }}>
                             <TouchableOpacity
+                              hapticDisabled
                               onPress={() => {
                                 triggerIfEnabled(hapticsEnabled, 'light');
                                 handleFoodMenuPress();
