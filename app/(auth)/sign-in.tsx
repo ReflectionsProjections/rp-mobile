@@ -29,7 +29,7 @@ export default function SignInScreen() {
   };
 
   const handleGuestLogin = () => {
-    router.replace('/(tabs)/home');
+    router.replace({ pathname: '/(auth)/loading', params: { guest: '1' } });
   };
 
   useEffect(() => {
