@@ -259,11 +259,11 @@ const ProfileScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (user && user.roles && user.roles.length > 0) {
+      if (hasUserRole) {
         dispatch(fetchAttendeePoints());
       }
       return () => {};
-    }, [dispatch, user]),
+    }, [dispatch, hasUserRole]),
   );
 
   if (!isInitialized) {
@@ -950,7 +950,6 @@ const ProfileScreen = () => {
                 icon={<VibrationIcon width={16} height={16} />}
               />
             </View>
-
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
