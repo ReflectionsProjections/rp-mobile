@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Alert } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { useAppSelector, useAppDispatch } from '@/lib/store';
 import {
   updateAttendeeIcon,

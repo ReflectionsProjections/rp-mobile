@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { SafeAreaView, Text, View, TouchableOpacity, Animated, Dimensions, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, View, Animated, Dimensions, StyleSheet } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Header } from '@/components/home/Header';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
 const ScannerGuestScreen = () => {
+  const insets = useSafeAreaInsets();
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -53,6 +57,11 @@ const ScannerGuestScreen = () => {
       />
       
       <SafeAreaView className="flex-1 justify-center items-center px-6">
+        <View
+          style={{ position: 'absolute', top: insets.top, left: 0, right: 0, zIndex: 20 }}
+        >
+          <Header bigText={false} />
+        </View>
         <Animated.View
           style={{
             opacity: fadeAnim,
@@ -105,6 +114,9 @@ const ScannerGuestScreen = () => {
               fontFamily: 'Inter',
               color: 'rgba(255, 255, 255, 0.9)',
               textAlign: 'center',
+              width: '100%',
+              maxWidth: 280,
+              alignSelf: 'center',
               marginBottom: 40,
               lineHeight: 24,
               textShadowColor: 'rgba(0, 0, 0, 0.3)',

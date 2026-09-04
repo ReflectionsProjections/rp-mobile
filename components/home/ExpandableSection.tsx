@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  TouchableOpacity,
   FlatList,
   Animated,
   Easing,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useThemeColor } from '@/lib/theme';
