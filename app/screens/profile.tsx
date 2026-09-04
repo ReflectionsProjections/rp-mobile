@@ -232,7 +232,12 @@ const ProfileScreen = () => {
   };
 
   const handleBackPress = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(tabs)/home');
   };
 
   useEffect(() => {
@@ -438,7 +443,7 @@ const ProfileScreen = () => {
             accessibilityLabel="Go back"
             style={{
               position: 'absolute',
-              top: 12,
+              top: 56,
               left: 20,
               width: 40,
               height: 40,
