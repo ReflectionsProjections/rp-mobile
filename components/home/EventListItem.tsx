@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';
 import { GradientPill } from './GradientPill';

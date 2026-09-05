@@ -2,12 +2,11 @@ import React from 'react';
 import {
   Modal,
   View,
-  TouchableOpacity,
   ScrollView,
   Dimensions,
   StyleSheet,
-  Pressable,
 } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CardType } from './types';

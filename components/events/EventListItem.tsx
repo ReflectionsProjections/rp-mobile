@@ -1,5 +1,6 @@
 import React from 'react';
-import { Animated, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, ImageBackground, StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';

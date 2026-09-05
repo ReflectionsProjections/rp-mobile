@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, Modal } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface SuccessModalProps {
@@ -11,7 +12,7 @@ interface SuccessModalProps {
 export default function SuccessModal({ visible, message, onClose }: SuccessModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={onClose}>
+      <Pressable hapticDisabled className="flex-1 bg-black/50 justify-center items-center" onPress={onClose}>
         <LinearGradient
           colors={['#ffffff20', '#ffffff05']}
           className="rounded-xl p-[1px] mx-6 max-w-sm w-[85%]"
