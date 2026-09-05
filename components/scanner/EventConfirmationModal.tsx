@@ -3,11 +3,10 @@ import {
   Modal,
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Pressable,
 } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { BlurView } from 'expo-blur';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeColor } from '@/lib/theme';

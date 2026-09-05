@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Modal, Pressable, Dimensions } from 'react-native';
+import { View, Text, Modal, Dimensions } from 'react-native';
+import { Pressable } from '@/components/ui/HapticControls';
 import { BlurView } from 'expo-blur';
 import SealCheck from '@/assets/scanner/seal_check.svg';
 import NameBracket from '@/assets/scanner/name_bracket.svg';

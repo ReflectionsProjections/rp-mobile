@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
 import { fetchDailyLeaderboard } from '@/lib/slices/leaderboardSlice';
 import { triggerIfEnabled } from '@/lib/haptics';
+import { Header } from '@/components/home/Header';
 
 // ─── Crown images (put the uploaded PNGs here) ────────────────────────────────
 const CROWN_GOLD   = require('@/assets/images/leaderboard/crown_gold.png');
@@ -215,9 +216,7 @@ export default function LeaderboardScreen() {
       />
 
       <SafeAreaView style={s.safe}>
-
-        {/* TITLE */}
-        <Text style={s.title}>STANDINGS</Text>
+        <Header title="STANDINGS" bigText={false} />
 
         {/* PODIUM */}
         <View style={s.podium}>
@@ -269,21 +268,6 @@ export default function LeaderboardScreen() {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0F062D' },
   safe: { flex: 1 },
-
-  // Title
-  title: {
-    fontFamily: 'Ethnocentric',
-    fontSize: SW > 390 ? 31 : 26,
-    color: TEXT_W,
-    textAlign: 'center',
-    letterSpacing: 4,
-    marginTop: 6,
-    marginBottom: 10,
-    textShadowColor: TITLE_GLOW,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 22,
-  },
-
   // Podium row
   podium: {
     flexDirection: 'row',

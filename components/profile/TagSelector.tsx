@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, Alert, ScrollView } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { useAppSelector, useAppDispatch } from '@/lib/store';
 import { updateAttendeeTags } from '@/lib/slices/attendeeSlice';
 import { api } from '@/api/api';

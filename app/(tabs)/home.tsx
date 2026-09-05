@@ -171,10 +171,10 @@ export default function HomeScreen() {
     if (!user) {
       dispatch(fetchUserProfile());
     }
-    if (!attendee) {
+    if (hasUserRole && !attendee) {
       dispatch(fetchAttendeeProfile());
     }
-  }, [dispatch, user, attendee]);
+  }, [dispatch, user, attendee, hasUserRole]);
 
   if (initLoading) {
     return <LoadingScreenView />;

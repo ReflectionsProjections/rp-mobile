@@ -1,6 +1,7 @@
 import '@/global.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dimensions, View, TouchableOpacity, Pressable } from 'react-native';
+import { Dimensions, View } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { SvgProps } from 'react-native-svg';
 import * as SecureStore from 'expo-secure-store';
 import { useThemeColor } from '@/lib/theme';
@@ -29,8 +30,12 @@ import { useAppSelector } from '@/lib/store';
 import LeaderboardGuestScreen from './leaderboard/leaderboard_guest';
 
 const { width, height } = Dimensions.get('window');
-const HEIGHT = 0.15 * height;
+// Keep the floating QR button aligned with CurvedBottomBar, which is 10% of
+// the viewport height. Using 15% here positioned the button too high and over
+// screen content.
+const HEIGHT = 0.1 * height;
 const BUTTON_SIZE = Math.min(width, height) * 0.21;
+const QR_BUTTON_RAISE = 8;
 const ICON_SIZE = 36;
 const QR_COLOR = '#373792';
 const TAB_ICON_SIZE = 44;
@@ -177,7 +182,7 @@ export default function TabLayout() {
         <Pressable
           className="absolute justify-center items-center"
           style={{
-            bottom: HEIGHT - BUTTON_SIZE * 1.11 + (height < 700 ? 10 : 0),
+            bottom: HEIGHT - BUTTON_SIZE * 1.11 + QR_BUTTON_RAISE,
             left: width / 2 - BUTTON_SIZE / 2,
             width: BUTTON_SIZE,
             height: BUTTON_SIZE,

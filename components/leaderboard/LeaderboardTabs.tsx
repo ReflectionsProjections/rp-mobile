@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, Animated, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { View, Text, Animated, Platform, Dimensions } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { FadeInWrapper } from './LeaderboardAnimations';
 import { useThemeColor } from '@/lib/theme';
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, Modal, ScrollView } from 'react-native';
+import { Pressable, TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { RedemptionInfo, MerchandiseItem } from '@/lib/redemptionUtils';
 import { mapBackendTierToFrontend } from '@/lib/redemptionUtils';
@@ -23,7 +24,7 @@ export default function GeneralCheckinModal({
 }: GeneralCheckinModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>
+      <Pressable hapticDisabled className="flex-1 bg-black/50 justify-center items-center" onPress={() => {}}>
         <LinearGradient
           colors={['#ffffff20', '#ffffff05']}
           className="rounded-xl p-[1px] mx-6 max-w-sm w-[95%]"
