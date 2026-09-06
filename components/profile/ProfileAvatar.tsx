@@ -10,6 +10,18 @@ import AvatarMagenta from '@/assets/profile/avatars/avatar_magenta.svg';
 
 type AvatarArt = React.FC<{ width: number; height: number }>;
 
+export const PROFILE_AVATAR_OPTIONS: {
+  icon: IconColorType;
+  label: string;
+  Art: AvatarArt;
+}[] = [
+  { icon: 'BLUE', label: 'Dark Blue', Art: AvatarDarkBlue },
+  { icon: 'PINK', label: 'Pink', Art: AvatarPink },
+  { icon: 'PURPLE', label: 'Purple', Art: AvatarPurple },
+  { icon: 'GREEN', label: 'Dark Teal', Art: AvatarDarkTeal },
+  { icon: 'RED', label: 'Magenta', Art: AvatarMagenta },
+];
+
 // Figma avatar set (Development Handoff (app): Avatar 1-5), keyed by the
 // attendee's icon color from GET /attendee — the API has no dedicated avatar
 // field. No orange art exists, so ORANGE shares the magenta avatar; users
@@ -27,14 +39,21 @@ const AVATAR_BY_ICON: Record<IconColorType, AvatarArt> = {
 
 interface ProfileAvatarProps {
   size: number;
+  icon?: IconColorType;
   borderRadius?: number;
   style?: StyleProp<ViewStyle>;
 }
 
 // The user's profile picture, resolved from their attendee data so every
 // screen (profile, QR) shows the same art.
-export function ProfileAvatar({ size, borderRadius = 2.4, style }: ProfileAvatarProps) {
-  const icon = useAppSelector((state) => state.attendee.attendee?.icon);
+export function ProfileAvatar({
+  size,
+  icon: iconOverride,
+  borderRadius = 2.4,
+  style,
+}: ProfileAvatarProps) {
+  const savedIcon = useAppSelector((state) => state.attendee.attendee?.icon);
+  const icon = iconOverride ?? savedIcon;
   const Art = (icon && AVATAR_BY_ICON[icon]) || AvatarPurple;
   return (
     <View style={[{ width: size, height: size, borderRadius, overflow: 'hidden' }, style]}>

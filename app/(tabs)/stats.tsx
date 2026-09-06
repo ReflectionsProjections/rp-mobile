@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  Platform,
 } from 'react-native';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useThemeColor } from '@/lib/theme';
@@ -52,13 +51,7 @@ export default function StatsScreen() {
   }
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-gray-100"
-      style={{
-        paddingTop: Platform.OS === 'android' ? 15 : 0,
-        top: Platform.OS === 'ios' ? -12 : 0,
-      }}
-    >
+    <SafeAreaView className="flex-1 bg-gray-100">
       <BackgroundSvg
         style={StyleSheet.absoluteFillObject}
         width={screenWidth}

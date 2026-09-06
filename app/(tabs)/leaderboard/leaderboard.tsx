@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
 import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import { triggerIfEnabled } from '@/lib/haptics';
+import { Header } from '@/components/home/Header';
 
 // ─── Crown images (put the uploaded PNGs here) ────────────────────────────────
 const CROWN_GOLD   = require('@/assets/images/leaderboard/crown_gold.png');
