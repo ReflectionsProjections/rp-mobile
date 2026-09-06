@@ -31,6 +31,12 @@ import { clearShifts } from '@/lib/slices/shiftsSlice';
 import { clearStaff } from '@/lib/slices/staffSlice';
 import { clearLeaderboard } from '@/lib/slices/leaderboardSlice';
 import { toggleHaptics, toggleNotifications } from '@/lib/slices/settingsSlice';
+import {
+  requestNotificationPermission,
+  getFcmToken,
+  registerDeviceToken,
+  deleteLocalFcmToken,
+} from '@/lib/firebase';
 import { useAttendeeAttendance } from '@/api/tanstack/attendee';
 import { useMyLeaderboardRank } from '@/api/tanstack/leaderboard';
 
@@ -187,6 +193,43 @@ const ProfileScreen = () => {
   );
 
   const hasUserRole = (user?.roles || []).some((r: string) => (r || '').toUpperCase() === 'USER');
+
+  const handleToggleNotifications = async () => {
+    const enabling = !notificationsEnabled;
+    dispatch(toggleNotifications());
+
+    if (enabling) {
+      if (!hasUserRole) {
+        dispatch(toggleNotifications());
+        Alert.alert(
+          'Notifications Unavailable',
+          'Push notifications are only available for attendee accounts.',
+        );
+        return;
+      }
+
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        dispatch(toggleNotifications());
+        Alert.alert(
+          'Notifications Disabled',
+          'Enable notifications for this app in your device settings to receive updates.',
+        );
+        return;
+      }
+
+      const token = await getFcmToken();
+      if (token) {
+        try {
+          await registerDeviceToken(token);
+        } catch (err) {
+          console.error('Failed to register for notifications:', err);
+        }
+      }
+    } else {
+      await deleteLocalFcmToken();
+    }
+  };
   const attendanceQuery = useAttendeeAttendance(hasUserRole);
   const rankQuery = useMyLeaderboardRank(hasUserRole);
 
@@ -970,7 +1013,7 @@ const ProfileScreen = () => {
               <ToggleRow
                 label="Notification"
                 value={notificationsEnabled}
-                onToggle={() => dispatch(toggleNotifications())}
+                onToggle={handleToggleNotifications}
                 icon={<BellIcon width={16} height={16} />}
               />
             </View>

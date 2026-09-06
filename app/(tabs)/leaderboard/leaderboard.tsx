@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
-import { fetchDailyLeaderboard } from '@/lib/slices/leaderboardSlice';
+import { fetchDailyLeaderboard, fetchGlobalLeaderboard } from '@/lib/slices/leaderboardSlice';
 import { triggerIfEnabled } from '@/lib/haptics';
 
 // ─── Crown images (put the uploaded PNGs here) ────────────────────────────────
@@ -34,8 +34,7 @@ const PANEL_BG       = 'rgba(15, 6, 45, 0.75)';   // slightly darker panel
 const PANEL_BORDER   = '#C02EFF';   // neon purple panel ring
 const PANEL_GLOW     = '#A020F0';
 const ROW_BG         = 'rgba(20, 8, 50, 0.85)';   // normal row
-const ROW_ME_BG      = 'rgba(255, 20, 180, 0.10)';
-const ROW_ME_BORDER  = '#FF18B4';   // hot-pink current-user highlight
+const ROW_ME_BORDER  = '#FF18B4';   // hot-pink current-user highlight (podium ring only)
 const RANK_PILL_BORDER = '#FF18B4';
 const TITLE_GLOW     = '#FF3CF0';
 const TEXT_W         = '#FFFFFF';
@@ -102,11 +101,11 @@ function Avatar({ name, uid, icon, size = 36 }: { name: string; uid: string; ico
 function LeaderboardRow({ item, isMe }: { item: Entry; isMe: boolean }) {
   return (
     <View style={[s.row, isMe && s.rowMe]}>
-      <Text style={[s.rowRank, isMe && { color: ROW_ME_BORDER }]}>{item.rank}</Text>
+      <Text style={s.rowRank}>{item.rank}</Text>
       <Avatar name={item.displayName} uid={item.userId} icon={item.icon} size={36} />
       <Text style={s.rowName} numberOfLines={1}>{item.displayName}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={[s.rowPts, isMe && { color: ROW_ME_BORDER }]}>{item.points} pts</Text>
+        <Text style={s.rowPts}>{item.points} pts</Text>
         <DeltaBadge delta={item.delta} />
       </View>
     </View>
@@ -161,16 +160,29 @@ export default function LeaderboardScreen() {
   const hapticsOn = useAppSelector((st: RootState) => st.settings?.hapticsEnabled ?? true);
   const attendee  = useAppSelector((st: RootState) => st.attendee.attendee);
   const daily     = useAppSelector((st: RootState) => st.leaderboard.daily);
+  const global    = useAppSelector((st: RootState) => st.leaderboard.global);
 
-  // Fetch daily on mount only
+  const [mode, setMode] = useState<'global' | 'daily'>('global');
+
+  // Fetch whichever board is active, only if it isn't already loaded
   useEffect(() => {
-    const d = new Date();
-    const day = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if (!daily.day || daily.day !== day) dispatch(fetchDailyLeaderboard({ day }));
-  }, []);
+    if (mode === 'daily') {
+      const d = new Date();
+      const day = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!daily.day || daily.day !== day) dispatch(fetchDailyLeaderboard({ day }));
+    } else {
+      if (global.leaderboard.length === 0) dispatch(fetchGlobalLeaderboard({}));
+    }
+  }, [mode]);
+
+  const handleModeChange = useCallback(async (next: 'global' | 'daily') => {
+    if (next === mode) return;
+    await triggerIfEnabled(hapticsOn, 'light');
+    setMode(next);
+  }, [mode, hapticsOn]);
 
   // All entries — list starts from rank 1
-  const raw: Entry[] = (daily.leaderboard ?? []).map((p: any) => ({
+  const raw: Entry[] = ((mode === 'global' ? global.leaderboard : daily.leaderboard) ?? []).map((p: any) => ({
     rank: p.rank, userId: p.userId, displayName: p.displayName,
     points: p.points, icon: p.icon, delta: p.delta,
   }));
@@ -199,7 +211,9 @@ export default function LeaderboardScreen() {
   const keyEx = useCallback((item: Entry) => item.userId, []);
 
   const empty    = raw.length === 0;
-  const emptyMsg = 'No leaderboard for today —\ncheck back tomorrow!';
+  const emptyMsg = mode === 'daily'
+    ? 'No leaderboard for today —\ncheck back tomorrow!'
+    : 'No leaderboard data yet —\ncheck back soon!';
 
   // Panel height — fixed so it doesn't consume the whole screen
   const PANEL_HEIGHT = SH * 0.44;
@@ -218,6 +232,24 @@ export default function LeaderboardScreen() {
 
         {/* TITLE */}
         <Text style={s.title}>STANDINGS</Text>
+
+        {/* GLOBAL / DAILY TOGGLE */}
+        <View style={s.toggleRow}>
+          <TouchableOpacity
+            style={[s.toggleBtn, mode === 'global' && s.toggleBtnActive]}
+            onPress={() => handleModeChange('global')}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.toggleTxt, mode === 'global' && s.toggleTxtActive]}>GLOBAL</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.toggleBtn, mode === 'daily' && s.toggleBtnActive]}
+            onPress={() => handleModeChange('daily')}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.toggleTxt, mode === 'daily' && s.toggleTxtActive]}>DAILY</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* PODIUM */}
         <View style={s.podium}>
@@ -277,12 +309,39 @@ const s = StyleSheet.create({
     color: TEXT_W,
     textAlign: 'center',
     letterSpacing: 4,
-    marginTop: 6,
+    marginTop: 24,
     marginBottom: 10,
     textShadowColor: TITLE_GLOW,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 22,
   },
+
+  // Global / Daily toggle
+  toggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  toggleBtn: {
+    paddingHorizontal: 22,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(20, 8, 50, 0.6)',
+  },
+  toggleBtnActive: {
+    borderColor: ROW_ME_BORDER,
+    backgroundColor: 'rgba(255, 20, 180, 0.15)',
+    shadowColor: ROW_ME_BORDER,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  toggleTxt: { fontFamily: 'ShareTechMono', fontSize: 13, color: TEXT_D, letterSpacing: 1 },
+  toggleTxtActive: { color: TEXT_W, fontWeight: '700' },
 
   // Podium row
   podium: {
@@ -332,14 +391,9 @@ const s = StyleSheet.create({
     backgroundColor: ROW_BG,
   },
   rowMe: {
-    backgroundColor: ROW_ME_BG,
-    borderWidth: 1.5,
-    borderColor: ROW_ME_BORDER,
-    shadowColor: ROW_ME_BORDER,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 24, 180, 0.35)',
+    backgroundColor: 'rgba(255, 20, 180, 0.06)',
   },
   rowRank: { fontFamily: 'ShareTechMono', fontSize: 13, color: TEXT_D, width: 28, textAlign: 'right', marginRight: 8 },
   rowName: { flex: 1, fontFamily: 'ShareTechMono', fontSize: 13, color: TEXT_W, marginLeft: 8 },

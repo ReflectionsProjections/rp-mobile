@@ -70,6 +70,9 @@ export default function EmailSignInScreen() {
         client: 'mobile',
       });
       await SecureStore.setItemAsync('jwt', response.data.token);
+      if (__DEV__) {
+        console.log('[JWT]', response.data.token);
+      }
 
       const roles = await api.get('/auth/info').then((res) => res.data.roles);
       if (roles.length > 0) {
