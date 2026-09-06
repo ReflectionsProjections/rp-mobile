@@ -25,11 +25,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
 import { clearAttendeeProfile } from '@/lib/slices/attendeeSlice';
-import {
-  clearUserProfile,
-  fetchUserProfile,
-  logout as logoutUserSlice,
-} from '@/lib/slices/userSlice';
+import { clearUserProfile, logout as logoutUserSlice } from '@/lib/slices/userSlice';
 import { clearFavorites, clearEvents } from '@/lib/slices/favoritesSlice';
 import { clearShifts } from '@/lib/slices/shiftsSlice';
 import { clearStaff } from '@/lib/slices/staffSlice';
@@ -47,7 +43,6 @@ import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
 import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
 import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
-import { buildProfileRoleChips, resolveProfileDisplayName } from '@/lib/profileUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -81,6 +76,13 @@ const ordinal = (n: number) => {
       return `${n}th`;
   }
 };
+
+const titleCase = (s: string) =>
+  s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 
 // 0.8pt-wide decorative tick marks scattered around the panels
 const Tick = ({ top, left, right }: { top: number; left?: number; right?: number }) => (
@@ -173,7 +175,7 @@ const ToggleRow = ({
 );
 
 const ProfileScreen = () => {
-  const { isAuthenticated, isInitialized } = useDataInitialization();
+  const { isInitialized } = useDataInitialization();
   const user = useAppSelector((state: RootState) => state.user.profile);
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
   const logout = useLogout();
@@ -184,13 +186,7 @@ const ProfileScreen = () => {
     (s: RootState) => s.settings?.notificationsEnabled ?? true,
   );
 
-  const roles = user?.roles || [];
-  const hasUserRole = roles.some((role: string) => (role || '').toUpperCase() === 'USER');
-  const hasStaffRole = roles.some((role: string) => (role || '').toUpperCase() === 'STAFF');
-  const isStaffOrAdmin = roles.some((role: string) => {
-    const normalizedRole = (role || '').toUpperCase();
-    return normalizedRole === 'STAFF' || normalizedRole === 'ADMIN';
-  });
+  const hasUserRole = (user?.roles || []).some((r: string) => (r || '').toUpperCase() === 'USER');
   const attendanceQuery = useAttendeeAttendance(hasUserRole);
   const rankQuery = useMyLeaderboardRank(hasUserRole);
 
@@ -264,18 +260,15 @@ const ProfileScreen = () => {
         }),
       ]),
     ]).start();
-  }, [fadeAnim, logoScaleAnim, slideAnim]);
+  }, [user, dispatch]);
 
   useFocusEffect(
     useCallback(() => {
-      if (isAuthenticated) {
-        dispatch(fetchUserProfile());
-      }
       if (hasUserRole) {
         dispatch(fetchAttendeePoints());
       }
       return () => {};
-    }, [dispatch, hasUserRole, isAuthenticated]),
+    }, [dispatch, hasUserRole]),
   );
 
   if (!isInitialized) {
@@ -431,6 +424,120 @@ const ProfileScreen = () => {
     );
   }
 
+  const isStaffOrAdmin = (user?.roles || []).some((r: string) => {
+    const R = (r || '').toUpperCase();
+    return R === 'STAFF' || R === 'ADMIN';
+  });
+  const staffWithoutUser = isStaffOrAdmin && !hasUserRole;
+
+  {
+    /* Staff without user role - show registration prompt */
+  }
+  if (staffWithoutUser) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0F062D' }}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <TouchableOpacity
+            onPress={handleBackPress}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            style={{
+              position: 'absolute',
+              top: 56,
+              left: 20,
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.3)',
+              zIndex: 1,
+            }}
+          >
+            <Ionicons name="chevron-back" size={24} color="#fff" />
+          </TouchableOpacity>
+
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 32,
+            }}
+          >
+            <Text
+              style={{
+                color: '#fff',
+                fontFamily: 'ProRacing',
+                fontSize: 24,
+                textAlign: 'center',
+                marginBottom: 12,
+              }}
+            >
+              SEE THE CITY!
+            </Text>
+            <Text
+              style={{
+                color: 'rgba(255,255,255,0.9)',
+                fontFamily: 'Inter',
+                fontSize: 16,
+                lineHeight: 24,
+                textAlign: 'center',
+                maxWidth: 300,
+              }}
+            >
+              Log in with the account you used to register as an attendee to view your profile.
+            </Text>
+            {!!user?.email && (
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                style={{
+                  color: 'rgba(255,255,255,0.65)',
+                  fontFamily: 'ShareTechMono',
+                  fontSize: 14,
+                  textAlign: 'center',
+                  maxWidth: 300,
+                  marginTop: 20,
+                }}
+              >
+                {user.email}
+              </Text>
+            )}
+            <TouchableOpacity
+              onPress={handleLogout}
+              accessibilityRole="button"
+              accessibilityLabel="Log out"
+              activeOpacity={0.8}
+              style={{
+                marginTop: 28,
+                paddingHorizontal: 28,
+                paddingVertical: 12,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.3)',
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontFamily: 'ProRacing',
+                  fontSize: 16,
+                  textAlign: 'center',
+                }}
+              >
+                LOG OUT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
   const points = attendee?.points ?? 0;
   const eventsAttended = attendanceQuery.data?.count ?? 0;
   const rank = rankQuery.data?.rank;
@@ -452,27 +559,19 @@ const ProfileScreen = () => {
         ? points / (points + pointsToNextRank)
         : 0;
 
-  const displayName = resolveProfileDisplayName({
-    displayName: user?.displayName,
-    staffName: isStaffOrAdmin ? staffMe?.name : undefined,
-    email: user?.email,
+  const roleChips: string[] = [];
+  if (isStaffOrAdmin && staffMe?.team) {
+    roleChips.push(titleCase(staffMe.team));
+  }
+  (user?.roles || []).forEach((r: string) => {
+    const R = (r || '').toUpperCase();
+    if (R === 'USER') return;
+    const label = titleCase(R);
+    if (!roleChips.includes(label)) roleChips.push(label);
   });
-  const roleChips = buildProfileRoleChips(roles, isStaffOrAdmin ? staffMe?.team : undefined);
-  const avatarFrame = (
-    <>
-      <ProfileAvatar
-        size={107.3}
-        borderRadius={2.4}
-        style={{ position: 'absolute', top: 2.4, left: 4.3 }}
-      />
-      <CornerBrackets
-        width={116}
-        height={20.2}
-        style={{ position: 'absolute', top: 0, transform: [{ scaleY: -1 }] }}
-      />
-      <CornerBrackets width={116} height={20.2} style={{ position: 'absolute', bottom: 0 }} />
-    </>
-  );
+  if (roleChips.length === 0) {
+    roleChips.push('Attendee');
+  }
 
   return (
     <View className="flex-1" style={{ backgroundColor: COLORS.bgTop, overflow: 'hidden' }}>
@@ -542,38 +641,38 @@ const ProfileScreen = () => {
               </TouchableOpacity>
 
               {/* Avatar tile with corner brackets (brackets drawn above the tile) */}
-              {hasUserRole ? (
-                <TouchableOpacity
-                  onPress={() => router.push('/screens/configure-profile')}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel="Configure profile avatar"
-                  style={{ alignSelf: 'center', width: 116, height: 113 }}
-                >
-                  {avatarFrame}
-                </TouchableOpacity>
-              ) : (
-                <View
-                  accessibilityRole="image"
-                  accessibilityLabel="Profile avatar"
-                  style={{ alignSelf: 'center', width: 116, height: 113 }}
-                >
-                  {avatarFrame}
-                </View>
-              )}
+              <TouchableOpacity
+                onPress={() => router.push('/screens/configure-profile')}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Configure profile avatar"
+                style={{ alignSelf: 'center', width: 116, height: 113 }}
+              >
+                <ProfileAvatar
+                  size={107.3}
+                  borderRadius={2.4}
+                  style={{ position: 'absolute', top: 2.4, left: 4.3 }}
+                />
+                <CornerBrackets
+                  width={116}
+                  height={20.2}
+                  style={{ position: 'absolute', top: 0, transform: [{ scaleY: -1 }] }}
+                />
+                <CornerBrackets
+                  width={116}
+                  height={20.2}
+                  style={{ position: 'absolute', bottom: 0 }}
+                />
+              </TouchableOpacity>
 
               {/* QR button */}
-              {(hasUserRole || hasStaffRole) && (
-                <TouchableOpacity
-                  onPress={() => router.push('/screens/scanner')}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel={hasStaffRole ? 'Open staff scanner' : 'Show attendee QR code'}
-                  style={{ position: 'absolute', right: 31, top: 72 }}
-                >
-                  <QrButtonOrnament width={68} height={64} />
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                onPress={() => router.push('/screens/scanner')}
+                activeOpacity={0.8}
+                style={{ position: 'absolute', right: 31, top: 72 }}
+              >
+                <QrButtonOrnament width={68} height={64} />
+              </TouchableOpacity>
 
               {/* Logout button, stacked beneath QR */}
               <TouchableOpacity
@@ -606,7 +705,7 @@ const ProfileScreen = () => {
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {displayName}
+              {user?.displayName || ''}
             </Text>
 
             {!!user?.email && (
@@ -629,67 +728,65 @@ const ProfileScreen = () => {
             )}
 
             {/* ---- Stats bar ---- */}
-            {hasUserRole && (
+            <View
+              style={{
+                alignSelf: 'center',
+                marginTop: 22,
+                width: 349,
+                height: 58,
+                backgroundColor: COLORS.panel,
+                borderWidth: 4,
+                borderColor: COLORS.panelBorder,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
+                  {points}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'ShareTechMono',
+                    fontSize: 14,
+                    color: '#fff',
+                    marginLeft: 6,
+                    marginBottom: 3,
+                  }}
+                >
+                  pts
+                </Text>
+              </View>
+
               <View
                 style={{
-                  alignSelf: 'center',
-                  marginTop: 22,
-                  width: 349,
-                  height: 58,
-                  backgroundColor: COLORS.panel,
-                  borderWidth: 4,
-                  borderColor: COLORS.panelBorder,
-                  borderRadius: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: 6,
+                  height: 34,
+                  borderRadius: 5,
+                  backgroundColor: COLORS.divider,
+                  marginHorizontal: 24,
                 }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-                  <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
-                    {points}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: 'ShareTechMono',
-                      fontSize: 14,
-                      color: '#fff',
-                      marginLeft: 6,
-                      marginBottom: 3,
-                    }}
-                  >
-                    pts
-                  </Text>
-                </View>
+              />
 
-                <View
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
+                  {eventsAttended}
+                </Text>
+                <Text
                   style={{
-                    width: 6,
-                    height: 34,
-                    borderRadius: 5,
-                    backgroundColor: COLORS.divider,
-                    marginHorizontal: 24,
+                    fontFamily: 'ShareTechMono',
+                    fontSize: 14,
+                    color: '#fff',
+                    marginLeft: 6,
+                    marginBottom: 3,
                   }}
-                />
-
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-                  <Text style={{ fontFamily: 'Ethnocentric', fontSize: 24, color: '#fff' }}>
-                    {eventsAttended}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: 'ShareTechMono',
-                      fontSize: 14,
-                      color: '#fff',
-                      marginLeft: 6,
-                      marginBottom: 3,
-                    }}
-                  >
-                    events
-                  </Text>
-                </View>
+                >
+                  events
+                </Text>
               </View>
-            )}
+            </View>
 
             {/* ---- ROLE panel ---- */}
             <View style={{ alignSelf: 'center', marginTop: 25, width: 344, height: 148 }}>
@@ -741,8 +838,7 @@ const ProfileScreen = () => {
                     key={chip}
                     style={{
                       height: 35,
-                      maxWidth: 140,
-                      paddingHorizontal: 12,
+                      paddingHorizontal: 20,
                       borderRadius: 6,
                       backgroundColor: COLORS.chipBg,
                       justifyContent: 'center',
@@ -755,9 +851,6 @@ const ProfileScreen = () => {
                         lineHeight: 22,
                         color: '#fff',
                       }}
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.75}
                     >
                       {chip}
                     </Text>
@@ -767,111 +860,109 @@ const ProfileScreen = () => {
             </View>
 
             {/* ---- RANK card ---- */}
-            {hasUserRole && (
-              <View style={{ alignSelf: 'center', marginTop: 24, width: 348, height: 122 }}>
-                <RankCardFrame
-                  width={348}
-                  height={114}
-                  style={{ position: 'absolute', top: 4, transform: [{ scaleX: -1 }] }}
-                />
+            <View style={{ alignSelf: 'center', marginTop: 24, width: 348, height: 122 }}>
+              <RankCardFrame
+                width={348}
+                height={114}
+                style={{ position: 'absolute', top: 4, transform: [{ scaleX: -1 }] }}
+              />
 
-                {/* Pink banner + RANK label */}
-                <RankBannerPink
-                  width={230}
-                  height={125}
-                  style={{ position: 'absolute', left: 5, top: -4 }}
-                />
-                <Text
-                  style={{
-                    position: 'absolute',
-                    left: 14,
-                    top: 30,
-                    width: 120,
-                    textAlign: 'center',
-                    fontFamily: 'Ethnocentric',
-                    fontSize: 24,
-                    color: '#fff',
-                    transform: [{ rotate: '-8deg' }],
-                  }}
-                >
-                  RANK
-                </Text>
-                <Text
-                  style={{
-                    position: 'absolute',
-                    left: 26,
-                    top: 68,
-                    width: 160,
-                    fontFamily: 'ShareTechMono',
-                    fontSize: 14,
-                    color: '#fff',
-                  }}
-                >
-                  {rankCaption}
-                </Text>
+              {/* Pink banner + RANK label */}
+              <RankBannerPink
+                width={230}
+                height={125}
+                style={{ position: 'absolute', left: 5, top: -4 }}
+              />
+              <Text
+                style={{
+                  position: 'absolute',
+                  left: 14,
+                  top: 30,
+                  width: 120,
+                  textAlign: 'center',
+                  fontFamily: 'Ethnocentric',
+                  fontSize: 24,
+                  color: '#fff',
+                  transform: [{ rotate: '-8deg' }],
+                }}
+              >
+                RANK
+              </Text>
+              <Text
+                style={{
+                  position: 'absolute',
+                  left: 26,
+                  top: 68,
+                  width: 160,
+                  fontFamily: 'ShareTechMono',
+                  fontSize: 14,
+                  color: '#fff',
+                }}
+              >
+                {rankCaption}
+              </Text>
 
-                {/* Rank number card (drawn above the banner, as in the design) */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 10,
-                    width: 153,
-                    height: 90,
-                    borderRadius: 12,
-                    backgroundColor: COLORS.rankNumberBg,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              {/* Rank number card (drawn above the banner, as in the design) */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 10,
+                  width: 153,
+                  height: 90,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.rankNumberBg,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Ethnocentric',
+                      fontSize: rank !== undefined && rank >= 1000 ? 40 : 56,
+                      color: COLORS.pink,
+                      lineHeight: rank !== undefined && rank >= 1000 ? 46 : 62,
+                    }}
+                  >
+                    {rank !== undefined ? rank : '--'}
+                  </Text>
+                  {rank !== undefined && (
                     <Text
                       style={{
                         fontFamily: 'Ethnocentric',
-                        fontSize: rank !== undefined && rank >= 1000 ? 40 : 56,
+                        fontSize: 12,
                         color: COLORS.pink,
-                        lineHeight: rank !== undefined && rank >= 1000 ? 46 : 62,
+                        marginTop: 6,
+                        marginLeft: 2,
                       }}
                     >
-                      {rank !== undefined ? rank : '--'}
+                      {ordinal(rank).replace(String(rank), '')}
                     </Text>
-                    {rank !== undefined && (
-                      <Text
-                        style={{
-                          fontFamily: 'Ethnocentric',
-                          fontSize: 12,
-                          color: COLORS.pink,
-                          marginTop: 6,
-                          marginLeft: 2,
-                        }}
-                      >
-                        {ordinal(rank).replace(String(rank), '')}
-                      </Text>
-                    )}
-                  </View>
-                  {/* Progress toward next rank */}
+                  )}
+                </View>
+                {/* Progress toward next rank */}
+                <View
+                  style={{
+                    width: 131,
+                    height: 8,
+                    borderRadius: 12,
+                    backgroundColor: 'rgba(185, 200, 255, 0.25)',
+                    marginTop: 6,
+                    overflow: 'hidden',
+                  }}
+                >
                   <View
                     style={{
-                      width: 131,
+                      width: 131 * Math.max(0.06, Math.min(1, progressFraction)),
                       height: 8,
                       borderRadius: 12,
-                      backgroundColor: 'rgba(185, 200, 255, 0.25)',
-                      marginTop: 6,
-                      overflow: 'hidden',
+                      backgroundColor: COLORS.progress,
                     }}
-                  >
-                    <View
-                      style={{
-                        width: 131 * Math.max(0.06, Math.min(1, progressFraction)),
-                        height: 8,
-                        borderRadius: 12,
-                        backgroundColor: COLORS.progress,
-                      }}
-                    />
-                  </View>
+                  />
                 </View>
               </View>
-            )}
+            </View>
 
             {/* ---- Toggles ---- */}
             <View style={{ alignSelf: 'center', marginTop: 26 }}>
