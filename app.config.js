@@ -36,6 +36,7 @@ export default {
       },
       package: 'com.reflectionsprojections',
       googleServicesFile: './googleServices/google-services.json',
+      permissions: ['android.permission.POST_NOTIFICATIONS'],
       intentFilters: [
         {
           action: 'VIEW',

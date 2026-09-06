@@ -16,11 +16,16 @@ import { checkVersion, CheckVersionOptions } from 'react-native-check-version';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-// import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
+import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
 import { AutoRefreshProvider } from '@/components/AutoRefreshProvider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 SplashScreen.preventAutoHideAsync();
+
+function NotificationsGate() {
+  useFirebaseNotifications();
+  return null;
+}
 
 (React as any).useInsertionEffect = useLayoutEffect;
 
@@ -35,7 +40,6 @@ RNText.defaultProps = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  // useFirebaseNotifications();
   const versionCheckedRef = useRef(false);
   // const options: CheckVersionOptions = {
   //   bundleId: 'com.reflectionsprojections',
@@ -120,6 +124,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
+        <NotificationsGate />
         <AutoRefreshProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <BottomSheetModalProvider>

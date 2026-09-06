@@ -519,7 +519,7 @@ export interface APIRoutes {
   '/notifications/register': {
     POST: {
       request: { deviceId: string }; // FCM token
-      response: never;
+      response: { deviceId: string };
     };
   };
   '/shifts/my-shifts': {
