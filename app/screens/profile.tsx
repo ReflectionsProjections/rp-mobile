@@ -47,11 +47,6 @@ import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
 import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
 import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
-import {
-  buildProfileRoleChips,
-  getProfileCapabilities,
-  resolveProfileDisplayName,
-} from '@/lib/profileUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -85,6 +80,14 @@ const ordinal = (n: number) => {
       return `${n}th`;
   }
 };
+
+const titleCase = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
 // 0.8pt-wide decorative tick marks scattered around the panels
 const Tick = ({ top, left, right }: { top: number; left?: number; right?: number }) => (
@@ -189,8 +192,10 @@ const ProfileScreen = () => {
   );
 
   const roles = user?.roles || [];
-  const profileCapabilities = getProfileCapabilities(roles);
-  const { hasUserRole } = profileCapabilities;
+  const normalizedRoles = roles.map((role) => (role || '').trim().toUpperCase());
+  const hasUserRole = normalizedRoles.includes('USER');
+  const hasStaffRole = normalizedRoles.includes('STAFF');
+  const isStaffOrAdmin = hasStaffRole || normalizedRoles.includes('ADMIN');
   const attendanceQuery = useAttendeeAttendance(hasUserRole);
   const rankQuery = useMyLeaderboardRank(hasUserRole);
 
@@ -452,15 +457,27 @@ const ProfileScreen = () => {
         ? points / (points + pointsToNextRank)
         : 0;
 
-  const displayName = resolveProfileDisplayName({
-    displayName: user?.displayName,
-    staffName: profileCapabilities.usesStaffProfileData ? staffMe?.name : undefined,
-    email: user?.email,
+  const displayName =
+    user?.displayName?.trim() ||
+    (isStaffOrAdmin ? staffMe?.name?.trim() : '') ||
+    user?.email?.trim() ||
+    'R|P MEMBER';
+  const roleChips: string[] = [];
+  if (isStaffOrAdmin && staffMe?.team) {
+    roleChips.push(titleCase(staffMe.team));
+  }
+  roles.forEach((role) => {
+    const normalizedRole = (role || '').trim().toUpperCase();
+    if (!normalizedRole || normalizedRole === 'USER') return;
+
+    const label = titleCase(normalizedRole);
+    if (!roleChips.some((chip) => chip.toLowerCase() === label.toLowerCase())) {
+      roleChips.push(label);
+    }
   });
-  const roleChips = buildProfileRoleChips(
-    roles,
-    profileCapabilities.usesStaffProfileData ? staffMe?.team : undefined,
-  );
+  if (roleChips.length === 0) {
+    roleChips.push('Attendee');
+  }
   const avatarFrame = (
     <>
       <ProfileAvatar
@@ -545,7 +562,7 @@ const ProfileScreen = () => {
               </TouchableOpacity>
 
               {/* Avatar tile with corner brackets (brackets drawn above the tile) */}
-              {profileCapabilities.canEditAvatar ? (
+              {hasUserRole ? (
                 <TouchableOpacity
                   onPress={() => router.push('/screens/configure-profile')}
                   activeOpacity={0.8}
@@ -566,16 +583,12 @@ const ProfileScreen = () => {
               )}
 
               {/* QR button */}
-              {profileCapabilities.canOpenScanner && (
+              {(hasUserRole || hasStaffRole) && (
                 <TouchableOpacity
                   onPress={() => router.push('/screens/scanner')}
                   activeOpacity={0.8}
                   accessibilityRole="button"
-                  accessibilityLabel={
-                    profileCapabilities.hasStaffRole
-                      ? 'Open staff scanner'
-                      : 'Show attendee QR code'
-                  }
+                  accessibilityLabel={hasStaffRole ? 'Open staff scanner' : 'Show attendee QR code'}
                   style={{ position: 'absolute', right: 31, top: 72 }}
                 >
                   <QrButtonOrnament width={68} height={64} />
@@ -636,7 +649,7 @@ const ProfileScreen = () => {
             )}
 
             {/* ---- Stats bar ---- */}
-            {profileCapabilities.showsAttendeeProgress && (
+            {hasUserRole && (
               <View
                 style={{
                   alignSelf: 'center',
@@ -774,7 +787,7 @@ const ProfileScreen = () => {
             </View>
 
             {/* ---- RANK card ---- */}
-            {profileCapabilities.showsAttendeeProgress && (
+            {hasUserRole && (
               <View style={{ alignSelf: 'center', marginTop: 24, width: 348, height: 122 }}>
                 <RankCardFrame
                   width={348}
