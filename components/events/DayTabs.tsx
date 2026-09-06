@@ -79,8 +79,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   content: {
+    flexGrow: 1,
     gap: 17,
     paddingHorizontal: 18,
+    justifyContent: 'center',
   },
   touchTarget: {
     minWidth: 78,

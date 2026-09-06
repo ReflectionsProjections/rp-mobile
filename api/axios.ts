@@ -4,7 +4,7 @@ import { TypedAxiosInstance } from './type-wrapper';
 
 function createApi(baseURL: string, unauthorizedCallback: () => void): TypedAxiosInstance {
   console.log('baseURL', baseURL);
-  const axiosObject = axios.create({ baseURL });
+  const axiosObject = axios.create({ baseURL, timeout: 30000 });
 
   axiosObject.interceptors.request.use(async (config) => {
     const jwt = await SecureStore.getItemAsync('jwt');
