@@ -50,6 +50,7 @@ export function useDataInitialization() {
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
   const userLoading = useAppSelector((state: RootState) => state.user.loading);
   const attendeeLoading = useAppSelector((state: RootState) => state.attendee.loading);
+  const hasUserRole = user?.roles?.some((role: string) => role.toUpperCase() === 'USER') ?? false;
 
   useEffect(() => {
     if (!hasEvents) {
@@ -64,17 +65,17 @@ export function useDataInitialization() {
   }, [isAuthenticated, user, userLoading, dispatch]);
 
   useEffect(() => {
-    if (isAuthenticated === true && !attendee && !attendeeLoading) {
+    if (isAuthenticated === true && hasUserRole && !attendee && !attendeeLoading) {
       dispatch(fetchAttendeeProfile());
     }
-  }, [isAuthenticated, attendee, attendeeLoading, dispatch]);
+  }, [isAuthenticated, hasUserRole, attendee, attendeeLoading, dispatch]);
 
   // Fetch user favorites if authenticated
   useEffect(() => {
-    if (isAuthenticated === true && user?.userId && !hasFavorites) {
+    if (isAuthenticated === true && hasUserRole && user?.userId && !hasFavorites) {
       dispatch(fetchUserFavorites(user.userId));
     }
-  }, [isAuthenticated, user?.userId, hasFavorites, dispatch]);
+  }, [isAuthenticated, hasUserRole, user?.userId, hasFavorites, dispatch]);
 
   // Fetch shifts and profile for staff and admin users only
   useEffect(() => {
@@ -96,7 +97,7 @@ export function useDataInitialization() {
   const isInitialized =
     isAuthenticated === false
       ? eventsLoaded
-      : eventsLoaded && (isAuthenticated ? hasUser && hasAttendeeData : true);
+      : eventsLoaded && (isAuthenticated ? hasUser && (!hasUserRole || hasAttendeeData) : true);
 
   const isLoading = isAuthenticated === null ? true : !eventsLoaded;
 

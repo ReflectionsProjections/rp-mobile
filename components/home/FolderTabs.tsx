@@ -2,13 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   FlatList,
   Animated,
   Easing,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { FontAwesome } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { GradientPill } from './GradientPill';
