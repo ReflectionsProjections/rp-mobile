@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -10,7 +9,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -24,11 +22,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import LOGO from '@/assets/images/logo.svg';
 import SideDiscLeft from '@/assets/pointshop/side_disc_left.svg';
 import SideDiscRight from '@/assets/pointshop/side_disc_right.svg';
 import type { TierType } from '@/api/types';
-import { ProfileButton } from '@/components/misc/ProfileButton';
+import { Header } from '@/components/home/Header';
 import CdPlayerSvg from '@/components/pointshop/CdPlayerSvg';
 import DiscLabelSvg from '@/components/pointshop/DiscLabelSvg';
 import MilestoneBarSvg from '@/components/pointshop/MilestoneBarSvg';
@@ -181,20 +178,6 @@ export default function PointsShopScreen() {
   return (
     <LinearGradient colors={['#0F062D', '#24114C']} style={styles.page}>
       <View style={[styles.canvas, { width: canvasWidth, height: canvasHeight, left: canvasLeft }]}>
-        <Text
-          style={[
-            styles.title,
-            {
-              top: 69 * scale,
-              width: canvasWidth,
-              fontSize: 29 * scale,
-              lineHeight: 38 * scale,
-            },
-          ]}
-        >
-          POINT SHOP
-        </Text>
-
         <View
           accessible
           accessibilityRole="text"
@@ -405,10 +388,7 @@ export default function PointsShopScreen() {
       </View>
 
       <SafeAreaView edges={['top']} pointerEvents="box-none" style={styles.topBarSafeArea}>
-        <View pointerEvents="box-none" style={styles.topBar}>
-          <LOGO width={32} height={32} />
-          <ProfileButton onPress={() => router.push('/screens/profile')} />
-        </View>
+        <Header title="POINT SHOP" bigText={false} />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -429,23 +409,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    paddingTop: Platform.OS === 'android' ? 15 : 0,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  title: {
-    position: 'absolute',
-    color: '#FFFFFF',
-    fontFamily: 'GeistPixel',
-    textAlign: 'center',
-    textShadowColor: 'rgba(255,255,255,0.72)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 13,
   },
   pointsCard: {
     position: 'absolute',

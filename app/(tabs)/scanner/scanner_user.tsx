@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Dimensions, Text, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Brightness from 'expo-brightness';
 import { useQRCode } from '@/hooks/useQRCode';
 import QRDisplay from '@/components/scanner/QRDisplay';
 import { useAppSelector } from '@/lib/store';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import PhotoBracketTop from '@/assets/qr/photo_bracket_top.svg';
 import PhotoBracketBottom from '@/assets/qr/photo_bracket_bottom.svg';
+import { Header } from '@/components/home/Header';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -54,6 +56,36 @@ function CornerBracket({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
 }
 
 export default function ScannerScreen() {
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    let isMounted = true;
+    let previousBrightness: number | null = null;
+
+    const maximizeBrightness = async () => {
+      try {
+        const currentBrightness = await Brightness.getBrightnessAsync();
+        if (!isMounted) return;
+
+        previousBrightness = currentBrightness;
+        await Brightness.setBrightnessAsync(1);
+      } catch (error) {
+        console.warn('Unable to maximize screen brightness:', error);
+      }
+    };
+
+    void maximizeBrightness();
+
+    return () => {
+      isMounted = false;
+      if (previousBrightness !== null) {
+        void Brightness.setBrightnessAsync(previousBrightness).catch((error) => {
+          console.warn('Unable to restore screen brightness:', error);
+        });
+      }
+    };
+  }, []);
+
   const {
     qrValue,
     loading,
@@ -96,6 +128,11 @@ export default function ScannerScreen() {
       />
 
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <View
+          style={{ position: 'absolute', top: insets.top, left: 0, right: 0, zIndex: 20 }}
+        >
+          <Header bigText={false} />
+        </View>
         <View style={{ flex: 1, alignItems: 'center' }}>
           {/* Profile block */}
           <View

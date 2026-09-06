@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   Alert,
   ActivityIndicator,
   TouchableWithoutFeedback,
   AppState,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '@/api/api';

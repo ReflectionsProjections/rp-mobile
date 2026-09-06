@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Event } from '@/api/types';
 

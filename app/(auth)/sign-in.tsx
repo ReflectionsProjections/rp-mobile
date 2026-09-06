@@ -7,8 +7,9 @@ import {
   Text,
   useWindowDimensions,
   Animated,
-  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Background from '@/assets/background/rp_background.svg';
@@ -62,142 +63,155 @@ export default function SignInScreen() {
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1 items-center justify-center"
+          className="flex-1"
         >
-          <Animated.View
-            className="w-full items-center px-6"
-            style={{
-              opacity: fadeAnim,
-              transform: [{ translateY: cardSlideAnim }],
-              maxWidth: width * 0.85,
-              marginTop: 80,
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: Math.max(20, Math.min(32, width * 0.06)),
+              paddingVertical: 24,
             }}
+            showsVerticalScrollIndicator={false}
           >
-            <View
+            <Animated.View
               style={{
                 width: '100%',
-                marginBottom: 28,
+                maxWidth: 480,
                 alignItems: 'center',
-                justifyContent: 'center',
+                opacity: fadeAnim,
+                transform: [{ translateY: cardSlideAnim }],
               }}
             >
               <View
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  width: '92%',
-                  height: BUTTON_HEIGHT,
-                  borderRadius: 20,
-                  backgroundColor: '#FF4CCC',
-                  opacity: 0.95,
-                  shadowColor: '#FF4CCC',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.9,
-                  shadowRadius: 30,
-
-                  elevation: 20,
-                }}
-              />
-
-              <LinearGradient
-                colors={['#373792', '#F52DBC']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
                 style={{
                   width: '100%',
-                  height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
-                  borderRadius: 20,
-                  padding: BORDER_WIDTH,
+                  marginBottom: 28,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <TouchableOpacity
-                  onPress={handleEmailLogin}
-                  activeOpacity={0.85}
+                <View
+                  pointerEvents="none"
                   style={{
+                    position: 'absolute',
+                    width: '92%',
                     height: BUTTON_HEIGHT,
-                    borderRadius: 18,
-                    backgroundColor: BUTTON_COLOR,
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    borderRadius: 20,
+                    backgroundColor: '#FF4CCC',
+                    opacity: 0.95,
+                    shadowColor: '#FF4CCC',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.9,
+                    shadowRadius: 30,
+
+                    elevation: 20,
+                  }}
+                />
+
+                <LinearGradient
+                  colors={['#373792', '#F52DBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={{
+                    width: '100%',
+                    height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
+                    borderRadius: 20,
+                    padding: BORDER_WIDTH,
                   }}
                 >
-                  <Text
+                  <TouchableOpacity
+                    onPress={handleEmailLogin}
+                    activeOpacity={0.85}
                     style={{
-                      color: '#FFF',
-                      fontFamily: 'Ethnocentric',
-                      fontSize: 18,
-                      letterSpacing: 1,
+                      height: BUTTON_HEIGHT,
+                      borderRadius: 18,
+                      backgroundColor: BUTTON_COLOR,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    SIGN IN WITH EMAIL
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
+                    <Text
+                      style={{
+                        color: '#FFF',
+                        fontFamily: 'Ethnocentric',
+                        fontSize: 18,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      SIGN IN WITH EMAIL
+                    </Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
 
-            <View
-              style={{
-                width: '100%',
-                marginTop: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
               <View
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  width: '92%',
-                  height: BUTTON_HEIGHT,
-                  borderRadius: 20,
-                  backgroundColor: '#FF4CCC',
-                  opacity: 0.95,
-                  shadowColor: '#FF4CCC',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.9,
-                  shadowRadius: 30,
-
-                  elevation: 20,
-                }}
-              />
-
-              <LinearGradient
-                colors={['#373792', '#F52DBC']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
                 style={{
                   width: '100%',
-                  height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
-                  borderRadius: 20,
-                  padding: BORDER_WIDTH,
+                  marginTop: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <TouchableOpacity
-                  onPress={handleGuestLogin}
-                  activeOpacity={0.85}
+                <View
+                  pointerEvents="none"
                   style={{
+                    position: 'absolute',
+                    width: '92%',
                     height: BUTTON_HEIGHT,
-                    borderRadius: 18,
-                    backgroundColor: BUTTON_COLOR,
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    borderRadius: 20,
+                    backgroundColor: '#FF4CCC',
+                    opacity: 0.95,
+                    shadowColor: '#FF4CCC',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.9,
+                    shadowRadius: 30,
+
+                    elevation: 20,
+                  }}
+                />
+
+                <LinearGradient
+                  colors={['#373792', '#F52DBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={{
+                    width: '100%',
+                    height: BUTTON_HEIGHT + BORDER_WIDTH * 2,
+                    borderRadius: 20,
+                    padding: BORDER_WIDTH,
                   }}
                 >
-                  <Text
+                  <TouchableOpacity
+                    onPress={handleGuestLogin}
+                    activeOpacity={0.85}
                     style={{
-                      color: '#FFFFFF',
-                      fontFamily: 'Ethnocentric',
-                      fontSize: 18,
-                      letterSpacing: 1,
+                      height: BUTTON_HEIGHT,
+                      borderRadius: 18,
+                      backgroundColor: BUTTON_COLOR,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    CONTINUE AS GUEST
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
-
-          </Animated.View>
+                    <Text
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.75}
+                      style={{
+                        color: '#FFFFFF',
+                        fontFamily: 'Ethnocentric',
+                        fontSize: 18,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      CONTINUE AS GUEST
+                    </Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
+            </Animated.View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
