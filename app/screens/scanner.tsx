@@ -10,17 +10,19 @@ import ScannerStaffScreen from '../(tabs)/scanner/scanner_staff';
 import ScannerUserScreen from '../(tabs)/scanner/scanner_user';
 
 // Stack-pushed scanner screen (reached from the profile page's QR button).
-// Mirrors the role routing of the scanner tab in app/(tabs)/_layout.tsx.
+// Unlike the scanner tab, this is reached by tapping *your own* QR button, so
+// attendees who are also staff should still see their own QR code / profile
+// pic here rather than the staff camera scanner.
 export default function ScannerScreen() {
   const profile = useAppSelector((state) => state.user.profile);
 
   let content: React.ReactNode;
   if (!profile || !profile.roles || profile.roles.length === 0) {
     content = <ScannerGuestScreen />;
-  } else if (profile.roles.includes('STAFF')) {
-    content = <ScannerStaffScreen />;
   } else if (profile.roles.includes('USER')) {
     content = <ScannerUserScreen />;
+  } else if (profile.roles.includes('STAFF')) {
+    content = <ScannerStaffScreen />;
   } else {
     content = <ScannerGuestScreen />;
   }

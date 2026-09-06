@@ -59,11 +59,8 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
         // Re-initialize app data via Redux fetches so routes refetch
         dispatch(fetchEvents());
         dispatch(fetchUserProfile());
+        dispatch(fetchAttendeeProfile());
         const roles: string[] = Array.isArray(profile?.roles) ? (profile?.roles as string[]) : [];
-        const hasUserRole = roles.some((r) => (r || '').toUpperCase() === 'USER');
-        if (hasUserRole) {
-          dispatch(fetchAttendeeProfile());
-        }
         const hasStaffOrAdmin = roles.some((r) => {
           const R = (r || '').toUpperCase();
           return R === 'STAFF' || R === 'ADMIN';
@@ -107,15 +104,23 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
   });
 
   return (
-    <View style={styles.headerContainer}>
-      <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning} style={styles.headerAction}>
+    <View style={[styles.headerContainer, { padding: height < 700 ? 12 : 16 }]}>
+      <TouchableOpacity onPress={handleLogoPress} disabled={isSpinning}>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <LOGO width={32} height={32} />
         </Animated.View>
       </TouchableOpacity>
       {title && (
-        <View style={styles.titleContainer}>
-          <Text style={[styles.mainTitle, { fontSize: bigText ? 32 : 28 }]}>{title}</Text>
+        <View style={[styles.titleContainer, title === 'EVENTS' && styles.eventsTitleContainer]}>
+          <Text
+            style={[
+              styles.mainTitle,
+              { fontSize: bigText ? 32 : 28 },
+              title === 'EVENTS' && styles.eventsTitle,
+            ]}
+          >
+            {title}
+          </Text>
           {title !== 'EVENTS' && (
             <View style={[styles.titleUnderline, { backgroundColor: themeColor }]} />
           )}
@@ -128,22 +133,16 @@ export const Header: React.FC<HeaderProps> = ({ title = '', bigText = false }) =
 
 const styles = StyleSheet.create({
   headerContainer: {
-    height: 64,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    alignItems: 'flex-start',
     zIndex: 10,
   },
-  headerAction: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   titleContainer: {
-    flex: 1,
     alignItems: 'center',
+  },
+  eventsTitleContainer: {
+    marginTop: -2,
   },
   mainTitle: {
     fontFamily: 'Ethnocentric',
@@ -151,6 +150,12 @@ const styles = StyleSheet.create({
     lineHeight: height < 700 ? 32 : 40,
     letterSpacing: 0,
     textAlign: 'center',
+  },
+  eventsTitle: {
+    letterSpacing: 4,
+    textShadowColor: '#FF3CF0',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 22,
   },
   titleUnderline: {
     marginTop: height < 700 ? 2 : 4,

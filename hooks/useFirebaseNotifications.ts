@@ -1,105 +1,71 @@
-// import { useEffect, useState } from 'react';
-// import FirebaseService from '../lib/firebase';
+import { useEffect, useRef } from 'react';
+import Toast from 'react-native-toast-message';
+import { useAppSelector } from '@/lib/store';
+import {
+  requestNotificationPermission,
+  getFcmToken,
+  registerDeviceToken,
+  subscribeToForegroundMessages,
+  subscribeToNotificationOpened,
+  subscribeToTokenRefresh,
+} from '@/lib/firebase';
 
-// export const useFirebaseNotifications = () => {
-//   const [fcmToken, setFcmToken] = useState<string | null>(null);
-//   const [isLoading, setIsLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
+export const useFirebaseNotifications = () => {
+  const notificationsEnabled = useAppSelector(
+    (s) => s.settings?.notificationsEnabled ?? true,
+  );
+  const hasUserRole = useAppSelector((s) => !!s.user?.profile?.roles?.includes('USER'));
+  const registeredRef = useRef(false);
 
-//   useEffect(() => {
-//     const initializeNotifications = async () => {
-//       try {
-//         setIsLoading(true);
-//         const firebaseService = FirebaseService.getInstance();
+  useEffect(() => {
+    if (!notificationsEnabled || !hasUserRole || registeredRef.current) return;
 
-//         // Request notification permission on app startup
-//         const permissionResult = await firebaseService.requestUserPermission();
-//         if (permissionResult.token) {
-//           setFcmToken(permissionResult.token);
-//         }
+    let unsubscribeMessage: (() => void) | undefined;
+    let unsubscribeOpened: (() => void) | undefined;
+    let unsubscribeRefresh: (() => void) | undefined;
+    let cancelled = false;
 
-//         if (!permissionResult.success) {
-//           console.log('Notification permission not granted:', permissionResult.error);
-//         }
+    (async () => {
+      const granted = await requestNotificationPermission();
+      if (!granted || cancelled) return;
 
-//         const startupStatus = await firebaseService.checkNotificationStatusOnStartup();
-//         if (startupStatus.needsAttention && startupStatus.showGuidance) {
-//           firebaseService.showNotificationGuidance();
-//         }
+      const token = await getFcmToken();
+      if (!token || cancelled) return;
 
-//         // Get token if we don't have one from permission request
-//         if (!permissionResult.success) {
-//           const token = await firebaseService.getFCMToken();
-//           setFcmToken(token);
-//         }
+      console.log('[FCM] device token:', token);
 
-//         const unsubscribeMessage = await firebaseService.onMessageReceived((message) => {
-//           console.log('Foreground message received:', message);
-//         });
+      try {
+        await registerDeviceToken(token);
+      } catch (err) {
+        console.error('Failed to register device for notifications:', err);
+      }
 
-//         firebaseService.onNotificationOpenedApp((message) => {
-//           console.log('App opened from notification:', message);
-//         });
+      registeredRef.current = true;
 
-//         const unsubscribeTokenRefresh = await firebaseService.onTokenRefresh((token) => {
-//           console.log('Token refreshed:', token);
-//           setFcmToken(token);
-//         });
+      unsubscribeMessage = subscribeToForegroundMessages((message) => {
+        Toast.show({
+          type: 'info',
+          text1: message.notification?.title ?? 'Notification',
+          text2: message.notification?.body,
+        });
+      });
 
-//         setIsLoading(false);
+      unsubscribeOpened = subscribeToNotificationOpened((message) => {
+        console.log('Notification opened app:', message);
+      });
 
-//         return () => {
-//           unsubscribeMessage();
-//           unsubscribeTokenRefresh();
-//         };
-//       } catch (err) {
-//         setError(err instanceof Error ? err.message : 'Unknown error');
-//         setIsLoading(false);
-//       }
-//     };
+      unsubscribeRefresh = subscribeToTokenRefresh((newToken) => {
+        registerDeviceToken(newToken).catch((err) =>
+          console.error('Failed to register refreshed token:', err),
+        );
+      });
+    })();
 
-//     initializeNotifications();
-//   }, []);
-
-//   const registerForNotifications = async (token: string) => {
-//     try {
-//       console.log('Registering token with server:', token);
-//     } catch (err) {
-//       console.error('Error registering token with server:', err);
-//     }
-//   };
-
-//   const unregisterFromNotifications = async () => {
-//     try {
-//       const firebaseService = FirebaseService.getInstance();
-//       await firebaseService.unregisterForNotifications();
-//       console.log('Unregistered from notifications');
-//     } catch (err) {
-//       console.error('Error unregistering from notifications:', err);
-//     }
-//   };
-
-//   const forceReregisterToken = async () => {
-//     try {
-//       const firebaseService = FirebaseService.getInstance();
-//       const result = await firebaseService.forceReregisterToken();
-//       if (result.success && result.token) {
-//         setFcmToken(result.token);
-//         console.log('Force re-registration successful');
-//       }
-//       return result;
-//     } catch (err) {
-//       console.error('Error force re-registering token:', err);
-//       return { success: false, error: err };
-//     }
-//   };
-
-//   return {
-//     fcmToken,
-//     isLoading,
-//     error,
-//     registerForNotifications,
-//     unregisterFromNotifications,
-//     forceReregisterToken,
-//   };
-// };
+    return () => {
+      cancelled = true;
+      unsubscribeMessage?.();
+      unsubscribeOpened?.();
+      unsubscribeRefresh?.();
+    };
+  }, [notificationsEnabled, hasUserRole]);
+};
