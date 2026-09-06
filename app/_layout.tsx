@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Alert, Linking, Platform, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@/components/toast/ToastConfig';
@@ -19,6 +19,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFirebaseNotifications } from '@/hooks/useFirebaseNotifications';
 import { AutoRefreshProvider } from '@/components/AutoRefreshProvider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { useLayoutEffect } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -139,6 +140,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="auth/mobile/login" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/profile" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/configure-profile" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/scanner" options={{ headerShown: false }} />
               </Stack>
             </BottomSheetModalProvider>

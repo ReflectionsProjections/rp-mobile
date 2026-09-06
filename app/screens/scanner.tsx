@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';

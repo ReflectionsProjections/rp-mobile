@@ -8,8 +8,8 @@ import {
   TextInput,
   Alert,
   useWindowDimensions,
-  TouchableOpacity,
 } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -76,7 +76,7 @@ export default function EmailSignInScreen() {
 
       const roles = await api.get('/auth/info').then((res) => res.data.roles);
       if (roles.length > 0) {
-        router.replace('/(tabs)/home');
+        router.replace('/(auth)/loading');
       } else {
         await SecureStore.deleteItemAsync('jwt');
         Alert.alert('Make sure to register for the event first!');
