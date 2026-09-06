@@ -1,4 +1,8 @@
-import { buildProfileRoleChips, resolveProfileDisplayName } from '../profileUtils';
+import {
+  buildProfileRoleChips,
+  getProfileCapabilities,
+  resolveProfileDisplayName,
+} from '../profileUtils';
 
 describe('resolveProfileDisplayName', () => {
   it('prefers the account display name', () => {
@@ -36,5 +40,43 @@ describe('buildProfileRoleChips', () => {
       'Admin',
       'Staff',
     ]);
+  });
+});
+
+describe('getProfileCapabilities', () => {
+  it('keeps attendee profile functionality enabled for USER accounts', () => {
+    expect(getProfileCapabilities(['USER'])).toMatchObject({
+      canEditAvatar: true,
+      canOpenScanner: true,
+      showsAttendeeProgress: true,
+      usesStaffProfileData: false,
+    });
+  });
+
+  it('gives staff scanner access without enabling attendee functionality', () => {
+    expect(getProfileCapabilities(['staff'])).toMatchObject({
+      canEditAvatar: false,
+      canOpenScanner: true,
+      showsAttendeeProgress: false,
+      usesStaffProfileData: true,
+    });
+  });
+
+  it('preserves both sets of functionality for mixed-role accounts', () => {
+    expect(getProfileCapabilities(['USER', 'STAFF'])).toMatchObject({
+      canEditAvatar: true,
+      canOpenScanner: true,
+      showsAttendeeProgress: true,
+      usesStaffProfileData: true,
+    });
+  });
+
+  it('does not route an admin-only account to an unsupported scanner', () => {
+    expect(getProfileCapabilities(['ADMIN'])).toMatchObject({
+      canEditAvatar: false,
+      canOpenScanner: false,
+      showsAttendeeProgress: false,
+      usesStaffProfileData: true,
+    });
   });
 });

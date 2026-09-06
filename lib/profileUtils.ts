@@ -4,6 +4,16 @@ type ProfileIdentityInput = {
   email?: string | null;
 };
 
+export type ProfileCapabilities = {
+  hasUserRole: boolean;
+  hasStaffRole: boolean;
+  hasAdminRole: boolean;
+  usesStaffProfileData: boolean;
+  canEditAvatar: boolean;
+  canOpenScanner: boolean;
+  showsAttendeeProgress: boolean;
+};
+
 const cleaned = (value?: string | null) => value?.trim() || '';
 
 export function resolveProfileDisplayName({
@@ -12,6 +22,23 @@ export function resolveProfileDisplayName({
   email,
 }: ProfileIdentityInput): string {
   return cleaned(displayName) || cleaned(staffName) || cleaned(email) || 'R|P MEMBER';
+}
+
+export function getProfileCapabilities(roles: string[] = []): ProfileCapabilities {
+  const normalizedRoles = new Set(roles.map((role) => cleaned(role).toUpperCase()));
+  const hasUserRole = normalizedRoles.has('USER');
+  const hasStaffRole = normalizedRoles.has('STAFF');
+  const hasAdminRole = normalizedRoles.has('ADMIN');
+
+  return {
+    hasUserRole,
+    hasStaffRole,
+    hasAdminRole,
+    usesStaffProfileData: hasStaffRole || hasAdminRole,
+    canEditAvatar: hasUserRole,
+    canOpenScanner: hasUserRole || hasStaffRole,
+    showsAttendeeProgress: hasUserRole,
+  };
 }
 
 const titleCase = (value: string) =>
