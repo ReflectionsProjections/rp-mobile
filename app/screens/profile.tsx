@@ -47,11 +47,7 @@ import BellIcon from '@/assets/profile/updated/icon_ringing_bell.svg';
 import VibrationIcon from '@/assets/profile/updated/icon_phone_vibration.svg';
 import CornerBrackets from '@/assets/profile/updated/avatar_corner_brackets_bottom.svg';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
-import {
-  buildProfileRoleChips,
-  getProfileCapabilities,
-  resolveProfileDisplayName,
-} from '@/lib/profileUtils';
+import { buildProfileRoleChips, resolveProfileDisplayName } from '@/lib/profileUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -189,8 +185,12 @@ const ProfileScreen = () => {
   );
 
   const roles = user?.roles || [];
-  const profileCapabilities = getProfileCapabilities(roles);
-  const { hasUserRole } = profileCapabilities;
+  const hasUserRole = roles.some((role: string) => (role || '').toUpperCase() === 'USER');
+  const hasStaffRole = roles.some((role: string) => (role || '').toUpperCase() === 'STAFF');
+  const isStaffOrAdmin = roles.some((role: string) => {
+    const normalizedRole = (role || '').toUpperCase();
+    return normalizedRole === 'STAFF' || normalizedRole === 'ADMIN';
+  });
   const attendanceQuery = useAttendeeAttendance(hasUserRole);
   const rankQuery = useMyLeaderboardRank(hasUserRole);
 
@@ -454,13 +454,10 @@ const ProfileScreen = () => {
 
   const displayName = resolveProfileDisplayName({
     displayName: user?.displayName,
-    staffName: profileCapabilities.usesStaffProfileData ? staffMe?.name : undefined,
+    staffName: isStaffOrAdmin ? staffMe?.name : undefined,
     email: user?.email,
   });
-  const roleChips = buildProfileRoleChips(
-    roles,
-    profileCapabilities.usesStaffProfileData ? staffMe?.team : undefined,
-  );
+  const roleChips = buildProfileRoleChips(roles, isStaffOrAdmin ? staffMe?.team : undefined);
   const avatarFrame = (
     <>
       <ProfileAvatar
@@ -545,7 +542,7 @@ const ProfileScreen = () => {
               </TouchableOpacity>
 
               {/* Avatar tile with corner brackets (brackets drawn above the tile) */}
-              {profileCapabilities.canEditAvatar ? (
+              {hasUserRole ? (
                 <TouchableOpacity
                   onPress={() => router.push('/screens/configure-profile')}
                   activeOpacity={0.8}
@@ -566,16 +563,12 @@ const ProfileScreen = () => {
               )}
 
               {/* QR button */}
-              {profileCapabilities.canOpenScanner && (
+              {(hasUserRole || hasStaffRole) && (
                 <TouchableOpacity
                   onPress={() => router.push('/screens/scanner')}
                   activeOpacity={0.8}
                   accessibilityRole="button"
-                  accessibilityLabel={
-                    profileCapabilities.hasStaffRole
-                      ? 'Open staff scanner'
-                      : 'Show attendee QR code'
-                  }
+                  accessibilityLabel={hasStaffRole ? 'Open staff scanner' : 'Show attendee QR code'}
                   style={{ position: 'absolute', right: 31, top: 72 }}
                 >
                   <QrButtonOrnament width={68} height={64} />
@@ -636,7 +629,7 @@ const ProfileScreen = () => {
             )}
 
             {/* ---- Stats bar ---- */}
-            {profileCapabilities.showsAttendeeProgress && (
+            {hasUserRole && (
               <View
                 style={{
                   alignSelf: 'center',
@@ -774,7 +767,7 @@ const ProfileScreen = () => {
             </View>
 
             {/* ---- RANK card ---- */}
-            {profileCapabilities.showsAttendeeProgress && (
+            {hasUserRole && (
               <View style={{ alignSelf: 'center', marginTop: 24, width: 348, height: 122 }}>
                 <RankCardFrame
                   width={348}
