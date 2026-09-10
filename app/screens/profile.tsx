@@ -36,6 +36,7 @@ import {
   getFcmToken,
   registerDeviceToken,
   deleteLocalFcmToken,
+  describeApiError,
 } from '@/lib/firebase';
 import { useAttendeeAttendance } from '@/api/tanstack/attendee';
 import { useMyLeaderboardRank } from '@/api/tanstack/leaderboard';
@@ -223,7 +224,7 @@ const ProfileScreen = () => {
         try {
           await registerDeviceToken(token);
         } catch (err) {
-          console.error('Failed to register for notifications:', err);
+          console.error('[FCM] Failed to register for notifications:', describeApiError(err));
         }
       }
     } else {
