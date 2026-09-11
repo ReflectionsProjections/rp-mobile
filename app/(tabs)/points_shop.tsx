@@ -93,7 +93,10 @@ export default function PointsShopScreen() {
         : POINT_SHOP_ITEMS,
     [attendedToday],
   );
-  const selectedItem = shopItems[selectedItemIndex];
+  useEffect(() => {
+    setSelectedItemIndex((currentIndex) => Math.min(currentIndex, Math.max(shopItems.length - 1, 0)));
+  }, [shopItems.length]);
+  const selectedItem = shopItems[selectedItemIndex] ?? shopItems[0];
   const scale = Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
   const canvasWidth = DESIGN_WIDTH * scale;
   const canvasHeight = DESIGN_HEIGHT * scale;
