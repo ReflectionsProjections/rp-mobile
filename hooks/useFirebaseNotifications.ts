@@ -8,6 +8,7 @@ import {
   subscribeToForegroundMessages,
   subscribeToNotificationOpened,
   subscribeToTokenRefresh,
+  describeApiError,
 } from '@/lib/firebase';
 
 export const useFirebaseNotifications = () => {
@@ -36,8 +37,9 @@ export const useFirebaseNotifications = () => {
 
       try {
         await registerDeviceToken(token);
+        console.log('[FCM] registered device with backend');
       } catch (err) {
-        console.error('Failed to register device for notifications:', err);
+        console.error('[FCM] Failed to register device:', describeApiError(err));
       }
 
       registeredRef.current = true;
@@ -56,7 +58,7 @@ export const useFirebaseNotifications = () => {
 
       unsubscribeRefresh = subscribeToTokenRefresh((newToken) => {
         registerDeviceToken(newToken).catch((err) =>
-          console.error('Failed to register refreshed token:', err),
+          console.error('[FCM] Failed to register refreshed token:', describeApiError(err)),
         );
       });
     })();
