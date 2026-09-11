@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -22,12 +22,19 @@ import { triggerIfEnabled } from '@/lib/haptics';
 import { toggleFavorite } from '@/lib/slices/favoritesSlice';
 import Toast from 'react-native-toast-message';
 
-const dayTabs = [
-  { label: 'WED', dayNumber: 3 },
-  { label: 'THUR', dayNumber: 4 },
-  { label: 'FRI', dayNumber: 5 },
-  { label: 'SAT', dayNumber: 6 },
+// Event runs Sep 16-19, 2026 — tabs are keyed to the actual calendar dates,
+// not day-of-week, so a Wed-Sat before/after the event doesn't get misidentified.
+const EVENT_DAYS = [
+  { label: 'WED', dayNumber: 1, date: '2026-09-16' },
+  { label: 'THUR', dayNumber: 2, date: '2026-09-17' },
+  { label: 'FRI', dayNumber: 3, date: '2026-09-18' },
+  { label: 'SAT', dayNumber: 4, date: '2026-09-19' },
 ];
+
+const dayTabs = EVENT_DAYS.map(({ label, dayNumber }) => ({ label, dayNumber }));
+
+const toLocalDateString = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -38,26 +45,26 @@ const EventsScreen = () => {
   const user = useAppSelector((state: RootState) => state.user.profile);
   const dispatch = useAppDispatch();
 
-  const [selectedDay, setSelectedDay] = useState(3);
+  const getInitialDay = () => {
+    // Today's actual date if it's one of the event days; day 0 (no tab active)
+    // before the event starts; otherwise fall back to day 1.
+    const todayStr = toLocalDateString(new Date());
+    const match = EVENT_DAYS.find((d) => d.date === todayStr);
+    if (match) return match.dayNumber;
+    if (todayStr < EVENT_DAYS[0].date) return 0;
+    return EVENT_DAYS[0].dayNumber;
+  };
+
+  const [selectedDay, setSelectedDay] = useState(getInitialDay);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
 
   const itemAnimations = useRef<Record<string, Animated.Value>>({});
 
-  useEffect(() => {
-    // Initialize selected tab to today's weekday (Wed-Sat), default Wednesday
-    const today = new Date().getDay();
-    if (today >= 3 && today <= 6) {
-      setSelectedDay(today);
-    } else {
-      setSelectedDay(3);
-    }
-  }, []);
-
+  const activeDay = EVENT_DAYS.find((d) => d.dayNumber === selectedDay);
   const filteredEvents = events.filter((item: Event) => {
-    if (!item.startTime) return false;
-    const eventDate = new Date(item.startTime);
-    return eventDate.getDay() === selectedDay;
+    if (!item.startTime || !activeDay) return false;
+    return toLocalDateString(new Date(item.startTime)) === activeDay.date;
   });
 
   const handleCloseModal = () => {
