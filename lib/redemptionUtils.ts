@@ -52,10 +52,9 @@ export function mapFrontendTierToBackend(frontendTier: TierMappedType): TierType
  */
 export function getMerchandiseItems(redemptionInfo: RedemptionInfo): MerchandiseItem[] {
   const items: MerchandiseItem[] = [
-    { tier: 'TIER1', name: 'T-shirt', isRedeemed: false, isEligible: false },
+    { tier: 'TIER1', name: 'Lanyard', isRedeemed: false, isEligible: false },
     { tier: 'TIER2', name: 'Keychain', isRedeemed: false, isEligible: false },
-    { tier: 'TIER3', name: 'Squishie', isRedeemed: false, isEligible: false },
-    { tier: 'TIER4', name: 'Beanie', isRedeemed: false, isEligible: false },
+    { tier: 'TIER3', name: 'Tote Bag', isRedeemed: false, isEligible: false },
   ];
 
   return items.map((item) => ({
@@ -66,7 +65,7 @@ export function getMerchandiseItems(redemptionInfo: RedemptionInfo): Merchandise
 }
 
 /**
- * Checks if a user has redeemed their t-shirt (TIER1)
+ * Checks if a user has redeemed their Tier 1 lanyard.
  */
 export function hasRedeemedTshirt(redemptionInfo: RedemptionInfo): boolean {
   return redemptionInfo.redeemedTiers.includes('TIER1');
@@ -77,10 +76,10 @@ export function hasRedeemedTshirt(redemptionInfo: RedemptionInfo): boolean {
  */
 export function getTierDisplayName(tier: TierType): string {
   const tierNames: Record<TierType, string> = {
-    TIER1: 'T-shirt',
+    TIER1: 'Lanyard',
     TIER2: 'Keychain',
-    TIER3: 'Squishie',
-    TIER4: 'Beanie',
+    TIER3: 'Tote Bag',
+    TIER4: 'Legacy Reward',
   };
   return tierNames[tier];
 }
