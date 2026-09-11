@@ -13,9 +13,21 @@ import {
   AuthorizationStatus,
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
-import { api } from '@/api/api';
+import axios, { AxiosError } from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { API_CONFIG } from '@/lib/config';
 
 const messagingInstance = () => getMessaging(getApp());
+
+export function describeApiError(err: unknown): string {
+  if (err instanceof AxiosError) {
+    const status = err.response?.status;
+    const data = err.response?.data;
+    const body = typeof data === 'string' ? data : data ? JSON.stringify(data) : err.message;
+    return `status ${status ?? 'unknown'}: ${body}`;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -53,7 +65,13 @@ export async function deleteLocalFcmToken(): Promise<void> {
 }
 
 export async function registerDeviceToken(token: string): Promise<void> {
-  await api.post('/notifications/register', { deviceId: token });
+  const jwt = await SecureStore.getItemAsync('jwt');
+  console.log('[FCM] registering against:', API_CONFIG.BASE_URL);
+  await axios.post(
+    `${API_CONFIG.BASE_URL}/notifications/register`,
+    { deviceId: token },
+    { headers: jwt ? { Authorization: jwt } : undefined },
+  );
 }
 
 export function subscribeToForegroundMessages(
