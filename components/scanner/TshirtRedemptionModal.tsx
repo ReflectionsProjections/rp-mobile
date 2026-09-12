@@ -25,10 +25,10 @@ export default function TshirtRedemptionModal({
         >
           <View className="bg-[#111] p-6 rounded-xl border border-white/10">
             <Text className="text-white text-xl font-bold text-center mb-3">
-              T-shirt Redemption
+              Lanyard Redemption
             </Text>
             <Text className="text-white/80 text-center">
-              Would you like to redeem the attendee's t-shirt now?
+              Would you like to redeem the attendee&apos;s lanyard now?
             </Text>
             <View className="flex-row gap-3 mt-5">
               <TouchableOpacity
