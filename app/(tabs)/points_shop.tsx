@@ -24,16 +24,20 @@ import Animated, {
 
 import SideDiscLeft from '@/assets/pointshop/side_disc_left.svg';
 import SideDiscRight from '@/assets/pointshop/side_disc_right.svg';
-import type { TierType } from '@/api/types';
 import { Header } from '@/components/home/Header';
 import CdPlayerSvg from '@/components/pointshop/CdPlayerSvg';
 import DiscLabelSvg from '@/components/pointshop/DiscLabelSvg';
 import MilestoneBarSvg from '@/components/pointshop/MilestoneBarSvg';
 import SkipArrowsSvg from '@/components/pointshop/SkipArrowsSvg';
 import { triggerIfEnabled } from '@/lib/haptics';
-import { getPointShopProgressWidth, POINT_SHOP_MILESTONES } from '@/lib/pointShopProgress';
-import { getTierDisplayName } from '@/lib/redemptionUtils';
+import {
+  getPointShopProgressWidth,
+  getPointShopTier,
+  POINT_SHOP_TIERS,
+} from '@/lib/pointShopProgress';
 import { fetchAttendeePoints } from '@/lib/slices/attendeeSlice';
+import { useAttendeeAttendance } from '@/api/tanstack/attendee';
+import { fetchEvents } from '@/lib/slices/favoritesSlice';
 import { RootState, useAppDispatch, useAppSelector } from '@/lib/store';
 
 const DESIGN_WIDTH = 402;
@@ -42,24 +46,57 @@ const DISC_IMAGE = require('../../assets/pointshop/disc.png');
 const ARROW_PRESSED_COLOR = '#FF4CCC';
 // Degrees of disc rotation dragged before the shop cycles to the next/previous item.
 const DISC_NOTCH_DEGREES = 90;
-const POINT_SHOP_ITEMS = (
-  [
-    ['TIER1', POINT_SHOP_MILESTONES[0]],
-    ['TIER2', POINT_SHOP_MILESTONES[1]],
-    ['TIER3', POINT_SHOP_MILESTONES[2]],
-    ['TIER4', POINT_SHOP_MILESTONES[3]],
-  ] as const satisfies readonly (readonly [TierType, number])[]
-).map(([tier, pointCost]) => ({ tier, pointCost, name: getTierDisplayName(tier) }));
+const POINT_SHOP_ITEMS = POINT_SHOP_TIERS.map(({ tier, name, pointThreshold }) => ({
+  tier,
+  name,
+  pointCost: pointThreshold,
+  costUnit: 'PTS',
+}));
+
+function isSameLocalDay(dateValue: string, today: Date): boolean {
+  const date = new Date(dateValue);
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
 
 export default function PointsShopScreen() {
   const dispatch = useAppDispatch();
   const attendee = useAppSelector((state: RootState) => state.attendee.attendee);
+  const events = useAppSelector((state: RootState) => state.favorites.events);
   const hapticsEnabled = useAppSelector((s: RootState) => s.settings?.hapticsEnabled ?? true);
   const isSignedIn = Boolean(attendee);
+  const attendanceQuery = useAttendeeAttendance(isSignedIn);
   const { width, height } = useWindowDimensions();
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const points = Math.max(0, attendee?.points ?? 0);
-  const selectedItem = POINT_SHOP_ITEMS[selectedItemIndex];
+  const currentTier = getPointShopTier(points);
+  const attendedEventIds = attendanceQuery.data?.eventsAttended ?? [];
+  const attendedToday = events.filter(
+    (event) =>
+      attendedEventIds.includes(event.eventId) && isSameLocalDay(event.startTime, new Date()),
+  ).length;
+  const shopItems = useMemo(
+    () =>
+      attendedToday >= 2
+        ? [
+            ...POINT_SHOP_ITEMS,
+            {
+              tier: 'VIP' as const,
+              name: 'Dinner Fast-Pass',
+              pointCost: 2,
+              costUnit: 'EVENTS',
+            },
+          ]
+        : POINT_SHOP_ITEMS,
+    [attendedToday],
+  );
+  useEffect(() => {
+    setSelectedItemIndex((currentIndex) => Math.min(currentIndex, Math.max(shopItems.length - 1, 0)));
+  }, [shopItems.length]);
+  const selectedItem = shopItems[selectedItemIndex] ?? shopItems[0];
   const scale = Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
   const canvasWidth = DESIGN_WIDTH * scale;
   const canvasHeight = DESIGN_HEIGHT * scale;
@@ -77,6 +114,7 @@ export default function PointsShopScreen() {
     useCallback(() => {
       if (isSignedIn) {
         dispatch(fetchAttendeePoints());
+        dispatch(fetchEvents());
       }
     }, [dispatch, isSignedIn]),
   );
@@ -140,10 +178,10 @@ export default function PointsShopScreen() {
       triggerIfEnabled(hapticsEnabled, 'medium');
       setSelectedItemIndex(
         (currentIndex) =>
-          (currentIndex + direction + POINT_SHOP_ITEMS.length) % POINT_SHOP_ITEMS.length,
+          (currentIndex + direction + shopItems.length) % shopItems.length,
       );
     },
-    [hapticsEnabled],
+    [hapticsEnabled, shopItems.length],
   );
 
   // Dragging the disc spins it like a record; every quarter turn cycles the shop item.
@@ -208,7 +246,9 @@ export default function PointsShopScreen() {
               <Text
                 style={[styles.pointsLabel, { fontSize: 14 * scale, letterSpacing: 1.3 * scale }]}
               >
-                {attendee ? 'current points' : 'sign in to track points'}
+                {attendee
+                  ? `current tier: ${currentTier?.replace('TIER', 'tier ') ?? 'not unlocked'}`
+                  : 'sign in to track points'}
               </Text>
               <View style={[styles.pointsAmount, { gap: 11 * scale }]}>
                 <Text style={[styles.pointsNumber, { fontSize: 22 * scale }]}>{points}</Text>
@@ -255,10 +295,10 @@ export default function PointsShopScreen() {
               styles.playerItemName,
               {
                 left: 54 * scale,
-                top: 388.5 * scale,
-                width: 69 * scale,
-                fontSize: 14 * scale,
-                lineHeight: 16 * scale,
+                top: 395 * scale,
+                width: 110 * scale,
+                fontSize: 18 * scale,
+                lineHeight: 21 * scale,
               },
             ]}
           >
@@ -282,7 +322,7 @@ export default function PointsShopScreen() {
               {String(selectedItem.pointCost).padStart(2, '0')}
             </Text>
             <Text style={[styles.playerCostUnit, { fontSize: 9 * scale, lineHeight: 11 * scale }]}>
-              PTS
+              {selectedItem.costUnit}
             </Text>
           </View>
           <Pressable

@@ -21,7 +21,7 @@ type MilestoneBarSvgProps = SvgProps & {
 
 const ACTIVE_TAG_IMAGE = require('../../assets/pointshop/milestone_tag_active.png');
 const LOCKED_TAG_IMAGE = require('../../assets/pointshop/milestone_tag_locked.png');
-const TAG_CENTERS = [51, 128, 202, 276, 350] as const;
+const TAG_CENTERS = [51, 202, 350] as const;
 
 const ACTIVE_TAG_PATH =
   'M42.499 23.8501C40.9528 24.7435 40 26.3934 40 28.1792V41.6704C40 41.6704 40.7034 46.1341 43.4219 47.7817C46.0356 49.3656 51 49.7378 51 49.7378C51.0235 49.7358 55.9481 49.3257 58.5771 47.7817C61.3734 46.1395 62 41.6704 62 41.6704V28.1792C62 26.3935 61.0471 24.7435 59.501 23.8501L51 18.938L42.499 23.8501Z';

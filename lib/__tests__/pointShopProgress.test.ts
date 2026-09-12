@@ -1,32 +1,43 @@
 import {
   getPointShopMilestoneStates,
   getPointShopProgressWidth,
+  getPointShopTier,
   POINT_SHOP_MILESTONES,
+  POINT_SHOP_TIERS,
   POINT_SHOP_TRACK_WIDTH,
 } from '../pointShopProgress';
 
 describe('point shop progress', () => {
   it('uses the milestone values shown by the design', () => {
-    expect(POINT_SHOP_MILESTONES).toEqual([5, 15, 25, 35, 45]);
+    expect(POINT_SHOP_MILESTONES).toEqual([40, 60, 90]);
+    expect(POINT_SHOP_TIERS.map(({ name }) => name)).toEqual(['Lanyard', 'Keychain', 'Tote Bag']);
   });
 
   it('maps points to the 355-unit SVG track', () => {
     expect(getPointShopProgressWidth(0)).toBe(0);
-    expect(getPointShopProgressWidth(12)).toBeCloseTo(94.667);
-    expect(getPointShopProgressWidth(45)).toBe(POINT_SHOP_TRACK_WIDTH);
+    expect(getPointShopProgressWidth(45)).toBe(POINT_SHOP_TRACK_WIDTH / 2);
+    expect(getPointShopProgressWidth(90)).toBe(POINT_SHOP_TRACK_WIDTH);
   });
 
   it('clears each milestone only when its threshold is reached', () => {
-    expect(getPointShopMilestoneStates(0)).toEqual([false, false, false, false, false]);
-    expect(getPointShopMilestoneStates(12)).toEqual([true, false, false, false, false]);
-    expect(getPointShopMilestoneStates(15)).toEqual([true, true, false, false, false]);
-    expect(getPointShopMilestoneStates(35)).toEqual([true, true, true, true, false]);
-    expect(getPointShopMilestoneStates(45)).toEqual([true, true, true, true, true]);
-    expect(getPointShopMilestoneStates(Number.NaN)).toEqual([false, false, false, false, false]);
+    expect(getPointShopMilestoneStates(39)).toEqual([false, false, false]);
+    expect(getPointShopMilestoneStates(40)).toEqual([true, false, false]);
+    expect(getPointShopMilestoneStates(60)).toEqual([true, true, false]);
+    expect(getPointShopMilestoneStates(90)).toEqual([true, true, true]);
+    expect(getPointShopMilestoneStates(Number.NaN)).toEqual([false, false, false]);
+  });
+
+  it('derives the highest unlocked tier from cumulative points', () => {
+    expect(getPointShopTier(39)).toBeNull();
+    expect(getPointShopTier(40)).toBe('TIER1');
+    expect(getPointShopTier(59)).toBe('TIER1');
+    expect(getPointShopTier(60)).toBe('TIER2');
+    expect(getPointShopTier(90)).toBe('TIER3');
+    expect(getPointShopTier(500)).toBe('TIER3');
   });
 
   it('tracks animation progress and clamps out-of-range values', () => {
-    expect(getPointShopProgressWidth(45, 0.5)).toBe(POINT_SHOP_TRACK_WIDTH / 2);
+    expect(getPointShopProgressWidth(90, 0.5)).toBe(POINT_SHOP_TRACK_WIDTH / 2);
     expect(getPointShopProgressWidth(90)).toBe(POINT_SHOP_TRACK_WIDTH);
     expect(getPointShopProgressWidth(-5)).toBe(0);
     expect(getPointShopProgressWidth(Number.NaN)).toBe(0);
