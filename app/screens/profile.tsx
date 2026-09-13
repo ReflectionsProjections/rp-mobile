@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
+  ScrollView,
   View,
   Text,
   Dimensions,
@@ -671,7 +672,10 @@ const ProfileScreen = () => {
       />
 
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={{ flex: 1, alignItems: 'center', paddingTop: 10 }}>
+        <ScrollView
+          contentContainerStyle={{ alignItems: 'center', paddingTop: 10, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Decorative frame hanging off the right edge */}
           <View
             pointerEvents="none"
@@ -1052,7 +1056,7 @@ const ProfileScreen = () => {
               }}
             />
           </Animated.View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
