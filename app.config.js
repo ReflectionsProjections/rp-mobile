@@ -4,7 +4,7 @@ dotenv.config();
 
 export default {
   expo: {
-    name: 'reflectionsprojections',
+    name: 'R|P 2026',
     slug: 'reflectionsprojections',
     version: '1.0.0',
     orientation: 'portrait',

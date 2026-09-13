@@ -75,7 +75,11 @@ function ScannerRouter() {
 
 function LeaderboardRouter({ scrollRef }: { scrollRef: React.RefObject<any> }) {
   const profile = useAppSelector((state) => state.user.profile);
-  if (profile && profile.roles && profile.roles.includes('USER')) {
+  if (
+    profile &&
+    profile.roles &&
+    (profile.roles.includes('USER') || profile.roles.includes('STAFF'))
+  ) {
     return <LeaderboardScreen scrollRef={scrollRef} />;
   }
   return <LeaderboardGuestScreen />;

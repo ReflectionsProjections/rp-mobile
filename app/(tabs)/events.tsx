@@ -112,7 +112,7 @@ const EventsScreen = () => {
   }
 
   return (
-    <View className="flex-1">
+    <View style={{ flex: 1 }}>
       <LinearGradient
         colors={['#130630', '#72138A']}
         start={{ x: 0.5, y: 0 }}
@@ -131,7 +131,7 @@ const EventsScreen = () => {
         <DayTabs tabs={dayTabs} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
 
         {filteredEvents.length === 0 ? (
-          <View className="flex-1 justify-center items-center">
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text style={styles.emptyText}>No events for this day.</Text>
           </View>
         ) : (
@@ -170,7 +170,9 @@ const EventsScreen = () => {
         <EventDetailModal
           visible={!!selectedEvent}
           event={selectedEvent}
+          isFlagged={selectedEvent ? favorites.includes(selectedEvent.eventId) : false}
           onClose={handleCloseModal}
+          onToggleFlag={handleFlagEvent}
         />
       </SafeAreaView>
     </View>

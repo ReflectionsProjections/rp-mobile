@@ -52,35 +52,14 @@ export const fetchEvents = createAsyncThunk(
   },
 );
 
+// Favoriting is client-side only: it's just a locally cached list of event IDs,
+// not synced to the backend. No network call, so no server round trip to fail.
 export const toggleFavorite = createAsyncThunk(
   'favorites/toggleFavorite',
-  async (
-    { eventId, userId }: { eventId: string; userId: string },
-    { getState, rejectWithValue },
-  ) => {
-    try {
-      const jwt = await SecureStore.getItemAsync('jwt');
-      if (!jwt) {
-        return rejectWithValue('No authentication token found');
-      }
-
-      const state = getState() as any;
-      const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
-
-      if (isCurrentlyFavorite) {
-        await api.delete(path('/attendee/favorites/:eventId', { eventId }), {
-          data: { userId },
-        });
-      } else {
-        await api.post(path('/attendee/favorites/:eventId', { eventId }), {
-          userId,
-        });
-      }
-
-      return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to toggle favorite');
-    }
+  async ({ eventId }: { eventId: string; userId: string }, { getState }) => {
+    const state = getState() as any;
+    const isCurrentlyFavorite = state.favorites.favoriteEventIds.includes(eventId);
+    return { eventId, action: isCurrentlyFavorite ? 'remove' : 'add' };
   },
 );
 
