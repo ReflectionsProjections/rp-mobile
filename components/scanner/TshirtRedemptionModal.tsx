@@ -25,10 +25,10 @@ export default function TshirtRedemptionModal({
         >
           <View className="bg-[#111] p-6 rounded-xl border border-white/10">
             <Text className="text-white text-xl font-bold text-center mb-3">
-              Lanyard Redemption
+              Shirt Redemption
             </Text>
             <Text className="text-white/80 text-center">
-              Would you like to redeem the attendee&apos;s lanyard now?
+              Would you like to redeem the attendee&apos;s shirt now?
             </Text>
             <View className="flex-row gap-3 mt-5">
               <TouchableOpacity
@@ -36,7 +36,7 @@ export default function TshirtRedemptionModal({
                 disabled={processing}
                 onPress={onRedeem}
               >
-                <Text className="text-white text-center font-semibold">Redeem T-shirt</Text>
+                <Text className="text-white text-center font-semibold">Redeem Shirt</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 className="flex-1 bg-white/10 py-3 rounded-lg border border-white/10"
