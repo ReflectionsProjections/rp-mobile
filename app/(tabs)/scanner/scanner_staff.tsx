@@ -426,7 +426,7 @@ export default function ScannerScreen() {
         Toast.show({
           type: 'info',
           text1: 'Already redeemed',
-          text2: 'User already received t-shirt',
+          text2: 'User already received shirt',
           position: 'top',
         });
         return false;
@@ -467,13 +467,13 @@ export default function ScannerScreen() {
       setMerchProcessing(true);
       const userId = merchUserIdRef.current;
       await redeemTier(userId, 'TIER1');
-      Toast.show({ type: 'success', text1: 'Lanyard redeemed', position: 'top' });
+      Toast.show({ type: 'success', text1: 'Shirt redeemed', position: 'top' });
       setMerchModalVisible(false);
       resetScan();
     } catch (e: any) {
       Toast.show({
         type: 'error',
-        text1: 'Failed to redeem lanyard',
+        text1: 'Failed to redeem shirt',
         text2: e?.message,
         position: 'top',
       });
