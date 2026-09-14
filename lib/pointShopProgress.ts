@@ -5,6 +5,7 @@ export const POINT_SHOP_TRACK_WIDTH = 355;
 export const POINT_SHOP_MILESTONES = [40, 60, 90] as const;
 
 export const POINT_SHOP_TIERS = [
+  { tier: 'TIER0', name: 'Shirt', pointThreshold: 0 },
   { tier: 'TIER1', name: 'Lanyard', pointThreshold: 40, inventory: 250 },
   { tier: 'TIER2', name: 'Keychain', pointThreshold: 60, inventory: 200 },
   { tier: 'TIER3', name: 'Tote Bag', pointThreshold: 90, inventory: 75 },
@@ -12,7 +13,7 @@ export const POINT_SHOP_TIERS = [
   tier: TierMappedType;
   name: string;
   pointThreshold: number;
-  inventory: number;
+  inventory?: number;
 }[];
 
 export function getPointShopTier(points: number): TierMappedType {

@@ -10,7 +10,16 @@ import {
 describe('point shop progress', () => {
   it('uses the milestone values shown by the design', () => {
     expect(POINT_SHOP_MILESTONES).toEqual([40, 60, 90]);
-    expect(POINT_SHOP_TIERS.map(({ name }) => name)).toEqual(['Lanyard', 'Keychain', 'Tote Bag']);
+    expect(POINT_SHOP_TIERS.map(({ tier, name, pointThreshold }) => ({
+      tier,
+      name,
+      pointThreshold,
+    }))).toEqual([
+      { tier: 'TIER0', name: 'Shirt', pointThreshold: 0 },
+      { tier: 'TIER1', name: 'Lanyard', pointThreshold: 40 },
+      { tier: 'TIER2', name: 'Keychain', pointThreshold: 60 },
+      { tier: 'TIER3', name: 'Tote Bag', pointThreshold: 90 },
+    ]);
   });
 
   it('maps points to the 355-unit SVG track', () => {
