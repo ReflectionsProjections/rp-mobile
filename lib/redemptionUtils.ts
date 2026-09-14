@@ -5,7 +5,7 @@ import { tierMapping } from '@/constants/tierMapping';
 
 export interface RedemptionInfo {
   userId: string;
-  currentTier: TierMappedType;
+  currentTier: TierType;
   redeemedTiers: TierType[];
   redeemableTiers: TierType[];
 }

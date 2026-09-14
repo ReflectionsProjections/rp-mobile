@@ -28,12 +28,14 @@ describe('point shop progress', () => {
   });
 
   it('derives the highest unlocked tier from cumulative points', () => {
-    expect(getPointShopTier(39)).toBeNull();
+    expect(getPointShopTier(0)).toBe('TIER0');
+    expect(getPointShopTier(39)).toBe('TIER0');
     expect(getPointShopTier(40)).toBe('TIER1');
     expect(getPointShopTier(59)).toBe('TIER1');
     expect(getPointShopTier(60)).toBe('TIER2');
     expect(getPointShopTier(90)).toBe('TIER3');
     expect(getPointShopTier(500)).toBe('TIER3');
+    expect(getPointShopTier(Number.NaN)).toBe('TIER0');
   });
 
   it('tracks animation progress and clamps out-of-range values', () => {
