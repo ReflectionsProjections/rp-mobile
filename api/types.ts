@@ -240,7 +240,7 @@ export interface APIRoutes {
     GET: {
       response: {
         userId: string;
-        currentTier: TierMappedType;
+        currentTier: TierType;
         redeemedTiers: TierType[];
         redeemableTiers: TierType[];
       };

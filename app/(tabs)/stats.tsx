@@ -184,7 +184,7 @@ export default function StatsScreen() {
               <View className="space-y-2">
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>
-                    Tier 1:
+                    Tier 0:
                   </Text>
                   <Text
                     className="font-semibold"
@@ -195,7 +195,7 @@ export default function StatsScreen() {
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>
-                    Tier 2:
+                    Tier 1:
                   </Text>
                   <Text
                     className="font-semibold"
@@ -206,7 +206,7 @@ export default function StatsScreen() {
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>
-                    Tier 3:
+                    Tier 2:
                   </Text>
                   <Text
                     className="font-semibold"
@@ -217,7 +217,7 @@ export default function StatsScreen() {
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600" style={{ fontFamily: 'ProRacing' }}>
-                    Tier 4:
+                    Tier 3:
                   </Text>
                   <Text
                     className="font-semibold"

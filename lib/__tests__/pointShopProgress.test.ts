@@ -10,7 +10,16 @@ import {
 describe('point shop progress', () => {
   it('uses the milestone values shown by the design', () => {
     expect(POINT_SHOP_MILESTONES).toEqual([40, 60, 90]);
-    expect(POINT_SHOP_TIERS.map(({ name }) => name)).toEqual(['Lanyard', 'Keychain', 'Tote Bag']);
+    expect(POINT_SHOP_TIERS.map(({ tier, name, pointThreshold }) => ({
+      tier,
+      name,
+      pointThreshold,
+    }))).toEqual([
+      { tier: 'TIER0', name: 'Shirt', pointThreshold: 0 },
+      { tier: 'TIER1', name: 'Lanyard', pointThreshold: 40 },
+      { tier: 'TIER2', name: 'Keychain', pointThreshold: 60 },
+      { tier: 'TIER3', name: 'Tote Bag', pointThreshold: 90 },
+    ]);
   });
 
   it('maps points to the 355-unit SVG track', () => {
@@ -28,12 +37,14 @@ describe('point shop progress', () => {
   });
 
   it('derives the highest unlocked tier from cumulative points', () => {
-    expect(getPointShopTier(39)).toBeNull();
+    expect(getPointShopTier(0)).toBe('TIER0');
+    expect(getPointShopTier(39)).toBe('TIER0');
     expect(getPointShopTier(40)).toBe('TIER1');
     expect(getPointShopTier(59)).toBe('TIER1');
     expect(getPointShopTier(60)).toBe('TIER2');
     expect(getPointShopTier(90)).toBe('TIER3');
     expect(getPointShopTier(500)).toBe('TIER3');
+    expect(getPointShopTier(Number.NaN)).toBe('TIER0');
   });
 
   it('tracks animation progress and clamps out-of-range values', () => {

@@ -34,7 +34,7 @@ export default function GeneralCheckinModal({
             {redemptionInfo && (
               <View className="mb-4">
                 <Text className="text-white/80 text-center mb-2">
-                  Current Tier: {mapBackendTierToFrontend(redemptionInfo.currentTier as any)}
+                  Current Tier: {mapBackendTierToFrontend(redemptionInfo.currentTier)}
                 </Text>
                 <Text className="text-white/60 text-center text-sm">
                   Redeemed:{' '}
