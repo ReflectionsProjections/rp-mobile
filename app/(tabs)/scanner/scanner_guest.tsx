@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { SafeAreaView, Text, View, Animated, Dimensions, StyleSheet } from 'react-native';
+import { Text, View, Animated, Dimensions, StyleSheet } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Header } from '@/components/home/Header';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,7 +56,7 @@ const ScannerGuestScreen = () => {
         style={StyleSheet.absoluteFillObject}
       />
       
-      <SafeAreaView className="flex-1 justify-center items-center px-6">
+      <SafeAreaView edges={['top']} className="flex-1 justify-center items-center px-6">
         <View
           style={{ position: 'absolute', top: insets.top, left: 0, right: 0, zIndex: 20 }}
         >

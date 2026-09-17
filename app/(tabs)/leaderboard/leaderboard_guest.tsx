@@ -3,11 +3,11 @@ import {
   View,
   Text,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Dimensions,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { TouchableOpacity } from '@/components/ui/HapticControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -215,7 +215,7 @@ export default function LeaderboardGuestScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      <SafeAreaView style={s.safe}>
+      <SafeAreaView edges={['top']} style={s.safe}>
         <Header title="STANDINGS" bigText={false} />
 
         {/* Podium — wrapped in a glowing outer box matching the screenshot */}
