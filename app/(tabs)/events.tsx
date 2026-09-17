@@ -4,11 +4,11 @@ import {
   Dimensions,
   FlatList,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Event } from '../../api/types';
 import { Header } from '@/components/home/Header';
 import { DayTabs } from '@/components/events/DayTabs';
@@ -120,9 +120,9 @@ const EventsScreen = () => {
         style={StyleSheet.absoluteFillObject}
       />
       <SafeAreaView
+        edges={['top']}
         style={{
           flex: 1,
-          paddingTop: Platform.OS === 'android' ? 15 : 0,
           top: Platform.OS === 'ios' ? -12 : 0,
         }}
       >

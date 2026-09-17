@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, Platform } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FolderTabs, FolderSection } from '@/components/home/FolderTabs';
@@ -201,12 +202,7 @@ export default function HomeScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      <SafeAreaView
-        style={{
-          flex: 1,
-          paddingTop: Platform.OS === 'android' ? 15 : 0,
-        }}
-      >
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <HomeTopBar onProfilePress={() => router.push('/screens/profile')} />
         <FolderTabs<HomeCard>
           sections={sections}

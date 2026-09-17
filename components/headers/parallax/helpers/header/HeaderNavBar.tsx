@@ -1,4 +1,5 @@
-import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { isValidElement } from 'react';
 import type { HeaderNavBarProps } from '../../types';
 import { BlurView } from 'expo-blur';
@@ -75,7 +76,7 @@ export const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
       intensity={showTint ? intensity : 0}
       tint={showTint ? tint : undefined}
     >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
         <View style={styles.contentContainer}>{renderChildren()}</View>
       </SafeAreaView>
     </BlurView>
