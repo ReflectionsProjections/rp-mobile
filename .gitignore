@@ -41,3 +41,4 @@ firebase-service-account*.json
 *.tsbuildinfo
 
 app-example
+android/app/tmp.json
