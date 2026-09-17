@@ -4,10 +4,10 @@ import {
   Text,
   Dimensions,
   ActivityIndicator,
-  SafeAreaView,
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackgroundSvg from '@/assets/background/background_grate.svg';
 import { useThemeColor } from '@/lib/theme';
 import { useAllStats } from '@/api/tanstack/stats';
@@ -51,7 +51,7 @@ export default function StatsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView edges={['top']} className="flex-1 bg-gray-100">
       <BackgroundSvg
         style={StyleSheet.absoluteFillObject}
         width={screenWidth}

@@ -4,11 +4,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
   Dimensions,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch, useAppSelector, RootState } from '@/lib/store';
@@ -229,7 +229,7 @@ export default function LeaderboardScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      <SafeAreaView style={s.safe}>
+      <SafeAreaView edges={['top']} style={s.safe}>
 
         {/* TITLE */}
         <Text style={s.title}>STANDINGS</Text>
