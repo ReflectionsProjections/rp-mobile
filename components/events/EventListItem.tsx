@@ -55,8 +55,14 @@ export const EventListItem: React.FC<Props> = ({
     translateX.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
   };
 
+  // Only claim the touch once the finger has actually dragged right; a plain
+  // tap must fall through to the card press and to any tab-bar button that
+  // happens to sit over the card. (`activeOffsetX([12, 999])` used to set the
+  // *start* bound to 12, which activated on every touch with dx < 12 — i.e. on
+  // any tap or scroll — and cancelled the underlying press.)
   const panGesture = Gesture.Pan()
-    .activeOffsetX([12, 999])
+    .activeOffsetX(12)
+    .failOffsetX(-12)
     .failOffsetY([-10, 10])
     .onUpdate((event) => {
       if (event.translationX > 0) {
